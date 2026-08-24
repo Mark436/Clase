@@ -65,7 +65,7 @@ export function ScheduleDayView({
       const startsIn = meeting.startMinutes - minutesNow;
       note =
         startsIn > 0
-          ? `Empieza en ${startsIn} min`
+          ? `${Math.floor(startsIn / 60)} ${Math.floor(startsIn / 60) === 1 ? "hr" : "hrs"} y ${startsIn % 60} min`
           : `Empieza a las ${formatMinutes(meeting.startMinutes)}`;
     } else if (meeting.endMinutes <= minutesNow && isToday) {
       variant = "past";
@@ -86,7 +86,11 @@ export function ScheduleDayView({
   }
 
   return (
-    <div className="flex flex-col gap-3" role="list" aria-label="Clases del día">
+    <div
+      className="flex flex-col gap-3"
+      role="list"
+      aria-label="Clases del día"
+    >
       {items}
     </div>
   );
