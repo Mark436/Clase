@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { getNow, subscribeToClock } from "@/lib/devtools/clock";
 
 const TICK_INTERVAL_MS = 15_000;
 
@@ -13,14 +14,14 @@ function isSameMinute(a: Date, b: Date): boolean {
 }
 
 export function useCurrentTime(): Date {
-  const [now, setNow] = useState(() => new Date());
+  const [now, setNow] = useState(() => getNow());
 
   useEffect(() => {
     let intervalId: number | undefined;
 
     function tick() {
       setNow((previous) => {
-        const current = new Date();
+        const current = getNow();
         return isSameMinute(previous, current) ? previous : current;
       });
     }
@@ -48,8 +49,12 @@ export function useCurrentTime(): Date {
     start();
     document.addEventListener("visibilitychange", handleVisibilityChange);
 
+    // Clock changes (dev simulation) apply immediately, even in background.
+    const unsubscribe = subscribeToClock(() => setNow(getNow()));
+
     return () => {
       stop();
+      unsubscribe();
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, []);
