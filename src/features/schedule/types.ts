@@ -1,6 +1,6 @@
 export interface ClassMeeting {
   subjectName: string;
-  group: string;
+  classroom: string;
   professor: string;
   weekday: number;
   startMinutes: number;

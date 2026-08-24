@@ -15,6 +15,7 @@ const WEEKDAY_FIELDS = [
 interface DaySlot {
   startMinutes: number;
   endMinutes: number;
+  classroom: string;
 }
 
 export function mapHorario(
@@ -64,8 +65,9 @@ function resolveSubjectName(
   return match?.nombre.trim() || subject.clave;
 }
 
-// Formato observado por día: "hh:mm-hh:mm GGG" (rango + grupo). Se extraen
-// todos los rangos presentes para tolerar variaciones del API.
+// Formato observado por día: "hh:mm-hh:mm GGG" (rango + salón). Se extraen
+// todos los rangos presentes, junto con el código de salón que los sigue,
+// para tolerar variaciones del API.
 function parseDaySlots(value: string): DaySlot[] {
   const slots: DaySlot[] = [];
   TIME_RANGE_PATTERN.lastIndex = 0;
@@ -77,7 +79,11 @@ function parseDaySlots(value: string): DaySlot[] {
     if (startMinutes === null || endMinutes === null) continue;
     if (endMinutes <= startMinutes) continue;
 
-    slots.push({ startMinutes, endMinutes });
+    slots.push({
+      startMinutes,
+      endMinutes,
+      classroom: (match[5] ?? "").trim(),
+    });
   }
 
   return slots;
