@@ -55,7 +55,7 @@ export function ClassCard({
           isCurrent ? "text-on-primary-container/80" : "text-on-surface-variant"
         }`}
       >
-        {meeting.group ? <p>Grupo {meeting.group}</p> : null}
+        {meeting.classroom ? <p>Salón {meeting.classroom}</p> : null}
         {meeting.professor ? <p>{meeting.professor}</p> : null}
       </div>
 

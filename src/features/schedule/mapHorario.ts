@@ -1,7 +1,8 @@
 import type { Boleta, HorarioMateria } from "sith-api-client";
 import type { ClassMeeting, WeekSchedule } from "./types";
 
-const TIME_RANGE_PATTERN = /(\d{1,2}):(\d{2})-(\d{1,2}):(\d{2})/g;
+const TIME_RANGE_PATTERN =
+  /(\d{1,2}):(\d{2})-(\d{1,2}):(\d{2})(?:\s+([^\s,;]+))?/g;
 
 const WEEKDAY_FIELDS = [
   { field: "lunes", weekday: 1 },
@@ -39,7 +40,7 @@ export function mapHorario(
 
         meetings.push({
           subjectName,
-          group: subject.grupo.trim(),
+          classroom: slot.classroom,
           professor: subject.docente.trim(),
           weekday,
           startMinutes: slot.startMinutes,

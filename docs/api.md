@@ -109,12 +109,13 @@ graph returned by `fetchDatos()`:
 
 - `HorarioMateria { clave, creditos?, grupo, docente, dias }`
 - `dias` holds optional raw strings per weekday (`lunes`…`sabado`) observed as
-  `"hh:mm-hh:mm GGG"` (time range + group); empty days are omitted.
+  `"hh:mm-hh:mm SALÓN"` (time range + room code); empty days are omitted.
 - `docente` concatenates the professor's surnames + names (`mape + mnom`).
 - **The subject name is NOT included** — resolve it by joining `clave`
   against `boleta.materias[].clve → nombre`, falling back to the clave
-  (implemented in `features/schedule/mapHorario.ts`). No classroom field
-  exists anywhere in the payload.
+  (implemented in `features/schedule/mapHorario.ts`). There is no dedicated
+  classroom field; the room code is the third token of each `dias` string
+  (`grupo` is not it).
 
 ## Session decision (this app)
 
