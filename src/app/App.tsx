@@ -16,9 +16,14 @@ import { getHomeTab, NAV_ITEMS } from "./navigation";
 import type { TabId } from "./navigation";
 
 function AuthenticatedShell() {
-  const { alumno, hasCredentials } = useAuth();
+  const { alumno, hasCredentials, refresh } = useAuth();
   const [tab, setTab] = useState<TabId>(() => getHomeTab(hasGrades(alumno)));
   const [reAuthOpen, setReAuthOpen] = useState(false);
+
+  function handlePullToRefresh() {
+    if (hasCredentials) return refresh();
+    setReAuthOpen(true);
+  }
 
   return (
     <>
@@ -30,6 +35,7 @@ function AuthenticatedShell() {
             onSelect={setTab}
           />
         }
+        onPullToRefresh={handlePullToRefresh}
       >
         {!hasCredentials ? (
           <button
@@ -53,7 +59,11 @@ function AuthenticatedShell() {
         )}
       </AppShell>
 
-      <ReAuthSheet open={reAuthOpen} onClose={() => setReAuthOpen(false)} />
+      <ReAuthSheet
+        open={reAuthOpen}
+        onClose={() => setReAuthOpen(false)}
+        onSuccess={() => setReAuthOpen(false)}
+      />
     </>
   );
 }

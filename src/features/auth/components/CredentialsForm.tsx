@@ -22,12 +22,14 @@ interface CredentialsFormProps {
   submitLabel: string;
   initialUser?: string;
   autoFocusPassword?: boolean;
+  onSuccess?: () => void;
 }
 
 export function CredentialsForm({
   submitLabel,
   initialUser = "",
   autoFocusPassword = false,
+  onSuccess,
 }: CredentialsFormProps) {
   const { status, errorKind, login } = useAuth();
   const [user, setUser] = useState(initialUser);
@@ -37,7 +39,7 @@ export function CredentialsForm({
 
   const isLoading = status === "authenticating";
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (isLoading) return;
 
@@ -51,7 +53,8 @@ export function CredentialsForm({
     setFieldErrors(errors);
     if (Object.keys(errors).length > 0) return;
 
-    void login(user.trim(), pass);
+    const success = await login(user.trim(), pass);
+    if (success) onSuccess?.();
   }
 
   return (

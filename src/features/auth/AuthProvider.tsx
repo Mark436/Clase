@@ -29,6 +29,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [avisos, setAvisos] = useState<Aviso[]>([]);
   const [errorKind, setErrorKind] = useState<ApiErrorKind | null>(null);
   const [hasCredentials, setHasCredentials] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const [rememberedUsername, setRememberedUsername] = useState<string | null>(
     null,
   );
@@ -36,6 +37,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Session credentials live in volatile memory only (never in any storage),
   // so an in-session refresh can reuse them. Cleared on logout. See docs/api.md.
   const credentialsRef = useRef<Credenciales | null>(null);
+  const refreshingRef = useRef(false);
 
   // Restore the last valid snapshot and the remembered username before any
   // network activity. Cached data hydrates the session; without it we fall
@@ -91,9 +93,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setAvisos(data.avisos);
       setStatus("authenticated");
       void persistSession(previousAlumno, data.alumno, data.avisos, user);
+      return true;
     } catch (error) {
       setErrorKind(error instanceof ApiError ? error.kind : "unknown");
       setStatus("unauthenticated");
+      return false;
+    }
+  }, []);
+
+  // Same load path as login (fetch → persist → adeudo alert) but without the
+  // "authenticating" status: cached data stays visible while refreshing and a
+  // failure never deletes it.
+  const refresh = useCallback(async () => {
+    const credentials = credentialsRef.current;
+    if (!credentials || refreshingRef.current) return false;
+
+    refreshingRef.current = true;
+    setRefreshing(true);
+    try {
+      const data = await fetchAppData(credentials);
+      const previousAlumno = await loadPreviousAlumno();
+      setAlumno(data.alumno);
+      setAvisos(data.avisos);
+      void persistSession(
+        previousAlumno,
+        data.alumno,
+        data.avisos,
+        credentials.user,
+      );
+      return true;
+    } catch {
+      return false;
+    } finally {
+      refreshingRef.current = false;
+      setRefreshing(false);
     }
   }, []);
 
@@ -117,8 +150,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       avisos,
       errorKind,
       hasCredentials,
+      refreshing,
       rememberedUsername,
       login,
+      refresh,
       logout,
     }),
     [
@@ -127,8 +162,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       avisos,
       errorKind,
       hasCredentials,
+      refreshing,
       rememberedUsername,
       login,
+      refresh,
       logout,
     ],
   );

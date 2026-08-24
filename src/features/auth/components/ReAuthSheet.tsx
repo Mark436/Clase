@@ -3,9 +3,10 @@ import { CredentialsForm } from "./CredentialsForm";
 interface ReAuthSheetProps {
   open: boolean;
   onClose: () => void;
+  onSuccess?: () => void;
 }
 
-export function ReAuthSheet({ open, onClose }: ReAuthSheetProps) {
+export function ReAuthSheet({ open, onClose, onSuccess }: ReAuthSheetProps) {
   if (!open) return null;
 
   return (
@@ -30,7 +31,11 @@ export function ReAuthSheet({ open, onClose }: ReAuthSheetProps) {
           Por seguridad tu contraseña no se guarda. Ingrésala para actualizar
           tus datos.
         </p>
-        <CredentialsForm submitLabel="Actualizar datos" autoFocusPassword />
+        <CredentialsForm
+          submitLabel="Actualizar datos"
+          autoFocusPassword
+          onSuccess={onSuccess}
+        />
       </section>
     </div>
   );

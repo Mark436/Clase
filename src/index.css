@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+html {
+  overscroll-behavior-y: contain;
+}
+
 @theme {
   --color-background: #f8fafc;
   --color-on-background: #0f172a;

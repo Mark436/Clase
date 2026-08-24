@@ -14,7 +14,9 @@ export interface AuthContextValue {
   errorKind: ApiErrorKind | null;
   hasCredentials: boolean;
   rememberedUsername: string | null;
-  login: (user: string, pass: string) => Promise<void>;
+  login: (user: string, pass: string) => Promise<boolean>;
+  refresh: () => Promise<boolean>;
+  refreshing: boolean;
   logout: () => void;
 }
 
