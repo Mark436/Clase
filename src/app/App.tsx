@@ -94,7 +94,10 @@ function AuthenticatedShell() {
         ) : tab === "grades" ? (
           <GradesPage alumno={alumno} />
         ) : (
-          <StudentPage onRequestRefresh={handlePullToRefresh} />
+          <StudentPage
+            alumno={alumno}
+            onRequestRefresh={handlePullToRefresh}
+          />
         )}
       </AppShell>
 
