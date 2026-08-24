@@ -22,4 +22,7 @@ html {
   --color-on-error: #ffffff;
   --color-error-container: #fee2e2;
   --color-on-error-container: #991b1b;
+
+  --color-success: #16a34a;
+  --color-on-success: #ffffff;
 }
