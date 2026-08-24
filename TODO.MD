@@ -2,17 +2,17 @@
 
 ## 0. Base del proyecto
 
-- [ ] Crear el proyecto con Vite + React + TypeScript.
+- [x] Crear el proyecto con Vite + React + TypeScript.
 - [ ] Configurar TypeScript estricto.
-- [ ] Configurar alias `@` para apuntar a `src`.
+- [x] Configurar el alias `@` para apuntar a `src`.
 - [ ] Configurar `vite-plugin-pwa`.
 - [ ] Crear el manifest de la PWA.
 - [ ] Añadir iconos de la aplicación.
 - [ ] Configurar el service worker.
-- [ ] Configurar estilos globales.
+- [x] Configurar estilos globales.
 - [ ] Definir estrategia responsive mobile-first.
 - [ ] Configurar variables de entorno.
-- [ ] Añadir `sith-api-client` como dependencia de runtime, no como `devDependency`.
+- [x] Añadir `sith-api-client` como dependencia de runtime, no como `devDependency`.
 - [ ] Configurar el consumo del paquete local si se desarrolla junto con la PWA.
 - [ ] Verificar compatibilidad de imports ES con extensión `.js`.
 
@@ -90,16 +90,16 @@ Datos del alumno
 Sesión de la aplicación
 ```
 
-- [ ] Crear pantalla de login.
-- [ ] Añadir campo de usuario.
-- [ ] Añadir campo de contraseña.
-- [ ] Implementar validación básica.
-- [ ] Definir estado de loading.
-- [ ] Mostrar errores de autenticación.
-- [ ] No persistir la contraseña en localStorage.
-- [ ] No persistir la contraseña en sessionStorage.
-- [ ] No persistir la contraseña en IndexedDB.
-- [ ] Definir logout.
+- [x] Crear pantalla de login.
+- [x] Añadir campo de usuario.
+- [x] Añadir campo de contraseña.
+- [x] Implementar validación básica.
+- [x] Definir estado de loading.
+- [x] Mostrar errores de autenticación.
+- [x] No persistir la contraseña en localStorage.
+- [x] No persistir la contraseña en sessionStorage.
+- [x] No persistir la contraseña en IndexedDB.
+- [x] Definir logout.
 - [ ] Definir expiración de sesión.
 - [ ] Definir comportamiento al recargar la PWA.
 
@@ -145,12 +145,12 @@ Intentar actualizar
 - Calificaciones
 - Alumno
 
-- [ ] Crear bottom navigation mobile-first.
-- [ ] Crear navegación entre las tres áreas.
-- [ ] Utilizar iconos coherentes.
-- [ ] Mantener la navegación accesible.
-- [ ] Añadir estados activo/inactivo.
-- [ ] Respetar safe areas de dispositivos móviles.
+- [x] Crear bottom navigation mobile-first.
+- [x] Crear navegación entre las tres áreas.
+- [x] Utilizar iconos coherentes.
+- [x] Mantener la navegación accesible.
+- [x] Añadir estados activo/inactivo.
+- [x] Respetar safe areas de dispositivos móviles.
 - [ ] Definir pantalla principal dinámica.
 - [ ] Si no hay calificaciones, mostrar Horario como Home.
 - [ ] Si existen calificaciones, mostrar Calificaciones como Home.
@@ -163,6 +163,7 @@ Intentar actualizar
 
 ### Vista diaria
 
+- [ ] Bloqueado: `sith-api-client` no expone el horario (`gins` sin mapear); requiere actualización del paquete o acceso al payload crudo. Ver `docs/api.md`.
 - [ ] La pantalla principal del horario debe representar el día como una timeline vertical.
 - [ ] Mostrar el día actual inicialmente.
 - [ ] Mostrar las clases del día.

@@ -166,6 +166,8 @@ interface AppData {
 ```
 
 Exact field types should follow `sith-api-client` exports (`Alumno`, `Aviso`, etc.).
+As of `sith-api-client` 2.2.0, `progreso` is a plain `number` and the client does not
+expose schedule data yet — see [`api.md`](api.md).
 
 **Invariant:** Prefer API package types over local duplicates unless the UI model
 genuinely differs.
@@ -173,14 +175,17 @@ genuinely differs.
 ### `sith-api-client` (external)
 
 Runtime dependency that talks to the academic API. Key type: `SithClient`. Primary
-method: `fetchDatos(credenciales)` returning `Alumno` and `Aviso[]` (schedule, grades,
-debts, and progress are embedded in the alumno graph).
+method: `fetchDatos(credenciales)` returning `Alumno` and `Aviso[]` (grades, debts,
+and progress are mapped into the alumno graph; schedule is not exposed yet — see
+[`api.md`](api.md)).
 
 **Boundary:** The package owns HTTP, parsing, and DTO mapping. The PWA owns when to
 fetch, how to cache, and how to present data.
 
 **Invariant:** Do not reimplement API communication that the package already provides.
 Keep `.js` extensions in package import paths as required by its ESM build.
+
+See [`api.md`](api.md) for the request lifecycle, error `cause` shapes, and known gaps.
 
 ## Cross-Cutting Concerns
 
