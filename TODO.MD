@@ -1,0 +1,303 @@
+# TODO — PWA académica
+
+## 0. Base del proyecto
+
+- [ ] Crear el proyecto con Vite + React + TypeScript.
+- [ ] Configurar TypeScript estricto.
+- [ ] Configurar alias `@` para apuntar a `src`.
+- [ ] Configurar `vite-plugin-pwa`.
+- [ ] Crear el manifest de la PWA.
+- [ ] Añadir iconos de la aplicación.
+- [ ] Configurar el service worker.
+- [ ] Configurar estilos globales.
+- [ ] Definir estrategia responsive mobile-first.
+- [ ] Configurar variables de entorno.
+- [ ] Añadir `sith-api-client` como dependencia de runtime, no como `devDependency`.
+- [ ] Configurar el consumo del paquete local si se desarrolla junto con la PWA.
+- [ ] Verificar compatibilidad de imports ES con extensión `.js`.
+
+## 1. Arquitectura
+
+### Estructura inicial
+
+```text
+src/
+├── app/
+│   ├── App.tsx
+│   └── navigation.tsx
+├── components/
+│   └── ui/
+├── features/
+│   ├── auth/
+│   ├── schedule/
+│   ├── grades/
+│   ├── student/
+│   └── notifications/
+├── lib/
+│   ├── api/
+│   ├── storage/
+│   └── biometrics/
+├── pages/
+├── styles/
+├── main.tsx
+└── types/
+```
+
+- [ ] Mantener las features independientes entre sí.
+- [ ] Evitar componentes React con lógica de negocio compleja.
+- [ ] Mantener la lógica del horario separada de su representación visual.
+- [ ] Mantener la lógica de autenticación separada de las pantallas.
+- [ ] Utilizar named exports.
+- [ ] Evitar default exports.
+- [ ] Evitar `any`.
+- [ ] Evitar abstracciones innecesarias.
+- [ ] Mantener los componentes pequeños.
+- [ ] Definir un flujo de dependencias claro: UI → Features → Domain/Services → `sith-api-client` → API.
+- [ ] Los componentes no deben instanciar directamente `SithClient`.
+- [ ] Centralizar la configuración del cliente API.
+- [ ] Centralizar la carga y actualización de `AppData`.
+
+## 2. Modelo de datos de la aplicación
+
+- [ ] Crear un modelo de dominio independiente de la respuesta exacta de la API cuando sea necesario.
+- [ ] Definir `AppData`.
+- [ ] Definir estado de carga.
+- [ ] Definir estado de error.
+- [ ] Definir estado autenticado/no autenticado.
+- [ ] Definir fecha y hora de última actualización.
+- [ ] Definir estructura de datos para:
+  - [ ] alumno
+  - [ ] horario
+  - [ ] calificaciones
+  - [ ] avisos
+  - [ ] adeudos
+  - [ ] progreso
+  - [ ] `loadedAt`
+- [ ] Crear mapeadores solo si los tipos de la API y del dominio necesitan estar desacoplados.
+- [ ] Evitar duplicar tipos que ya estén correctamente definidos en `sith-api-client`.
+
+## 3. Autenticación
+
+### Primer acceso
+
+```text
+Usuario + contraseña
+↓
+SithClient
+↓
+Datos del alumno
+↓
+Sesión de la aplicación
+```
+
+- [ ] Crear pantalla de login.
+- [ ] Añadir campo de usuario.
+- [ ] Añadir campo de contraseña.
+- [ ] Implementar validación básica.
+- [ ] Definir estado de loading.
+- [ ] Mostrar errores de autenticación.
+- [ ] No persistir la contraseña en localStorage.
+- [ ] No persistir la contraseña en sessionStorage.
+- [ ] No persistir la contraseña en IndexedDB.
+- [ ] Definir logout.
+- [ ] Definir expiración de sesión.
+- [ ] Definir comportamiento al recargar la PWA.
+
+### Accesos posteriores
+
+- [ ] Investigar WebAuthn/passkeys.
+- [ ] Diseñar flujo de acceso mediante biometría.
+- [ ] Determinar cómo se relacionará la credencial biométrica con la autenticación de la API.
+- [ ] Si la API requiere actualmente `user + pass` para cada consulta, evaluar una sesión/token como mejora del backend.
+- [ ] No intentar almacenar la contraseña cifrada en el frontend como sustituto de una sesión segura.
+
+## 4. Persistencia local
+
+### Objetivo
+
+```text
+Abrir aplicación
+↓
+¿Hay datos locales?
+↙          ↘
+Sí          No
+↓          ↓
+Mostrar datos locales   Mostrar Login
+↓
+Intentar actualizar
+```
+
+- [ ] Evaluar IndexedDB para persistencia.
+- [ ] Persistir datos académicos.
+- [ ] Persistir `loadedAt`.
+- [ ] No persistir credenciales.
+- [ ] Mostrar inmediatamente los últimos datos disponibles.
+- [ ] Intentar actualizar cuando corresponda.
+- [ ] Manejar aplicación offline.
+- [ ] Mostrar claramente cuando los datos mostrados son antiguos.
+- [ ] Invalidar datos locales cuando sea necesario.
+
+## 5. Navegación
+
+### Áreas principales
+
+- Horario
+- Calificaciones
+- Alumno
+
+- [ ] Crear bottom navigation mobile-first.
+- [ ] Crear navegación entre las tres áreas.
+- [ ] Utilizar iconos coherentes.
+- [ ] Mantener la navegación accesible.
+- [ ] Añadir estados activo/inactivo.
+- [ ] Respetar safe areas de dispositivos móviles.
+- [ ] Definir pantalla principal dinámica.
+- [ ] Si no hay calificaciones, mostrar Horario como Home.
+- [ ] Si existen calificaciones, mostrar Calificaciones como Home.
+- [ ] Crear una función o lógica independiente para determinar el Home.
+- [ ] Intercambiar también icono y etiqueta según el estado de Home.
+- [ ] Mantener acceso al resto de las áreas.
+- [ ] No duplicar la lógica de navegación dentro de cada pantalla.
+
+## 6. Horario
+
+### Vista diaria
+
+- [ ] La pantalla principal del horario debe representar el día como una timeline vertical.
+- [ ] Mostrar el día actual inicialmente.
+- [ ] Mostrar las clases del día.
+- [ ] Mostrar hora de inicio.
+- [ ] Mostrar hora de finalización.
+- [ ] Ocultar clases completamente terminadas.
+- [ ] Mantener visible la clase actualmente en curso.
+- [ ] Mostrar la siguiente clase.
+- [ ] Destacar visualmente la clase actual.
+- [ ] Reducir prioridad visual de las clases futuras.
+- [ ] Mostrar ubicación/aula si existe.
+- [ ] Mostrar profesor si existe.
+
+### Hora actual
+
+- [ ] Mostrar indicador de hora actual.
+- [ ] Posicionar la línea según la hora real.
+- [ ] Actualizar la posición periódicamente.
+- [ ] No actualizar cada segundo si no es necesario.
+- [ ] Pausar actualizaciones innecesarias cuando la aplicación esté en background.
+- [ ] Recalcular al volver a foreground.
+- [ ] Mantener la clase actual correctamente aunque la hora cambie.
+
+### Progreso de clase
+
+- [ ] Calcular porcentaje de progreso.
+- [ ] Representar visualmente el progreso.
+- [ ] Mostrar tiempo restante.
+- [ ] Evitar errores en clases que cruzan cambios de hora/día.
+
+### Navegación entre días
+
+- [ ] Implementar swipe horizontal.
+- [ ] Swipe hacia izquierda → siguiente día.
+- [ ] Swipe hacia derecha → día anterior.
+- [ ] Añadir selector de fecha.
+- [ ] Mantener navegación táctil fluida.
+- [ ] Animar la transición entre días de forma sutil.
+- [ ] Permitir navegar a otros días disponibles.
+
+### Vista de dos días
+
+- [ ] Diseñar modo de dos días.
+- [ ] Mostrar ambos días completos.
+- [ ] Evaluar si funciona correctamente en pantallas pequeñas.
+- [ ] Considerar scroll horizontal.
+- [ ] Mantener la vista diaria como modo predeterminado.
+- [ ] Añadir selector para cambiar entre 1 día y 2 días.
+
+## 7. Calificaciones
+
+- [ ] Crear pantalla de calificaciones.
+- [ ] Mostrar promedio.
+- [ ] Mostrar materias.
+- [ ] Mostrar calificación por materia.
+- [ ] Mostrar período/semestre cuando esté disponible.
+- [ ] Mostrar créditos relacionados cuando estén disponibles.
+- [ ] Crear state sin calificaciones.
+- [ ] Crear loading state.
+- [ ] Crear error state.
+- [ ] Evaluar historial de calificaciones si la API lo permite.
+- [ ] Detectar si existen calificaciones para integración con el Home.
+- [ ] Convertir Calificaciones en Home cuando existan.
+- [ ] Intercambiar posición, icono y etiqueta de navegación.
+- [ ] No mostrar una pantalla vacía cuando todavía no existan calificaciones.
+
+## 8. Alumno
+
+### Información general
+
+- [ ] Crear pantalla de alumno.
+- [ ] Mostrar nombre.
+- [ ] Mostrar matrícula.
+- [ ] Mostrar carrera.
+- [ ] Mostrar semestre.
+- [ ] Mostrar campus.
+- [ ] Mostrar otros datos relevantes disponibles.
+
+### Progreso académico
+
+- [ ] Mostrar progreso total de la carrera.
+- [ ] Mostrar porcentaje.
+- [ ] Mostrar créditos aprobados.
+- [ ] Mostrar créditos en curso.
+- [ ] Mostrar créditos restantes.
+- [ ] Mostrar semestre actual.
+- [ ] Mostrar progreso por semestre si la información lo permite.
+- [ ] Crear componente visual de progreso.
+- [ ] Evitar presentar información académica redundante.
+
+## 9. Avisos
+
+- [ ] Mostrar avisos relevantes en Home.
+- [ ] Diferenciar avisos importantes de informativos si existe esa información.
+- [ ] Crear estado sin avisos.
+- [ ] Evitar que los avisos dominen la interfaz.
+- [ ] Evaluar posteriormente notificaciones push.
+
+## 10. Adeudos
+
+- [ ] Tratar los adeudos como una alerta principal, no como una sección central.
+- [ ] Detectar adeudos al cargar `AppData`.
+- [ ] Mostrar alerta si existen.
+- [ ] No añadir Adeudos como tab principal.
+- [ ] Permitir acceder a detalles si es necesario.
+- [ ] Ocultar completamente la alerta cuando no existan adeudos.
+- [ ] Evaluar posteriormente notificaciones push para adeudos.
+
+## 11. Actualización de datos
+
+- [ ] Definir política de actualización manual y automática.
+- [ ] La actualización manual será mediante un botón de refresco con indicador de carga.
+- [ ] La actualización automática se activará al abrir la app, al hacer login y cuando haya datos vencidos.
+- [ ] Definir la estrategia de invalidación de caché cuando cambien los datos.
+- [ ] Mostrar claramente el estado de última actualización.
+- [ ] Definir cooldown o throttling para evitar solicitudes repetidas.
+- [ ] Manejar errores de red y tiempos de espera.
+- [ ] Cuando no haya conectividad, mostrar datos locales con una advertencia visual.
+- [ ] Completar la lógica de reintento cuando la conexión vuelva.
+
+## 12. Calidad y UX
+
+- [ ] Revisar accesibilidad básica: contraste, foco, tamaños de toque, lectura por pantalla.
+- [ ] Validar experiencia mobile-first y evitar layouts frágiles en pantallas pequeñas.
+- [ ] Revisar estados vacíos, loading y error en cada pantalla.
+- [ ] Probar navegación con teclado y gesto táctil.
+- [ ] Revisar rendimiento y evitar renders innecesarios.
+- [ ] Documentar decisiones de arquitectura y flujo de datos.
+
+## 13. Criterio de finalización
+
+- [ ] La app puede iniciar en modo PWA.
+- [ ] El usuario puede iniciar sesión correctamente.
+- [ ] El horario se muestra y actualiza según la hora real.
+- [ ] Las calificaciones aparecen con estado vacío y error definidos.
+- [ ] La navegación principal funciona en mobile.
+- [ ] Los datos se guardan y restauran localmente sin exponer credenciales.
+- [ ] El flujo offline/online está definido y es visible para el usuario.
