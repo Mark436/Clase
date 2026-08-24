@@ -131,15 +131,32 @@ and feature pages call hooks or services above this layer.
 
 ### `src/lib/storage/`
 
-IndexedDB (or similar) persistence for cached `AppData` and metadata such as
-`loadedAt`.
+IndexedDB persistence for the app cache and small settings. Three stores:
+
+- `app-data` — last valid academic snapshot (`CachedAppData`: `alumno`, `avisos`, `loadedAt`);
+- `grade-tracking` — per-subject `TrackedGrade` (`current` vs `previous`) so the grades feature can mark new or changed grades;
+- `settings` — non-sensitive preferences: remembered username and adeudo-alerts opt-in.
+
+The restore flow lives in `features/auth/AuthProvider.tsx`: cached data hydrates
+the session before any network activity, and a successful login overwrites the
+snapshot atomically.
 
 **Boundary:** Components and features go through a storage service, not raw
 IndexedDB APIs.
 
 **Invariant:** A failed network refresh does not delete previously valid cached data.
 
-**Invariant:** Passwords and long-lived credential secrets are never written here.
+**Invariant:** Passwords and long-lived credential secrets are never written here;
+only the username is remembered.
+
+### `src/lib/notifications/`
+
+Local notification infrastructure. Owns permission management and exposes a single
+entry point, `notifyNewAdeudos(previousAlumno, nextAlumno)`, which fires an adeudo
+alert only on a clean→indebt transition and only when the stored opt-in allows it.
+Future server-push support implements the same seam without touching features.
+
+**Invariant:** Features never touch the Notification or ServiceWorker APIs directly.
 
 ### `src/lib/biometrics/`
 

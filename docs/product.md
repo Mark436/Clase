@@ -305,6 +305,8 @@ The first authentication may require the student's credentials.
 
 After successful authentication, the application should avoid unnecessary repeated credential entry when a secure mechanism is available.
 
+The application may remember the student's username locally to reduce friction; the password is never persisted.
+
 The application must not store the student's password in:
 
 - localStorage;
@@ -385,11 +387,13 @@ The interface should distinguish cached information from successfully refreshed 
 
 ## 17. Notifications and Alerts
 
-The initial product does not require push notifications.
+The application surfaces outstanding-balance alerts locally: when freshly loaded data reveals an outstanding balance that was not present before, and after the student opts in, the app may notify through the platform's local notification mechanism.
 
-Relevant notices, outstanding balances, and important academic information should instead be surfaced within the application.
+When there is no outstanding balance, the application stays silent.
 
-Push notifications may be evaluated as a future capability but are not part of the initial product scope.
+Local alerts fire only while the application runs or checks data. Silent background push would require server-side credential handling and remains out of scope pending backend token support (see `docs/api.md`).
+
+Relevant notices and important academic information continue to be surfaced within the application.
 
 ## 18. PWA Experience
 
