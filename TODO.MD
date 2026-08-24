@@ -164,35 +164,35 @@ Intentar actualizar
 ### Vista diaria
 
 - [ ] Bloqueado: `sith-api-client` no expone el horario (`gins` sin mapear); requiere actualización del paquete o acceso al payload crudo. Ver `docs/api.md`.
-- [ ] La pantalla principal del horario debe representar el día como una timeline vertical.
-- [ ] Mostrar el día actual inicialmente.
-- [ ] Mostrar las clases del día.
-- [ ] Mostrar hora de inicio.
-- [ ] Mostrar hora de finalización.
-- [ ] Ocultar clases completamente terminadas.
-- [ ] Mantener visible la clase actualmente en curso.
-- [ ] Mostrar la siguiente clase.
-- [ ] Destacar visualmente la clase actual.
-- [ ] Reducir prioridad visual de las clases futuras.
-- [ ] Mostrar ubicación/aula si existe.
+- [x] La pantalla principal del horario debe representar el día como una timeline vertical.
+- [x] Mostrar el día actual inicialmente.
+- [x] Mostrar las clases del día.
+- [x] Mostrar hora de inicio.
+- [x] Mostrar hora de finalización.
+- [x] Ocultar clases completamente terminadas.
+- [x] Mantener visible la clase actualmente en curso.
+- [x] Mostrar la siguiente clase.
+- [x] Destacar visualmente la clase actual.
+- [x] Reducir prioridad visual de las clases futuras.
+- [x] Mostrar ubicación/aula si existe.
 - [ ] Mostrar profesor si existe.
 
 ### Hora actual
 
-- [ ] Mostrar indicador de hora actual.
-- [ ] Posicionar la línea según la hora real.
-- [ ] Actualizar la posición periódicamente.
-- [ ] No actualizar cada segundo si no es necesario.
-- [ ] Pausar actualizaciones innecesarias cuando la aplicación esté en background.
-- [ ] Recalcular al volver a foreground.
-- [ ] Mantener la clase actual correctamente aunque la hora cambie.
+- [x] Mostrar indicador de hora actual.
+- [x] Posicionar la línea según la hora real.
+- [x] Actualizar la posición periódicamente.
+- [x] No actualizar cada segundo si no es necesario.
+- [x] Pausar actualizaciones innecesarias cuando la aplicación esté en background.
+- [x] Recalcular al volver a foreground.
+- [x] Mantener la clase actual correctamente aunque la hora cambie.
 
 ### Progreso de clase
 
-- [ ] Calcular porcentaje de progreso.
-- [ ] Representar visualmente el progreso.
-- [ ] Mostrar tiempo restante.
-- [ ] Evitar errores en clases que cruzan cambios de hora/día.
+- [x] Calcular porcentaje de progreso.
+- [x] Representar visualmente el progreso.
+- [x] Mostrar tiempo restante.
+- [x] Evitar errores en clases que cruzan cambios de hora/día.
 
 ### Navegación entre días
 
@@ -202,7 +202,7 @@ Intentar actualizar
 - [ ] Añadir selector de fecha.
 - [ ] Mantener navegación táctil fluida.
 - [ ] Animar la transición entre días de forma sutil.
-- [ ] Permitir navegar a otros días disponibles.
+- [x] Permitir navegar a otros días disponibles.
 
 ### Vista de dos días
 

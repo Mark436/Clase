@@ -1,18 +1,36 @@
+import { useMemo, useState } from "react";
 import { Page } from "@/components/layout/Page";
 import { PageHeader } from "@/components/layout/PageHeader";
-import { Card } from "@/components/ui/Card";
+import { useCurrentTime } from "./hooks/useCurrentTime";
+import { MOCK_MEETINGS } from "./mockData";
+import { DayNavigation } from "./components/DayNavigation";
+import { ScheduleDayView } from "./components/ScheduleDayView";
+import { getScheduleForDay, isSameDay } from "./utils";
 
 export function SchedulePage() {
+  const now = useCurrentTime();
+  const [selectedDate, setSelectedDate] = useState<Date>(() => new Date());
+
+  const dayMeetings = useMemo(
+    () => getScheduleForDay(MOCK_MEETINGS, selectedDate),
+    [selectedDate],
+  );
+  const isToday = isSameDay(selectedDate, now);
+
   return (
     <>
-      <PageHeader title="Horario" subtitle="Tus clases de hoy." />
+      <PageHeader title="Horario" />
       <Page>
-        <Card className="flex flex-col items-center gap-1 py-10 text-center">
-          <p className="font-medium text-on-surface">Próximamente</p>
-          <p className="max-w-xs text-sm text-on-surface-variant">
-            La línea de tiempo del día estará disponible en la siguiente fase.
-          </p>
-        </Card>
+        <DayNavigation
+          selectedDate={selectedDate}
+          now={now}
+          onSelectDate={setSelectedDate}
+        />
+        <ScheduleDayView
+          dayMeetings={dayMeetings}
+          now={now}
+          isToday={isToday}
+        />
       </Page>
     </>
   );
