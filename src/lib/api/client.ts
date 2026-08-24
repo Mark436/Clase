@@ -7,11 +7,19 @@ import {
 import type {
   Alumno,
   Aviso,
+  Boleta,
+  CalificacionMateria,
   Credenciales,
   DatosAlumno,
 } from "sith-api-client";
 
-export type { Alumno, Aviso, Credenciales };
+export type {
+  Alumno,
+  Aviso,
+  Boleta,
+  CalificacionMateria,
+  Credenciales,
+};
 
 export type ApiErrorKind = "invalid-credentials" | "connection" | "unknown";
 
