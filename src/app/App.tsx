@@ -7,7 +7,7 @@ import { AuthProvider } from "@/features/auth/AuthProvider";
 import { LoginPage } from "@/features/auth/LoginPage";
 import { ReAuthSheet } from "@/features/auth/components/ReAuthSheet";
 import { GradesPage } from "@/features/grades/GradesPage";
-import { hasGrades } from "@/features/grades/utils";
+import { shouldOpenGradesFirst } from "@/features/grades/utils";
 import { SchedulePage } from "@/features/schedule/SchedulePage";
 import { AdeudoAlertsCard } from "@/features/student/components/AdeudoAlertsCard";
 import { DebtBanner } from "@/features/student/components/DebtBanner";
@@ -16,8 +16,10 @@ import { getHomeTab, NAV_ITEMS } from "./navigation";
 import type { TabId } from "./navigation";
 
 function AuthenticatedShell() {
-  const { alumno, hasCredentials, refresh } = useAuth();
-  const [tab, setTab] = useState<TabId>(() => getHomeTab(hasGrades(alumno)));
+  const { alumno, hasCredentials, refresh, unseenGradeChanges } = useAuth();
+  const [tab, setTab] = useState<TabId>(() =>
+    getHomeTab(shouldOpenGradesFirst(alumno, unseenGradeChanges)),
+  );
   const [reAuthOpen, setReAuthOpen] = useState(false);
 
   function handlePullToRefresh() {

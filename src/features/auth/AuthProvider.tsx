@@ -18,6 +18,7 @@ import { clearAllStores } from "@/lib/storage/db";
 import {
   getSetting,
   setSetting,
+  SETTING_GRADES_SEEN,
   SETTING_REMEMBERED_USERNAME,
 } from "@/lib/storage/settingsStore";
 import type { AuthStatus } from "./auth-context";
@@ -30,6 +31,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [errorKind, setErrorKind] = useState<ApiErrorKind | null>(null);
   const [hasCredentials, setHasCredentials] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [unseenGradeChanges, setUnseenGradeChanges] = useState(false);
   const [rememberedUsername, setRememberedUsername] = useState<string | null>(
     null,
   );
@@ -48,6 +50,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     void (async () => {
       let cached: Awaited<ReturnType<typeof loadAppData>> = null;
       let username: string | null = null;
+      let gradesSeen: string | null = null;
 
       try {
         cached = await loadAppData();
@@ -59,6 +62,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } catch {
         username = null;
       }
+      try {
+        gradesSeen = await getSetting(SETTING_GRADES_SEEN);
+      } catch {
+        gradesSeen = null;
+      }
 
       if (cancelled) return;
 
@@ -67,6 +75,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setAvisos(cached.avisos);
       }
       setRememberedUsername(username);
+      // Missing setting counts as seen: a fetch without changes never writes it.
+      setUnseenGradeChanges(gradesSeen === "false");
       setStatus((current) =>
         current === "restoring"
           ? cached
@@ -81,6 +91,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
+  // A fetch that reveals new or changed grades re-arms the conditional home
+  // for the next app start; the first fetch only sets the baseline.
+  const handlePersistResult = useCallback((result: { hasChanges: boolean }) => {
+    if (!result.hasChanges) return;
+    setUnseenGradeChanges(true);
+    void setSetting(SETTING_GRADES_SEEN, "false").catch(() => undefined);
+  }, []);
+
   const login = useCallback(async (user: string, pass: string) => {
     setStatus("authenticating");
     setErrorKind(null);
@@ -92,14 +110,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setAlumno(data.alumno);
       setAvisos(data.avisos);
       setStatus("authenticated");
-      void persistSession(previousAlumno, data.alumno, data.avisos, user);
+      void persistSession(previousAlumno, data.alumno, data.avisos, user).then(
+        handlePersistResult,
+      );
       return true;
     } catch (error) {
       setErrorKind(error instanceof ApiError ? error.kind : "unknown");
       setStatus("unauthenticated");
       return false;
     }
-  }, []);
+  }, [handlePersistResult]);
 
   // Same load path as login (fetch → persist → adeudo alert) but without the
   // "authenticating" status: cached data stays visible while refreshing and a
@@ -120,7 +140,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         data.alumno,
         data.avisos,
         credentials.user,
-      );
+      ).then(handlePersistResult);
       return true;
     } catch {
       return false;
@@ -128,6 +148,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       refreshingRef.current = false;
       setRefreshing(false);
     }
+  }, [handlePersistResult]);
+
+  const markGradesSeen = useCallback(() => {
+    setUnseenGradeChanges(false);
+    void setSetting(SETTING_GRADES_SEEN, "true").catch(() => undefined);
   }, []);
 
   const logout = useCallback(() => {
@@ -151,9 +176,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       errorKind,
       hasCredentials,
       refreshing,
+      unseenGradeChanges,
       rememberedUsername,
       login,
       refresh,
+      markGradesSeen,
       logout,
     }),
     [
@@ -163,9 +190,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       errorKind,
       hasCredentials,
       refreshing,
+      unseenGradeChanges,
       rememberedUsername,
       login,
       refresh,
+      markGradesSeen,
       logout,
     ],
   );
@@ -188,12 +217,13 @@ async function persistSession(
   alumno: Alumno,
   avisos: Aviso[],
   user: string,
-): Promise<void> {
+): Promise<{ hasChanges: boolean }> {
+  let hasChanges = false;
   try {
     const tracking = await loadGradeTracking();
-    await saveGradeTracking(
-      mergeGradeTracking(tracking, alumno.boleta.materias),
-    );
+    const merged = mergeGradeTracking(tracking, alumno.boleta.materias);
+    hasChanges = merged.hasChanges;
+    await saveGradeTracking(merged.tracking);
     await saveAppData({
       alumno,
       avisos,
@@ -204,4 +234,5 @@ async function persistSession(
     console.warn("No se pudieron guardar los datos localmente.", error);
   }
   await notifyNewAdeudos(previousAlumno, alumno);
+  return { hasChanges };
 }

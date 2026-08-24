@@ -19,15 +19,25 @@ export async function saveGradeTracking(grades: TrackedGrade[]): Promise<void> {
   );
 }
 
+export interface GradeTrackingMerge {
+  tracking: TrackedGrade[];
+  // True when there were no previous records: everything would look "new",
+  // so the first fetch only sets the baseline and never reports changes.
+  isBaseline: boolean;
+  hasChanges: boolean;
+}
+
 // Folds a fresh boleta into the tracking records so the UI can tell whether a
 // grade is new or changed. Subjects whose calificacion is empty carry no
 // signal yet and are skipped; subjects missing from the boleta are dropped.
 export function mergeGradeTracking(
   previous: TrackedGrade[],
   materias: CalificacionMateria[],
-): TrackedGrade[] {
+): GradeTrackingMerge {
   const byClave = new Map(previous.map((grade) => [grade.clave, grade]));
   const merged: TrackedGrade[] = [];
+  const isBaseline = previous.length === 0;
+  let hasChanges = false;
 
   for (const materia of materias) {
     const calificacion = materia.calificacion.trim();
@@ -36,6 +46,7 @@ export function mergeGradeTracking(
     const record = byClave.get(materia.clave);
 
     if (!record) {
+      if (!isBaseline) hasChanges = true;
       merged.push({
         clave: materia.clave,
         nombre: materia.nombre,
@@ -50,6 +61,7 @@ export function mergeGradeTracking(
       continue;
     }
 
+    hasChanges = true;
     merged.push({
       clave: materia.clave,
       nombre: materia.nombre,
@@ -58,5 +70,5 @@ export function mergeGradeTracking(
     });
   }
 
-  return merged;
+  return { tracking: merged, isBaseline, hasChanges };
 }

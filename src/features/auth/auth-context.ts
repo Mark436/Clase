@@ -17,6 +17,8 @@ export interface AuthContextValue {
   login: (user: string, pass: string) => Promise<boolean>;
   refresh: () => Promise<boolean>;
   refreshing: boolean;
+  unseenGradeChanges: boolean;
+  markGradesSeen: () => void;
   logout: () => void;
 }
 

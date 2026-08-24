@@ -87,10 +87,7 @@ The active destination must be clearly identifiable through both icon and label.
 
 The first navigation item represents the application's contextual home.
 
-The contextual home changes automatically depending on the student's academic state:
-
-- Schedule is the home when the student has no grades.
-- Grades becomes the home once grades are available.
+The contextual home is determined automatically from the student's academic data: Schedule is the default home, and Grades opens first only when there are unseen grade changes to review (see section 6).
 
 The other primary area remains accessible through navigation.
 
@@ -102,11 +99,9 @@ The home experience is determined automatically from the student's current acade
 
 The student must not manually configure which section is the home screen.
 
-### 6.1 No Grades Available
+### 6.1 Default Home: Schedule
 
-When the student has no grades, Schedule is the contextual home.
-
-This prioritizes information that is immediately useful during the academic day.
+Schedule is the contextual home by default because it provides immediate day-to-day value.
 
 The home screen should show the current day's relevant schedule, including:
 
@@ -114,13 +109,19 @@ The home screen should show the current day's relevant schedule, including:
 - next class;
 - remaining classes for the day.
 
-### 6.2 Grades Available
+### 6.2 Grades First With Unseen Changes
 
-When the student has grades, Grades becomes the contextual home.
+Grades becomes the contextual home only when all of the following hold:
 
-The grades view should prioritize the student's academic status and progress.
+- local grade tracking has detected unseen changes since the last review (a subject appearing for the first time after the baseline, or a modified grade);
+- the period average exists as a numeric value;
+- that value is not zero.
 
-Schedule remains accessible through the main navigation.
+In any other case — nothing pending to review, changes already consumed, an empty or non-numeric average, or a zero average — Schedule is the home.
+
+Changes are considered consumed when the student opens the Grades area. Subsequent app launches return to Schedule until the next change is detected. The first successful data load only establishes the tracking baseline and never triggers the Grades home.
+
+When Grades is the home, the view should prioritize the student's academic status and progress. Schedule remains accessible through the main navigation.
 
 ### 6.3 Home Transition
 
@@ -132,7 +133,7 @@ It should not require:
 - a configuration setting;
 - an administrator setting.
 
-The application determines the appropriate home from the latest available student data.
+The application determines the appropriate home from the latest available student data each time the application starts.
 
 ## 7. Schedule
 
@@ -459,13 +460,13 @@ Additional institutional functionality should only be added when it provides cle
 
 The following decisions are intentional.
 
-### Schedule Before Grades
+### Schedule Is the Default Home
 
-When no grades exist, Schedule is the contextual home because it provides immediate day-to-day value.
+Schedule provides immediate day-to-day value, so it remains the contextual home unless there is something specific to review in Grades.
 
-### Grades After Grades Exist
+### Grades First Only With Unseen Changes
 
-Once grades are available, Grades becomes the contextual home because academic progress becomes a meaningful primary signal.
+When local tracking detects new or changed grades and the period average is non-zero, Grades becomes the contextual home until the student reviews them. This keeps academic progress as a meaningful primary signal exactly when it changes.
 
 ### No Dedicated Notices Tab
 

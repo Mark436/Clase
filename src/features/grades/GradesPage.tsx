@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/Card";
 import type { Alumno } from "@/lib/api/client";
 import { loadGradeTracking } from "@/lib/storage/gradeTracking";
 import type { TrackedGrade } from "@/lib/storage/gradeTracking";
+import { useAuth } from "@/features/auth/auth-context";
 import type { GradeRow } from "./types";
 import { buildGradeRows } from "./utils";
 
@@ -14,7 +15,12 @@ interface GradesPageProps {
 }
 
 export function GradesPage({ alumno }: GradesPageProps) {
+  const { markGradesSeen } = useAuth();
   const [tracking, setTracking] = useState<TrackedGrade[]>([]);
+
+  useEffect(() => {
+    markGradesSeen();
+  }, [markGradesSeen]);
 
   useEffect(() => {
     let cancelled = false;

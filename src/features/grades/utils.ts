@@ -2,14 +2,17 @@ import type { Alumno, CalificacionMateria } from "@/lib/api/client";
 import type { TrackedGrade } from "@/lib/storage/gradeTracking";
 import type { GradeRow } from "./types";
 
-// The app considers grades present only when at least one subject carries an
-// actual (non-empty) calificacion; pending subjects do not flip the Home.
-export function hasGrades(alumno: Alumno | null): boolean {
-  return (
-    alumno?.boleta.materias.some(
-      (materia) => materia.calificacion.trim() !== "",
-    ) ?? false
-  );
+// Home opens on Grades only when there are unseen changes to review and the
+// period average is a non-zero number; an empty or non-numeric average also
+// means Schedule.
+export function shouldOpenGradesFirst(
+  alumno: Alumno | null,
+  unseenChanges: boolean,
+): boolean {
+  if (!alumno || !unseenChanges) return false;
+
+  const promedio = Number.parseFloat(alumno.boleta.promedio.trim());
+  return !Number.isNaN(promedio) && promedio !== 0;
 }
 
 export function buildGradeRows(

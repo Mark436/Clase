@@ -164,8 +164,8 @@ Intentar actualizar
 - [x] Añadir estados activo/inactivo.
 - [x] Respetar safe areas de dispositivos móviles.
 - [x] Definir pantalla principal dinámica.
-- [x] Si no hay calificaciones, mostrar Horario como Home.
-- [x] Si existen calificaciones, mostrar Calificaciones como Home.
+- [x] Horario es el Home por defecto.
+- [x] Calificaciones abre como Home solo con cambios nuevos por ver y promedio del periodo ≠ 0.
 - [x] Crear una función o lógica independiente para determinar el Home.
 - [ ] Intercambiar también icono y etiqueta según el estado de Home.
 - [x] Mantener acceso al resto de las áreas.
@@ -238,8 +238,7 @@ Intentar actualizar
 - [ ] Crear error state.
 - [ ] Evaluar historial de calificaciones si la API lo permite.
 - [x] Detectar cambios entre consultas (materia nueva o calificación modificada) mediante seguimiento local (`TrackedGrade`, sin fechas).
-- [x] Detectar si existen calificaciones para integración con el Home.
-- [x] Convertir Calificaciones en Home cuando existan.
+- [x] Abrir Calificaciones como Home solo con cambios nuevos por ver y promedio del periodo ≠ 0.
 - [ ] Intercambiar posición, icono y etiqueta de navegación.
 - [x] No mostrar una pantalla vacía cuando todavía no existan calificaciones.
 
