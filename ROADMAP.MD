@@ -311,12 +311,14 @@ Intentar actualizar
 
 ## 13. Modo dev (herramientas de prueba)
 
-- [x] Panel en Alumno activado con 7 taps sobre el nombre (siempre visible en builds dev). Sin chequeo de dueño: las credenciales del API son la única barrera real; el panel solo oculta UI.
+- [x] Panel en Alumno activado con 7 taps sobre el nombre (en builds dev visible por defecto). Sin chequeo de dueño: las credenciales del API son la única barrera real; el panel solo oculta UI.
+- [x] Botón «Cerrar modo dev»: oculta el panel hasta repetir los 7 taps, pausa la simulación y conserva la configuración guardada.
 - [x] Reloj simulado (offset/datetime) que alimenta hora, día, clase en curso y progreso.
 - [x] Agregar/quitar materias del horario (solo presentación).
 - [x] Editar calificaciones simuladas por materia.
 - [x] Toggle de adeudos (banner y alertas).
 - [x] Config persistida en settings store con botón "Restaurar datos reales".
+- [x] Sección de pruebas de toast: variante y mensaje arbitrarios (los estados nuevos aparecen solos al registrarse en `TOAST_VARIANTS`).
 - [ ] Evaluar retirar el panel antes de compartir la app con otros alumnos.
 
 ## 14. Criterio de finalización

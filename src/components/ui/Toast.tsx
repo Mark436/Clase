@@ -1,9 +1,8 @@
 import { useEffect } from "react";
 import { createPortal } from "react-dom";
+import type { ToastVariant } from "./toastVariants";
 
-export type ToastVariant = "neutral" | "success" | "error";
-
-const VARIANT_CLASSES = {
+const VARIANT_CLASSES: Record<ToastVariant, string> = {
   neutral: "bg-on-surface text-surface",
   success: "bg-success text-on-success",
   error: "bg-error text-on-error",

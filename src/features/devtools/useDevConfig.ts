@@ -5,18 +5,24 @@ import {
   removeSetting,
   setSetting,
   SETTING_DEV_CONFIG,
+  SETTING_DEV_MODE_ENABLED,
   SETTING_DEV_UNLOCKED,
 } from "@/lib/storage/settingsStore";
 import type { DevConfig, DevMateria } from "./types";
 import { EMPTY_DEV_CONFIG } from "./types";
+import { isDevBuild } from "./config";
 
 export interface DevToolsController {
   config: DevConfig;
-  unlocked: boolean;
+  // Single visibility flag: dev builds default to true, production starts
+  // hidden and unlocks via the tap gesture. Closing persists an explicit
+  // "false" so the panel stays hidden across reloads until re-enabled.
+  enabled: boolean;
   loaded: boolean;
   updateConfig: (updater: (previous: DevConfig) => DevConfig) => void;
   resetConfig: () => void;
-  unlock: () => void;
+  enable: () => void;
+  disable: () => void;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -93,7 +99,7 @@ async function saveDevConfig(config: DevConfig): Promise<void> {
 
 export function useDevConfig(): DevToolsController {
   const [config, setConfig] = useState<DevConfig>(EMPTY_DEV_CONFIG);
-  const [unlocked, setUnlocked] = useState(false);
+  const [enabled, setEnabled] = useState(false);
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
@@ -101,7 +107,7 @@ export function useDevConfig(): DevToolsController {
 
     void (async () => {
       let raw: string | null = null;
-      let unlockedRaw: string | null = null;
+      let enabledRaw: string | null = null;
 
       try {
         raw = await getSetting(SETTING_DEV_CONFIG);
@@ -109,9 +115,17 @@ export function useDevConfig(): DevToolsController {
         raw = null;
       }
       try {
-        unlockedRaw = await getSetting(SETTING_DEV_UNLOCKED);
+        enabledRaw = await getSetting(SETTING_DEV_MODE_ENABLED);
       } catch {
-        unlockedRaw = null;
+        enabledRaw = null;
+      }
+      if (enabledRaw === null) {
+        // Migration: inherit the previous unlock flag when present.
+        try {
+          enabledRaw = await getSetting(SETTING_DEV_UNLOCKED);
+        } catch {
+          enabledRaw = null;
+        }
       }
 
       if (cancelled) return;
@@ -119,7 +133,9 @@ export function useDevConfig(): DevToolsController {
       const parsed = parseDevConfig(raw);
       setConfig(parsed);
       setClockOffsetMinutes(parsed.clockOffsetMinutes);
-      setUnlocked(unlockedRaw === "true");
+      // Unset resolves per build type: dev builds show the panel, production
+      // keeps it hidden until the tap gesture enables it.
+      setEnabled(enabledRaw === null ? isDevBuild() : enabledRaw === "true");
       setLoaded(true);
     })();
 
@@ -151,10 +167,19 @@ export function useDevConfig(): DevToolsController {
     });
   }, []);
 
-  const unlock = useCallback(() => {
-    setUnlocked(true);
-    void setSetting(SETTING_DEV_UNLOCKED, "true").catch(() => undefined);
+  const enable = useCallback(() => {
+    setEnabled(true);
+    void setSetting(SETTING_DEV_MODE_ENABLED, "true").catch(() => undefined);
   }, []);
 
-  return { config, unlocked, loaded, updateConfig, resetConfig, unlock };
+  // Closing keeps the saved DevConfig (it re-applies on the next unlock) but
+  // pauses all simulation immediately, since overrides only apply while the
+  // panel is enabled.
+  const disable = useCallback(() => {
+    setEnabled(false);
+    setClockOffsetMinutes(null);
+    void setSetting(SETTING_DEV_MODE_ENABLED, "false").catch(() => undefined);
+  }, []);
+
+  return { config, enabled, loaded, updateConfig, resetConfig, enable, disable };
 }

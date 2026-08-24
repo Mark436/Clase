@@ -1,12 +1,14 @@
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
+import type { ToastVariant } from "@/components/ui/toastVariants";
 import type { Alumno } from "@/lib/api/client";
 import type { DevConfig } from "./types";
 import { AdeudosSection } from "./components/AdeudosSection";
 import { ClockSection } from "./components/ClockSection";
 import { GradesSection } from "./components/GradesSection";
 import { MateriasSection } from "./components/MateriasSection";
+import { ToastsSection } from "./components/ToastsSection";
 import type { DevToolsController } from "./useDevConfig";
 
 function hasActiveSimulation(config: DevConfig): boolean {
@@ -22,9 +24,10 @@ function hasActiveSimulation(config: DevConfig): boolean {
 interface DevPanelProps {
   alumno: Alumno | null;
   dev: DevToolsController;
+  onShowToast?: (message: string, variant: ToastVariant) => void;
 }
 
-export function DevPanel({ alumno, dev }: DevPanelProps) {
+export function DevPanel({ alumno, dev, onShowToast }: DevPanelProps) {
   if (!dev.loaded) return null;
 
   const simulating = hasActiveSimulation(dev.config);
@@ -45,12 +48,23 @@ export function DevPanel({ alumno, dev }: DevPanelProps) {
       <GradesSection alumno={alumno} dev={dev} />
       <div className="border-t border-outline-variant pt-4" />
       <AdeudosSection dev={dev} />
+      <div className="border-t border-outline-variant pt-4" />
+      <ToastsSection onShowToast={onShowToast} />
 
-      {simulating ? (
-        <Button variant="secondary" onClick={dev.resetConfig} className="w-full">
-          Restaurar datos reales
+      <div className="flex flex-col gap-2 border-t border-outline-variant pt-4">
+        {simulating ? (
+          <Button
+            variant="secondary"
+            onClick={dev.resetConfig}
+            className="w-full"
+          >
+            Restaurar datos reales
+          </Button>
+        ) : null}
+        <Button variant="ghost" onClick={dev.disable} className="w-full">
+          Cerrar modo dev
         </Button>
-      ) : null}
+      </div>
     </Card>
   );
 }

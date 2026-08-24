@@ -4,21 +4,28 @@ import { Card } from "@/components/ui/Card";
 import { Page } from "@/components/layout/Page";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { ProgressBar } from "@/components/ui/ProgressBar";
+import type { ToastVariant } from "@/components/ui/toastVariants";
 import { DevPanel } from "@/features/devtools/DevPanel";
-import { UNLOCK_TAP_COUNT, isDevBuild } from "@/features/devtools/config";
+import { UNLOCK_TAP_COUNT } from "@/features/devtools/config";
 import type { DevToolsController } from "@/features/devtools/useDevConfig";
 import type { Alumno } from "@/lib/api/client";
 
 interface StudentPageProps {
   alumno: Alumno | null;
   onRequestRefresh: () => void;
+  onShowToast?: (message: string, variant: ToastVariant) => void;
   dev?: DevToolsController;
 }
 
-export function StudentPage({ alumno, onRequestRefresh, dev }: StudentPageProps) {
+export function StudentPage({
+  alumno,
+  onRequestRefresh,
+  onShowToast,
+  dev,
+}: StudentPageProps) {
   const nameTapsRef = useRef(0);
 
-  const devEnabled = dev !== undefined && (isDevBuild() || dev.unlocked);
+  const devEnabled = dev !== undefined && dev.enabled;
 
   function handleNameTap() {
     if (!dev || devEnabled) return;
@@ -26,7 +33,7 @@ export function StudentPage({ alumno, onRequestRefresh, dev }: StudentPageProps)
     nameTapsRef.current += 1;
     if (nameTapsRef.current >= UNLOCK_TAP_COUNT) {
       nameTapsRef.current = 0;
-      dev.unlock();
+      dev.enable();
     }
   }
 
@@ -68,7 +75,7 @@ export function StudentPage({ alumno, onRequestRefresh, dev }: StudentPageProps)
             ) : null}
 
             {devEnabled && dev ? (
-              <DevPanel alumno={alumno} dev={dev} />
+              <DevPanel alumno={alumno} dev={dev} onShowToast={onShowToast} />
             ) : null}
           </>
         ) : (

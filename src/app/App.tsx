@@ -1,9 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { AppShell } from "@/components/layout/AppShell";
 import { BottomNavigation } from "@/components/layout/BottomNavigation";
 import { Spinner } from "@/components/ui/Spinner";
 import { Toast } from "@/components/ui/Toast";
-import type { ToastVariant } from "@/components/ui/Toast";
+import type { ToastVariant } from "@/components/ui/toastVariants";
 import { applyDevOverrides } from "@/features/devtools/applyDevOverrides";
 import { useDevConfig } from "@/features/devtools/useDevConfig";
 import { useAuth } from "@/features/auth/auth-context";
@@ -47,12 +47,19 @@ function AuthenticatedShell() {
   const [toast, setToast] = useState<ActiveToast | null>(null);
 
   // Dev simulation is presentation-only: the virtual alumno feeds every
-  // screen, while fetches and persistence keep using the real data.
+  // screen, while fetches and persistence keep using the real data. Overrides
+  // pause while the dev panel is closed (enabled === false).
   const effectiveAlumno = useMemo(
     () =>
-      alumno && dev.loaded ? applyDevOverrides(alumno, dev.config) : alumno,
-    [alumno, dev.loaded, dev.config],
+      alumno && dev.loaded && dev.enabled
+        ? applyDevOverrides(alumno, dev.config)
+        : alumno,
+    [alumno, dev.loaded, dev.enabled, dev.config],
   );
+
+  const showToast = useCallback((message: string, variant: ToastVariant) => {
+    setToast({ message, variant });
+  }, []);
 
   // Daily re-auth reminder: with a session restored from cache and no
   // credentials in memory, suggest re-entering the password once per day.
@@ -148,6 +155,7 @@ function AuthenticatedShell() {
           <StudentPage
             alumno={effectiveAlumno}
             onRequestRefresh={handlePullToRefresh}
+            onShowToast={showToast}
             dev={dev}
           />
         )}
