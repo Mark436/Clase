@@ -1,17 +1,24 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AppShell } from "@/components/layout/AppShell";
 import { BottomNavigation } from "@/components/layout/BottomNavigation";
 import { Spinner } from "@/components/ui/Spinner";
+import { Toast } from "@/components/ui/Toast";
 import { useAuth } from "@/features/auth/auth-context";
 import { AuthProvider } from "@/features/auth/AuthProvider";
 import { LoginPage } from "@/features/auth/LoginPage";
 import { ReAuthSheet } from "@/features/auth/components/ReAuthSheet";
+import { shouldPromptReAuth, toDateKey } from "@/features/auth/utils";
 import { GradesPage } from "@/features/grades/GradesPage";
 import { shouldOpenGradesFirst } from "@/features/grades/utils";
 import { SchedulePage } from "@/features/schedule/SchedulePage";
 import { AdeudoAlertsCard } from "@/features/student/components/AdeudoAlertsCard";
 import { DebtBanner } from "@/features/student/components/DebtBanner";
 import { StudentPage } from "@/features/student/StudentPage";
+import {
+  getSetting,
+  setSetting,
+  SETTING_LAST_REAUTH_PROMPT_DATE,
+} from "@/lib/storage/settingsStore";
 import { getHomeTab, NAV_ITEMS } from "./navigation";
 import type { TabId } from "./navigation";
 
@@ -21,6 +28,46 @@ function AuthenticatedShell() {
     getHomeTab(shouldOpenGradesFirst(alumno, unseenGradeChanges)),
   );
   const [reAuthOpen, setReAuthOpen] = useState(false);
+  const [reminderVisible, setReminderVisible] = useState(false);
+
+  // Daily re-auth reminder: with a session restored from cache and no
+  // credentials in memory, suggest re-entering the password once per day.
+  // The date is saved when the prompt fires, so closing the sheet without
+  // logging in still consumes the day.
+  useEffect(() => {
+    if (hasCredentials || !alumno) return;
+
+    let cancelled = false;
+
+    void (async () => {
+      let lastPromptDate: string | null = null;
+      try {
+        lastPromptDate = await getSetting(SETTING_LAST_REAUTH_PROMPT_DATE);
+      } catch {
+        lastPromptDate = null;
+      }
+
+      const today = new Date();
+      if (!shouldPromptReAuth(lastPromptDate, today)) return;
+
+      try {
+        await setSetting(
+          SETTING_LAST_REAUTH_PROMPT_DATE,
+          toDateKey(today),
+        );
+      } catch {
+        // A storage failure should not block the prompt itself.
+      }
+
+      if (cancelled) return;
+      setReAuthOpen(true);
+      setReminderVisible(true);
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [alumno, hasCredentials]);
 
   function handlePullToRefresh() {
     if (hasCredentials) return refresh();
@@ -60,6 +107,13 @@ function AuthenticatedShell() {
           <StudentPage />
         )}
       </AppShell>
+
+      {reminderVisible ? (
+        <Toast
+          message="Se recomienda volver a iniciar sesión para actualizar tus datos."
+          onClose={() => setReminderVisible(false)}
+        />
+      ) : null}
 
       <ReAuthSheet
         open={reAuthOpen}
