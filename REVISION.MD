@@ -16,9 +16,10 @@ el manifest) y **una decisión pendiente** (indicador de datos antiguos).
 | Severidad | Hallazgos |
 | --------- | --------- |
 | Alta      | 1 (H1)   |
-| Media     | 5 (H2, H3, H5, H7, H9) |
+| Media     | 4 (H3, H5, H7, H9) |
 | Baja      | 5 (H4, H6, H8, H10, H11/H12) |
 | Informativa | 2 (H13, H14) |
+| Retirado  | 1 (H2, falso positivo) |
 
 ---
 
@@ -43,13 +44,11 @@ el manifest) y **una decisión pendiente** (indicador de datos antiguos).
 architecture; mencionar el SW registrado en el bird's eye de architecture (explica
 además por qué `notifyNewAdeudos` puede usar `navigator.serviceWorker.ready`).
 
-### H2 · Texto corrupto en el manifest — **Media (bug de código)**
+### H2 · Texto corrupto en el manifest — **RETIRADO (falso positivo)**
 
-`vite.config.ts` → `manifest.description`:
-`"Clase: aplicaciA3n mA3vil para consultar horario..."` (mojibake: `á` → `A3`).
-
-**Propuesta:** reemplazar por `"Clase: aplicación móvil para consultar horario,
-calificaciones y alumno."`. Es lo único que un instalador de la PWA ve roto.
+La lectura inicial con decodificación incorrecta mostró
+`"aplicaciA3n mA3vil"` en `vite.config.ts`; verificando los bytes UTF-8 reales,
+el manifest contiene `"aplicación móvil"` correctamente. No requiere acción.
 
 ### H3 · El indicador de datos antiguos desapareció pero el roadmap lo da por hecho — **Media (decisión)**
 
@@ -191,3 +190,27 @@ esté bloqueado en producción (guardará por `dev.loaded && dev.enabled`).
    globales (H13).
 6. Retomar el commit 3 pendiente del feature de toasts (H14), que cierra la brecha
    de `applyDevOverrides` cuando el panel está cerrado.
+
+---
+
+## Estado de resolución (2026-08-24, segunda pasada)
+
+| Hallazgo | Estado | Dónde |
+| -------- | ------ | ----- |
+| H1 | ✅ Resuelto | ROADMAP §0 (PWA×4 + TS estricto marcados); AGENTS sin "(planned)"; architecture § Configuration actualizado |
+| H2 | ⛔ Retirado | Falso positivo de decodificación; manifest correcto |
+| H3 | 🔶 Parcial | ROADMAP §4 desmarcado con nota; implementar el indicador ligero queda como decisión abierta |
+| H4 | ✅ Resuelto | architecture: párrafo de estado reescrito |
+| H5 | ✅ Resuelto | AGENTS: regla Grades-Home corregida |
+| H6 | ✅ Resuelto | AGENTS/architecture: árboles con `features/devtools`, `lib/devtools`, `lib/notifications`; sin `types/` ni `styles/` fantasma |
+| H7 | ✅ Resuelto | architecture: sección `src/types/` sustituida por «Domain types» (`CachedAppData`, grafo `Alumno`) |
+| H8 | ✅ Resuelto | architecture: "(planned)" retirado de schedule |
+| H9 | ✅ Resuelto | AGENTS/architecture: flujo de arranque = cache → render → fetch en login/PTR; auto-refresh explícito como pendiente |
+| H10 | ✅ Resuelto | AGENTS «Refresh behavior»: alternativa accesible discreta autorizada |
+| H11 | ✅ Resuelto | product §17: toasts in-app documentados |
+| H12 | ✅ Resuelto | architecture: secciones devtools (feature + lib) en Code Map |
+| H13 | 🔶 Abierto | Confirmar intención de banners globales (decisión del dueño) |
+| H14 | ✅ Resuelto | Commit `196526d`: flag `enabled` único, botón «Cerrar modo dev», previews de toast; `applyDevOverrides` solo aplica con panel habilitado |
+
+Commits de la segunda pasada: `196526d` (código), y el commit de documentación
+que incluye este archivo.

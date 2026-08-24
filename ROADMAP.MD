@@ -12,12 +12,12 @@ Especificación completa de estas fases en [`docs/plan.md`](docs/plan.md):
 ## 0. Base del proyecto
 
 - [x] Crear el proyecto con Vite + React + TypeScript.
-- [ ] Configurar TypeScript estricto.
+- [x] Configurar TypeScript estricto.
 - [x] Configurar el alias `@` para apuntar a `src`.
-- [ ] Configurar `vite-plugin-pwa`.
-- [ ] Crear el manifest de la PWA.
-- [ ] Añadir iconos de la aplicación.
-- [ ] Configurar el service worker.
+- [x] Configurar `vite-plugin-pwa`.
+- [x] Crear el manifest de la PWA.
+- [x] Añadir iconos de la aplicación.
+- [x] Configurar el service worker.
 - [x] Configurar estilos globales.
 - [ ] Definir estrategia responsive mobile-first.
 - [x] Configurar variables de entorno.
@@ -146,7 +146,7 @@ Intentar actualizar
 - [x] Mostrar inmediatamente los últimos datos disponibles.
 - [x] Intentar actualizar cuando corresponda (pull-to-refresh).
 - [ ] Manejar aplicación offline.
-- [x] Mostrar claramente cuando los datos mostrados son antiguos.
+- [ ] Mostrar claramente cuando los datos mostrados son antiguos (el indicador previo se retiró; pendiente decidir reemplazo ligero).
 - [x] Invalidar datos locales cuando sea necesario (logout borra todo el almacenamiento).
 
 ## 5. Navegación

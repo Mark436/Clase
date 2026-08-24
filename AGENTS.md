@@ -13,7 +13,7 @@ This is a mobile-first academic PWA that lets students quickly access:
 - notices;
 - debt notifications.
 
-Built with React, TypeScript, Vite, `vite-plugin-pwa` (planned), and `sith-api-client`.
+Built with React, TypeScript, Vite, `vite-plugin-pwa`, and `sith-api-client`.
 
 The app should feel like a personal mobile app, not an institutional admin portal. Prioritize speed, clarity, and mobile-first UX.
 
@@ -81,23 +81,26 @@ Lightweight feature-based architecture:
 
 ```text
 src/
-├── app/                  # Application composition, routing, navigation config
+├── app/                  # Application composition, navigation config, shell wiring
 ├── components/
-│   ├── ui/               # Generic visual primitives (Button, Card, …)
-│   └── layout/           # AppShell, Page, BottomNavigation, …
+│   ├── ui/               # Generic visual primitives (Button, Card, Toast, …)
+│   └── layout/           # AppShell, Page, BottomNavigation, usePullToRefresh
 ├── features/
 │   ├── auth/
 │   ├── schedule/
 │   ├── grades/
-│   └── student/
+│   ├── student/
+│   └── devtools/         # Gated testing panel (see ROADMAP §13)
 ├── lib/
 │   ├── api/              # SithClient configuration and API layer
-│   ├── storage/          # IndexedDB / persistence
+│   ├── storage/          # IndexedDB / persistence services
+│   ├── devtools/         # Simulated clock service
+│   ├── notifications/    # Local adeudo notifications (opt-in seam)
 │   └── biometrics/       # WebAuthn/passkeys (future)
-├── types/
-├── styles/
 └── main.tsx
 ```
+
+Domain DTO types come from `sith-api-client` (re-exported via `lib/api/client.ts`); feature-local types live in `features/<feature>/types.ts`. Do not create a shared `types/` or `styles/` directory unless a real need appears.
 
 A feature may contain `components/`, `hooks/`, `types.ts`, `utils.ts`, `service.ts`, and `FeaturePage.tsx` — but only what it actually needs.
 
@@ -109,7 +112,6 @@ A feature may contain `components/`, `hooks/`, `types.ts`, `utils.ts`, `service.
 | Generic visual primitive | `components/ui/`      |
 | Application layout       | `components/layout/`  |
 | Shared infrastructure    | `lib/`                |
-| Shared application types | `types/`              |
 | Application composition  | `app/`                |
 
 Keep code as close as possible to the functionality that owns it.
@@ -240,14 +242,16 @@ Feature / application state → Storage service → IndexedDB
 Startup flow:
 
 ```text
-Load cached AppData → Render immediately → Fetch fresh data → Replace cache
+Load cached AppData → Render immediately → Fetch on login / pull-to-refresh → Replace cache
 ```
 
-If the network request fails, cached data remains visible with an appropriate stale/offline indicator.
+Automatic refresh at launch is planned but not implemented (ROADMAP §11). If the
+network request fails, cached data remains visible with an appropriate stale/offline
+indicator.
 
 ### Refresh behavior
 
-The primary refresh mechanism is **pull-to-refresh**. Do not add a prominent "Actualizar" button unless product requirements explicitly change.
+The primary refresh mechanism is **pull-to-refresh**. Do not add a prominent "Actualizar" button unless product requirements explicitly change. A discreet, non-gesture refresh action (currently in the Student area) is the required accessible alternative — do not remove it on gesture-independence grounds.
 
 One coherent refresh operation for all academic data:
 
@@ -302,7 +306,7 @@ getScheduleForDay()
 ### Grades (`features/grades/`)
 
 - Show appropriate empty state when no grades exist; the app remains functional and Schedule is Home.
-- When grades exist, Grades becomes Home.
+- Grades becomes Home only with unseen grade changes and a non-zero period average (see "Home screen" above).
 
 ### Student (`features/student/`)
 

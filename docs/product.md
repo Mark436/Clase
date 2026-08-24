@@ -394,6 +394,8 @@ When there is no outstanding balance, the application stays silent.
 
 Local alerts fire only while the application runs or checks data. Silent background push would require server-side credential handling and remains out of scope pending backend token support (see `docs/api.md`).
 
+The application also surfaces short in-app messages (toasts) when a data refresh detects a relevant event: new or changed grades (positive styling) and a newly appearing outstanding balance (alert styling). These in-app messages are informational, require no permission, and are independent of the opt-in for platform notifications.
+
 Relevant notices and important academic information continue to be surfaced within the application.
 
 ## 18. PWA Experience

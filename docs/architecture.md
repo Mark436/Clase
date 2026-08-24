@@ -5,16 +5,18 @@ see their schedule, grades, profile, notices, and debt alerts without navigating
 institutional portal. Data comes from the academic API through `sith-api-client`; the
 frontend owns presentation, caching, and refresh orchestration.
 
-The repository is in early setup: the Vite + React scaffold under `src/` is in place,
-but feature directories, PWA configuration, the `@` import alias, and most product
-functionality are not implemented yet. The structure below is the intended architecture.
+Core product functionality (auth, schedule, grades, student, persistence,
+pull-to-refresh, PWA shell) is implemented under `src/`; automatic refresh at
+launch, several UX polish items, and roadmap tasks are still pending — see
+[`ROADMAP.MD`](../ROADMAP.MD).
 
 ## Bird's Eye View
 
 The student opens the app. If a valid session exists, cached academic data loads from
-local storage and renders immediately. A background fetch refreshes that data through
-a single `AppData` load. If there is no session, the auth feature collects credentials
-and triggers the first load.
+local storage and renders immediately. Fresh data is fetched through a single
+`AppData`-shaped load on login and via pull-to-refresh; automatic refresh at launch is
+planned but not implemented (ROADMAP §11). If there is no cached session, the auth
+feature collects credentials and triggers the first load.
 
 ```txt
 Login → SithClient.fetchDatos → AppData → persist → Schedule / Grades / Student UI
@@ -90,9 +92,9 @@ IndexedDB, or cookies. Biometric shortcuts must not store the password, even enc
 ### `src/features/schedule/`
 
 Today's schedule as a vertical timeline: current class, next class, later classes.
-Key pure helpers (planned): `getCurrentClass`, `getNextClass`, `getVisibleClasses`,
-`getClassProgress`, `getScheduleForDay`. Key UI (planned): `SchedulePage`,
-`ScheduleTimeline`, `ClassCard`, `CurrentTimeIndicator`.
+Key pure helpers: `getCurrentClass`, `getNextClass`, `getVisibleClasses`,
+`getClassProgress`, `getScheduleForDay`. Key UI: `SchedulePage`,
+`ScheduleDayView`, `ClassCard`, `CurrentTimeIndicator`.
 
 **Invariant:** Date/time and "which class is active" logic lives in pure functions or
 hooks, not scattered through JSX.
@@ -122,6 +124,23 @@ Shows only fields with product value, not every API field.
 
 **Invariant:** Reuses types from `sith-api-client` (`Alumno`, `Creditos`, etc.)
 rather than duplicating DTO shapes.
+
+### `src/features/devtools/`
+
+Gated testing panel (ROADMAP §13): simulated clock, schedule/grade/debt
+overrides, and toast previews. Unlocked with a tap gesture in production;
+visible by default in dev builds. Closing the panel persists an explicit
+disabled flag, pauses simulation, and keeps the saved config.
+
+**Invariant:** Simulation is presentation-only — `applyDevOverrides` builds a
+virtual `Alumno` for rendering; fetches, persistence, grade tracking, and
+adeudo alerts always use real data.
+
+### `src/lib/devtools/`
+
+Simulated clock service (`getNow`, `setClockOffsetMinutes`,
+`subscribeToClock`) consumed by time-dependent UI so dev tools can shift the
+app's notion of "now" without touching system APIs.
 
 ### `src/lib/api/`
 
@@ -171,26 +190,26 @@ Future WebAuthn/passkey integration for returning users. Separate from auth UI i
 
 **Invariant:** Does not implement "remember password" or encrypted password storage.
 
-### `src/types/`
+### Domain types (no separate directory)
 
-Shared application types that cross feature boundaries. Key concept: `AppData` — a
-single coherent snapshot of loaded academic information:
+There is no shared `src/types/` folder. Domain DTO types come from
+`sith-api-client` and are re-exported through `lib/api/client.ts`; the
+app-level snapshot type `CachedAppData` (`alumno`, `avisos`, `loadedAt`)
+lives in `lib/storage/appDataStore.ts`; feature-local types live in
+`features/<feature>/types.ts`.
 
-```ts
-interface AppData {
-  alumno: Alumno;
-  horario: Schedule;
-  calificaciones: Grades;
-  avisos: Aviso[];
-  adeudos: Debt[];
-  progreso: Progress;
-  loadedAt: string;
-}
+The conceptual "AppData" — one coherent snapshot feeding every screen — maps
+onto the package's `Alumno` graph (identity, boleta, horario, adeudos,
+progreso) plus the separate `avisos` list:
+
+```txt
+fetchDatos() → { alumno: Alumno, avisos: Aviso[] }
+Alumno ⊇ boleta (grades) + horario (schedule) + adeudos + progreso
 ```
 
-Exact field types should follow `sith-api-client` exports (`Alumno`, `Aviso`, etc.).
-As of `sith-api-client` 2.3.0, `progreso` is a plain `number` and `horario` carries
-raw per-day time strings that the schedule feature parses — see [`api.md`](api.md).
+Exact field types follow `sith-api-client` exports. As of `sith-api-client`
+2.3.0, `progreso` is a plain `number` and `horario` carries raw per-day time
+strings that the schedule feature parses — see [`api.md`](api.md).
 
 **Invariant:** Prefer API package types over local duplicates unless the UI model
 genuinely differs.
@@ -233,8 +252,9 @@ API integration and UI behavior should be tested separately from schedule math.
 Public frontend config uses Vite `VITE_` variables (for example, `VITE_API_URL`).
 These values are visible in the bundle and must not hold secrets.
 
-Build tooling: Vite, TypeScript (strict), Oxlint. PWA manifest and service worker will
-live at the Vite/build layer via `vite-plugin-pwa` (planned), not inside features.
+Build tooling: Vite, TypeScript (strict), Oxlint. PWA manifest and service worker
+live at the Vite/build layer via `vite-plugin-pwa` (`autoUpdate`; `registerSW` in
+`src/main.tsx`), not inside features.
 
 ### Refresh and Concurrency
 
