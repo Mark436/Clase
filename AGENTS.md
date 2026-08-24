@@ -67,7 +67,7 @@ Before making significant changes, read the relevant sections of:
 | ---------------------------------------------- | ------------------------------------------------ |
 | [`docs/product.md`](docs/product.md)           | Product behavior and UX requirements             |
 | [`docs/architecture.md`](docs/architecture.md) | Architecture and code organization               |
-| [`TODO.md`](TODO.md)                           | Current implementation status and task checklist |
+| [`ROADMAP.MD`](ROADMAP.MD)                     | Current implementation status and task checklist |
 
 If an implementation decision conflicts with product or architecture documentation, stop and reassess before proceeding.
 
@@ -385,7 +385,7 @@ pnpm build
 
 1. Read the relevant section of `docs/product.md`.
 2. Read the relevant section of `docs/architecture.md`.
-3. Check `TODO.md`.
+3. Check `ROADMAP.MD`.
 4. Inspect the existing implementation before creating new abstractions.
 5. Determine the smallest set of changes required.
 6. Avoid modifying unrelated code.
@@ -398,7 +398,7 @@ If the request conflicts with existing architecture or product decisions, explai
 2. Verify TypeScript types compile.
 3. Run `pnpm lint` and `pnpm build`.
 4. Run relevant tests when available.
-5. Update `TODO.md` if the task corresponds to a TODO item.
+5. Update `ROADMAP.MD` if the task corresponds to a roadmap item.
 6. Do not update documentation with speculative information.
 
 ### Architectural decision rule

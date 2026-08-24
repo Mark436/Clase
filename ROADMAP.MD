@@ -1,4 +1,13 @@
-# TODO — Clase
+# Roadmap — Clase
+
+## Pendientes inmediatos
+
+Especificación completa de estas fases en [`docs/plan.md`](docs/plan.md):
+
+- [ ] **Fase A** — Mostrar el salón (código junto a la hora) en las tarjetas de clase en lugar del grupo.
+- [ ] **Fase B** — Pull-to-refresh; sin credenciales en memoria abre el formulario de reingreso.
+- [ ] **Fase C** — Home condicional: Calificaciones abre primero solo con cambios nuevos por ver y promedio del periodo ≠ 0.
+- [ ] **Fase D** — Recordatorio diario (una vez al día) para volver a iniciar sesión, con toast.
 
 ## 0. Base del proyecto
 
