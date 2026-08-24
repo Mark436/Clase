@@ -1,0 +1,37 @@
+import { CredentialsForm } from "./CredentialsForm";
+
+interface ReAuthSheetProps {
+  open: boolean;
+  onClose: () => void;
+}
+
+export function ReAuthSheet({ open, onClose }: ReAuthSheetProps) {
+  if (!open) return null;
+
+  return (
+    <div className="fixed inset-0 z-20 flex items-end justify-center">
+      <button
+        type="button"
+        aria-label="Cerrar"
+        onClick={onClose}
+        className="absolute inset-0 cursor-default bg-on-background/40 backdrop-blur-[2px]"
+      />
+      <section
+        role="dialog"
+        aria-modal="true"
+        aria-label="Volver a iniciar sesión"
+        className="relative w-full max-w-md rounded-t-3xl bg-surface p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] shadow-lg ring-1 ring-outline-variant"
+      >
+        <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-outline-variant" />
+        <h2 className="text-lg font-semibold text-on-surface">
+          Vuelve a iniciar sesión
+        </h2>
+        <p className="mb-4 mt-1 text-sm text-on-surface-variant">
+          Por seguridad tu contraseña no se guarda. Ingrésala para actualizar
+          tus datos.
+        </p>
+        <CredentialsForm submitLabel="Actualizar datos" autoFocusPassword />
+      </section>
+    </div>
+  );
+}
