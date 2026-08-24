@@ -1,16 +1,38 @@
+import { useRef } from "react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Page } from "@/components/layout/Page";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { ProgressBar } from "@/components/ui/ProgressBar";
+import { DevPanel } from "@/features/devtools/DevPanel";
+import { DEV_OWNER_CONTROL, UNLOCK_TAP_COUNT, isDevBuild } from "@/features/devtools/config";
+import type { DevToolsController } from "@/features/devtools/useDevConfig";
 import type { Alumno } from "@/lib/api/client";
 
 interface StudentPageProps {
   alumno: Alumno | null;
   onRequestRefresh: () => void;
+  dev?: DevToolsController;
 }
 
-export function StudentPage({ alumno, onRequestRefresh }: StudentPageProps) {
+export function StudentPage({ alumno, onRequestRefresh, dev }: StudentPageProps) {
+  const nameTapsRef = useRef(0);
+
+  const devEnabled =
+    dev !== undefined &&
+    (isDevBuild() ||
+      (dev.unlocked && alumno?.numeroControl === DEV_OWNER_CONTROL));
+
+  function handleNameTap() {
+    if (!dev || devEnabled) return;
+
+    nameTapsRef.current += 1;
+    if (nameTapsRef.current >= UNLOCK_TAP_COUNT) {
+      nameTapsRef.current = 0;
+      dev.unlock();
+    }
+  }
+
   return (
     <>
       <PageHeader title="Alumno" subtitle="Tu información académica." />
@@ -18,9 +40,13 @@ export function StudentPage({ alumno, onRequestRefresh }: StudentPageProps) {
         {alumno ? (
           <>
             <Card className="flex flex-col items-center gap-1 py-6 text-center">
-              <p className="text-lg font-semibold text-on-surface">
+              <button
+                type="button"
+                onClick={handleNameTap}
+                className="rounded-lg text-lg font-semibold text-on-surface focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary"
+              >
                 {alumno.nombre}
-              </p>
+              </button>
               <p className="text-sm text-on-surface-variant">{alumno.carrera}</p>
               <p className="text-xs text-on-surface-variant">
                 Semestre {alumno.semestre}
@@ -42,6 +68,10 @@ export function StudentPage({ alumno, onRequestRefresh }: StudentPageProps) {
                   label="Progreso de la carrera"
                 />
               </Card>
+            ) : null}
+
+            {devEnabled && dev ? (
+              <DevPanel alumno={alumno} dev={dev} />
             ) : null}
           </>
         ) : (

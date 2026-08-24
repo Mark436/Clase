@@ -246,24 +246,24 @@ Intentar actualizar
 
 ### Información general
 
-- [ ] Crear pantalla de alumno.
-- [ ] Mostrar nombre.
+- [x] Crear pantalla de alumno.
+- [x] Mostrar nombre.
 - [ ] Mostrar matrícula.
-- [ ] Mostrar carrera.
-- [ ] Mostrar semestre.
+- [x] Mostrar carrera.
+- [x] Mostrar semestre.
 - [ ] Mostrar campus.
 - [ ] Mostrar otros datos relevantes disponibles.
 
 ### Progreso académico
 
-- [ ] Mostrar progreso total de la carrera.
-- [ ] Mostrar porcentaje.
+- [x] Mostrar progreso total de la carrera.
+- [x] Mostrar porcentaje.
 - [ ] Mostrar créditos aprobados.
 - [ ] Mostrar créditos en curso.
 - [ ] Mostrar créditos restantes.
-- [ ] Mostrar semestre actual.
+- [x] Mostrar semestre actual.
 - [ ] Mostrar progreso por semestre si la información lo permite.
-- [ ] Crear componente visual de progreso.
+- [x] Crear componente visual de progreso.
 - [ ] Evitar presentar información académica redundante.
 
 ## 9. Avisos
@@ -307,7 +307,17 @@ Intentar actualizar
 - [ ] Revisar rendimiento y evitar renders innecesarios.
 - [ ] Documentar decisiones de arquitectura y flujo de datos.
 
-## 13. Criterio de finalización
+## 13. Modo dev (herramientas de prueba)
+
+- [x] Panel en Alumno, solo para el dueño (`numeroControl` del API + 7 taps sobre el nombre; siempre visible en builds dev).
+- [x] Reloj simulado (offset/datetime) que alimenta hora, día, clase en curso y progreso.
+- [x] Agregar/quitar materias del horario (solo presentación).
+- [x] Editar calificaciones simuladas por materia.
+- [x] Toggle de adeudos (banner y alertas).
+- [x] Config persistida en settings store con botón "Restaurar datos reales".
+- [ ] Evaluar retirar el panel antes de compartir la app con otros alumnos.
+
+## 14. Criterio de finalización
 
 - [ ] La app puede iniciar en modo PWA.
 - [ ] El usuario puede iniciar sesión correctamente.

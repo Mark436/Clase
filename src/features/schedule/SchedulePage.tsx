@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { Page } from "@/components/layout/Page";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Card } from "@/components/ui/Card";
+import { getNow } from "@/lib/devtools/clock";
 import type { Alumno } from "@/lib/api/client";
 import { useCurrentTime } from "./hooks/useCurrentTime";
 import { mapHorario } from "./mapHorario";
@@ -15,7 +16,7 @@ interface SchedulePageProps {
 
 export function SchedulePage({ alumno }: SchedulePageProps) {
   const now = useCurrentTime();
-  const [selectedDate, setSelectedDate] = useState<Date>(() => new Date());
+  const [selectedDate, setSelectedDate] = useState<Date>(() => getNow());
 
   const weekMeetings = useMemo(
     () => (alumno ? mapHorario(alumno.horario, alumno.boleta) : []),

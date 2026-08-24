@@ -1,8 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AppShell } from "@/components/layout/AppShell";
 import { BottomNavigation } from "@/components/layout/BottomNavigation";
 import { Spinner } from "@/components/ui/Spinner";
 import { Toast } from "@/components/ui/Toast";
+import { applyDevOverrides } from "@/features/devtools/applyDevOverrides";
+import { useDevConfig } from "@/features/devtools/useDevConfig";
 import { useAuth } from "@/features/auth/auth-context";
 import { AuthProvider } from "@/features/auth/AuthProvider";
 import { LoginPage } from "@/features/auth/LoginPage";
@@ -24,11 +26,20 @@ import type { TabId } from "./navigation";
 
 function AuthenticatedShell() {
   const { alumno, hasCredentials, refresh, unseenGradeChanges } = useAuth();
+  const dev = useDevConfig();
   const [tab, setTab] = useState<TabId>(() =>
     getHomeTab(shouldOpenGradesFirst(alumno, unseenGradeChanges)),
   );
   const [reAuthOpen, setReAuthOpen] = useState(false);
   const [reminderVisible, setReminderVisible] = useState(false);
+
+  // Dev simulation is presentation-only: the virtual alumno feeds every
+  // screen, while fetches and persistence keep using the real data.
+  const effectiveAlumno = useMemo(
+    () =>
+      alumno && dev.loaded ? applyDevOverrides(alumno, dev.config) : alumno,
+    [alumno, dev.loaded, dev.config],
+  );
 
   // Daily re-auth reminder: with a session restored from cache and no
   // credentials in memory, suggest re-entering the password once per day.
@@ -86,17 +97,20 @@ function AuthenticatedShell() {
         }
         onPullToRefresh={handlePullToRefresh}
       >
-        {alumno?.adeudos.tieneAdeudos ? <DebtBanner adeudos={alumno.adeudos} /> : null}
-        <AdeudoAlertsCard alumno={alumno} />
+        {effectiveAlumno?.adeudos.tieneAdeudos ? (
+          <DebtBanner adeudos={effectiveAlumno.adeudos} />
+        ) : null}
+        <AdeudoAlertsCard alumno={effectiveAlumno} />
 
         {tab === "schedule" ? (
-          <SchedulePage alumno={alumno} />
+          <SchedulePage alumno={effectiveAlumno} />
         ) : tab === "grades" ? (
-          <GradesPage alumno={alumno} />
+          <GradesPage alumno={effectiveAlumno} />
         ) : (
           <StudentPage
-            alumno={alumno}
+            alumno={effectiveAlumno}
             onRequestRefresh={handlePullToRefresh}
+            dev={dev}
           />
         )}
       </AppShell>
