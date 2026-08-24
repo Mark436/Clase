@@ -103,7 +103,8 @@ Sesión de la aplicación
 - [x] No persistir la contraseña en IndexedDB.
 - [x] Definir logout.
 - [ ] Definir expiración de sesión.
-- [ ] Definir comportamiento al recargar la PWA.
+- [x] Definir comportamiento al recargar la PWA (se restauran los datos cacheados; sin contraseña guardada, se pide reingreso al actualizar).
+- [x] Recordar el usuario (nunca la contraseña) para agilizar accesos posteriores.
 
 ### Accesos posteriores
 
@@ -129,15 +130,15 @@ Mostrar datos locales   Mostrar Login
 Intentar actualizar
 ```
 
-- [ ] Evaluar IndexedDB para persistencia.
-- [ ] Persistir datos académicos.
-- [ ] Persistir `loadedAt`.
-- [ ] No persistir credenciales.
-- [ ] Mostrar inmediatamente los últimos datos disponibles.
-- [ ] Intentar actualizar cuando corresponda.
+- [x] Evaluar IndexedDB para persistencia.
+- [x] Persistir datos académicos.
+- [x] Persistir `loadedAt`.
+- [x] No persistir credenciales.
+- [x] Mostrar inmediatamente los últimos datos disponibles.
+- [ ] Intentar actualizar cuando corresponda (pendiente pull-to-refresh).
 - [ ] Manejar aplicación offline.
-- [ ] Mostrar claramente cuando los datos mostrados son antiguos.
-- [ ] Invalidar datos locales cuando sea necesario.
+- [x] Mostrar claramente cuando los datos mostrados son antiguos.
+- [x] Invalidar datos locales cuando sea necesario (logout borra todo el almacenamiento).
 
 ## 5. Navegación
 
@@ -153,12 +154,12 @@ Intentar actualizar
 - [x] Mantener la navegación accesible.
 - [x] Añadir estados activo/inactivo.
 - [x] Respetar safe areas de dispositivos móviles.
-- [ ] Definir pantalla principal dinámica.
-- [ ] Si no hay calificaciones, mostrar Horario como Home.
-- [ ] Si existen calificaciones, mostrar Calificaciones como Home.
-- [ ] Crear una función o lógica independiente para determinar el Home.
+- [x] Definir pantalla principal dinámica.
+- [x] Si no hay calificaciones, mostrar Horario como Home.
+- [x] Si existen calificaciones, mostrar Calificaciones como Home.
+- [x] Crear una función o lógica independiente para determinar el Home.
 - [ ] Intercambiar también icono y etiqueta según el estado de Home.
-- [ ] Mantener acceso al resto de las áreas.
+- [x] Mantener acceso al resto de las áreas.
 - [ ] No duplicar la lógica de navegación dentro de cada pantalla.
 
 ## 6. Horario
@@ -217,20 +218,21 @@ Intentar actualizar
 
 ## 7. Calificaciones
 
-- [ ] Crear pantalla de calificaciones.
-- [ ] Mostrar promedio.
-- [ ] Mostrar materias.
-- [ ] Mostrar calificación por materia.
-- [ ] Mostrar período/semestre cuando esté disponible.
+- [x] Crear pantalla de calificaciones.
+- [x] Mostrar promedio.
+- [x] Mostrar materias.
+- [x] Mostrar calificación por materia.
+- [x] Mostrar período/semestre cuando esté disponible.
 - [ ] Mostrar créditos relacionados cuando estén disponibles.
-- [ ] Crear state sin calificaciones.
+- [x] Crear state sin calificaciones.
 - [ ] Crear loading state.
 - [ ] Crear error state.
 - [ ] Evaluar historial de calificaciones si la API lo permite.
-- [ ] Detectar si existen calificaciones para integración con el Home.
-- [ ] Convertir Calificaciones en Home cuando existan.
+- [x] Detectar cambios entre consultas (materia nueva o calificación modificada) mediante seguimiento local (`TrackedGrade`, sin fechas).
+- [x] Detectar si existen calificaciones para integración con el Home.
+- [x] Convertir Calificaciones en Home cuando existan.
 - [ ] Intercambiar posición, icono y etiqueta de navegación.
-- [ ] No mostrar una pantalla vacía cuando todavía no existan calificaciones.
+- [x] No mostrar una pantalla vacía cuando todavía no existan calificaciones.
 
 ## 8. Alumno
 
@@ -266,13 +268,14 @@ Intentar actualizar
 
 ## 10. Adeudos
 
-- [ ] Tratar los adeudos como una alerta principal, no como una sección central.
-- [ ] Detectar adeudos al cargar `AppData`.
-- [ ] Mostrar alerta si existen.
-- [ ] No añadir Adeudos como tab principal.
+- [x] Tratar los adeudos como una alerta principal, no como una sección central.
+- [x] Detectar adeudos al cargar `AppData`.
+- [x] Mostrar alerta si existen.
+- [x] No añadir Adeudos como tab principal.
 - [ ] Permitir acceder a detalles si es necesario.
-- [ ] Ocultar completamente la alerta cuando no existan adeudos.
-- [ ] Evaluar posteriormente notificaciones push para adeudos.
+- [x] Ocultar completamente la alerta cuando no existan adeudos.
+- [x] Alerta local opcional al aparecer un adeudo nuevo (opt-in, solo transición sin→con adeudo).
+- [ ] Evaluar posteriormente notificaciones push para adeudos (requiere backend con sesión/token; ver `docs/api.md`).
 
 ## 11. Actualización de datos
 
