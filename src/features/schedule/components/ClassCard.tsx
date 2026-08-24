@@ -50,13 +50,14 @@ export function ClassCard({
         </span>
       </div>
 
-      <p
-        className={`mt-1 text-sm ${
+      <div
+        className={`mt-1 flex flex-col gap-0.5 text-sm ${
           isCurrent ? "text-on-primary-container/80" : "text-on-surface-variant"
         }`}
       >
-        Grupo {meeting.group}
-      </p>
+        {meeting.group ? <p>Grupo {meeting.group}</p> : null}
+        {meeting.professor ? <p>{meeting.professor}</p> : null}
+      </div>
 
       {isCurrent && progressPercent !== undefined ? (
         <ProgressBar

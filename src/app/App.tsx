@@ -12,6 +12,7 @@ import type { TabId } from "./navigation";
 
 function AuthenticatedShell() {
   const [tab, setTab] = useState<TabId>(getHomeTab());
+  const { alumno } = useAuth();
 
   return (
     <AppShell
@@ -20,7 +21,7 @@ function AuthenticatedShell() {
       }
     >
       {tab === "schedule" ? (
-        <SchedulePage />
+        <SchedulePage alumno={alumno} />
       ) : tab === "grades" ? (
         <GradesPage />
       ) : (

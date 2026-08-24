@@ -1,7 +1,7 @@
 # Sith API Client — Notes and Gaps
 
 Reference notes for [`sith-api-client`](https://github.com/Mark436/sith-api-client)
-(v2.2.0), the runtime dependency that talks to the academic API (SITH,
+(v2.3.0), the runtime dependency that talks to the academic API (SITH,
 Instituto Tecnológico de Hermosillo). The client owns HTTP, parsing, and DTO
 mapping; this PWA owns when to fetch, how to cache, and how to present data.
 
@@ -13,60 +13,77 @@ mapping; this PWA owns when to fetch, how to cache, and how to present data.
 ```ts
 import { SithClient } from "sith-api-client";
 
-const client = new SithClient(); // takes no arguments
-
-const datos = await client.fetchDatos({
-  user: "usuario",
-  pass: "contraseña",
+const client = new SithClient({
+  // Optional. Base for the derived `${baseUrl}/login` and `${baseUrl}/logout`
+  // endpoints. Defaults to the official http://sith.ith.mx/XTodo/wr.
+  baseUrl: import.meta.env.VITE_API_URL,
 });
-// datos: { alumno: Alumno, avisos: Aviso[] }
 
-// Static mapper for raw API payloads:
-await SithClient.mapDatos(rawApiTodo); // Promise<{ alumno, avisos }>
+const datos = await client.fetchDatos({ user, pass });
+// datos: DatosAlumno = { alumno: Alumno, avisos: Aviso[] }
+
+await SithClient.mapDatos(rawApiTodo); // map a captured raw payload, no HTTP
 ```
 
 - Keep `.js` extensions on package import paths; it ships as ES modules.
-- The package `exports` map only exposes the root entry. Deep imports such as
-  `sith-api-client/dist/dto/Alumno.js` are blocked — derive shared types from
-  the public call signature instead (done in `src/lib/api/client.ts`).
-- `VITE_API_URL` is currently unusable: endpoints are hardcoded inside the
-  client (see Known gaps).
+- v2.3.0 exports the shared types from the root entry (`Alumno`, `Aviso`,
+  `Credenciales`, `DatosAlumno`, `HorarioDia`, `HorarioMateria`, `Boleta`,
+  `Creditos`, `Adeudos`, `CalificacionMateria`, `TIPO_AVISO`) — reuse them
+  instead of duplicating DTO shapes.
+
+## Endpoint configuration and the Netlify proxy
+
+The upstream service is plain HTTP only, so browsers hit mixed-content blocks
+when the PWA is served over HTTPS (and CORS is not guaranteed either).
+`SithClient({ baseUrl })` plus a server-side proxy solve both:
+
+```text
+Browser (HTTPS)
+  └─POST https://<site>.netlify.app/api/sith/login   ← same-origin in production
+      └─ netlify/functions/sith-proxy.mts             ← transparent passthrough
+          └─POST http://sith.ith.mx/XTodo/wr/login    ← plaintext hop (unavoidable)
+```
+
+- The proxy forwards POST bodies verbatim for `login`/`logout` only, returns
+  the upstream status/body untouched, and never logs or stores credentials.
+- `VITE_API_URL=https://<site>.netlify.app/api/sith` in production; unset ⇒
+  direct official endpoint (fine for trusted/local contexts only).
+- Local development: either point `VITE_API_URL` at the deployed function
+  (its CORS answers any origin by default) or run `netlify dev` for a fully
+  local same-origin setup at `http://localhost:8888/api/sith`.
+- Proxy environment variables: `SITH_UPSTREAM_URL` (override upstream base)
+  and `CORS_ALLOW_ORIGIN` (lock CORS to the site origin once deployed).
 
 ## Request lifecycle (stateless)
 
 Every `fetchDatos()` call performs a complete one-shot cycle:
 
-1. Validate `{ user, pass }` locally (throws `"Credenciales inválidas"`).
-2. `POST http://sith.ith.mx/XTodo/wr/login` with JSON `{ user, pass }`.
+1. Validate `{ user, pass }` locally (throws `SithAuthError` when blank).
+2. `POST ${baseUrl}/login` with JSON `{ user, pass }`.
 3. Parse the response and require `al` (alumno payload) plus `tkn` (session
-   token); otherwise throw, attaching the API's error avisos as `cause`.
-4. Immediately `POST http://sith.ith.mx/XTodo/wr/logout` with `{ tkn }`.
+   token); otherwise throw `SithAuthError` with the API's error avisos as
+   `cause`.
+4. Best-effort `POST ${baseUrl}/logout` with `{ tkn }`. Since v2.3.0 a failed
+   logout **no longer discards the downloaded data** — a warning aviso is
+   appended to the result instead.
 5. Map the payload to DTOs and return `{ alumno, avisos }`.
 
-Consequences:
-
-- **There is no session.** The token is consumed internally and never exposed;
-  every data refresh needs the credentials again.
-- Endpoints are **plain HTTP and hardcoded**, which implies mixed-content risk
-  when the PWA is served over HTTPS and unknown CORS behavior in browsers.
+Consequence: **there is no session.** The token is consumed internally and
+never exposed; every data refresh needs the credentials again.
 
 ## Errors
 
-All failures are generic `Error` throws; distinguish them through `cause`:
+v2.3.0 ships a typed hierarchy under `SithError`; our `lib/api` layer maps it
+to UI-facing kinds:
 
-| `cause` shape                              | Meaning                                                        | App mapping        |
-| ------------------------------------------ | -------------------------------------------------------------- | ------------------ |
-| native `Error` (fetch rejection)           | network/DNS failure                                             | `connection`       |
-| `{ status, statusText, url }`              | HTTP !ok — 401/403 means bad credentials, others service issues | `invalid-credentials` / `connection` |
-| `string[]` of `"summary: detail"`          | login rejected by the API (wrong credentials)                   | `invalid-credentials` |
+| Package error       | Meaning                                            | App kind              |
+| ------------------- | -------------------------------------------------- | --------------------- |
+| `SithAuthError`     | Blank credentials locally, 401/403, or API-rejected | `invalid-credentials` |
+| `SithNetworkError`  | fetch rejection (network/DNS/CORS)                  | `connection`          |
+| `SithHttpError`     | Other HTTP !ok or non-JSON body (exposes `.status`) | `connection`          |
 
-Known quirks:
-
-- If login succeeds but the immediate logout fails (network blip),
-  `fetchDatos` throws even though valid data was already downloaded — that
-  data is lost.
-- Error messages are Spanish, generic, and untyped. Never surface them raw;
-  translate via `cause` inspection (centralized in `src/lib/api/client.ts`).
+The original `cause` shape is preserved on every error for debugging. Error
+messages are Spanish and generic — never surface them raw.
 
 ## Data model (as returned)
 
@@ -81,19 +98,28 @@ graph returned by `fetchDatos()`:
   `boleta { periodo, promedio, materias: CalificacionMateria[] }`
 - `CalificacionMateria`: `clave`, `nombre`, `calificacion` (**string**, may be
   empty or non-numeric), `claveOportunidad`, `oportunidad`, `creditos`
-  (`number`)
-- Progress: `progreso` (**plain number**) and `creditos { totales, faltantes }`
-  — approved credits derive as `totales − faltantes`; there is no separate
-  "in progress" count.
+- Progress: `progreso` (**plain number**, computed as approved/total credits)
+  and `creditos { totales, faltantes }`
 - Debts: `adeudos { tieneAdeudos, biblioteca, academico, escolar, financiero,
-  administrativo }` where each area string describes the debt when one exists.
+  administrativo }`
 - Notices: `avisos: Aviso[] { titulo, mensaje, tipo }` with
-  `tipo ∈ { "error", "warn", "info" }` (the `TIPO_AVISO` enum).
+  `tipo ∈ { "error", "warn", "info" }`
+
+**Schedule** — `horario: HorarioMateria[]` (since v2.3.0):
+
+- `HorarioMateria { clave, creditos?, grupo, docente, dias }`
+- `dias` holds optional raw strings per weekday (`lunes`…`sabado`) observed as
+  `"hh:mm-hh:mm GGG"` (time range + group); empty days are omitted.
+- `docente` concatenates the professor's surnames + names (`mape + mnom`).
+- **The subject name is NOT included** — resolve it by joining `clave`
+  against `boleta.materias[].clve → nombre`, falling back to the clave
+  (implemented in `features/schedule/mapHorario.ts`). No classroom field
+  exists anywhere in the payload.
 
 ## Session decision (this app)
 
 Because every call needs credentials, the app keeps them **in React memory
-only** for the lifetime of a session (`features/auth/AuthContext.tsx`). They
+only** for the lifetime of a session (`features/auth/AuthProvider.tsx`). They
 are never written to `localStorage`, `sessionStorage`, IndexedDB, cookies, or
 any other storage, and they are cleared on logout.
 
@@ -103,17 +129,13 @@ offers a real session/token mechanism.
 
 ## Known gaps and future upgrades
 
-1. **Missing schedule (`horario`).** The raw response contains enrolled-class
-   entries (`gins[]`) with per-weekday schedule strings (`lu`, `ma`, `mi`,
-   `ju`, `vi`, `sa`) plus grupo/materia fields, but the mapper drops them. The
-   mapped `Alumno` has **no schedule field**, which blocks the Schedule
-   feature until the client exposes it (preferred) or we gain access to the
-   raw payload and map it locally (currently impossible through
-   `fetchDatos`).
-2. **No session/token mechanism.** Backend improvement candidate (TODO §3).
-3. **Failed logout discards valid data** (see Errors).
-4. **Hardcoded plain-HTTP endpoints** with no configurable base URL.
-5. **Weakly typed errors** — untyped `cause`; classification lives in our
-   `lib/api` layer.
-6. **Type gotchas** — `calificacion` is a string; `progreso` is a bare number,
-   not an object.
+1. **Subject name resolution depends on the boleta join.** If a horario
+   subject has no matching boleta entry, the UI shows its clave. A cleaner fix
+   belongs in the client (resolve names via retícula) or a richer API payload.
+2. **No session/token mechanism.** Backend improvement candidate (TODO §3);
+   until then refreshes require in-memory credentials.
+3. **Plaintext hop remains.** The proxy fixes browser-facing mixed content/
+   CORS, but the edge→SITH leg is still plain HTTP because the upstream offers
+   nothing else.
+4. **Type gotchas** — `calificacion` is a string; day strings are raw text
+   parsed defensively (malformed/duplicate slots are skipped).

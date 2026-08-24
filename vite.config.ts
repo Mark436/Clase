@@ -16,10 +16,10 @@ export default defineConfig({
     VitePWA({
       registerType: "autoUpdate",
       manifest: {
-        name: "PWA Académica",
-        short_name: "Académica",
+        name: "Clase",
+        short_name: "Clase",
         description:
-          "Aplicación móvil para consultar horario, calificaciones y alumno.",
+          "Clase: aplicación móvil para consultar horario, calificaciones y alumno.",
         theme_color: "#0f172a",
         background_color: "#f8fafc",
         display: "standalone",

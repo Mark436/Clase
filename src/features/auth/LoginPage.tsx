@@ -50,18 +50,20 @@ export function LoginPage() {
       <div className="w-full max-w-sm">
         <header className="mb-6 text-center">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">
-            PWA académica
+            Clase
           </p>
-          <h1 className="mt-2 text-3xl font-bold text-on-background">
-            Académica
-          </h1>
+          <h1 className="mt-2 text-3xl font-bold text-on-background">Clase</h1>
           <p className="mt-1 text-sm text-on-surface-variant">
             Tu información académica en un solo lugar.
           </p>
         </header>
 
         <Card className="p-6">
-          <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
+          <form
+            onSubmit={handleSubmit}
+            noValidate
+            className="flex flex-col gap-4"
+          >
             <Input
               label="Usuario"
               type="text"

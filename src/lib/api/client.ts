@@ -1,19 +1,17 @@
 import { SithClient } from "sith-api-client";
+import {
+  SithAuthError,
+  SithHttpError,
+  SithNetworkError,
+} from "sith-api-client";
+import type {
+  Alumno,
+  Aviso,
+  Credenciales,
+  DatosAlumno,
+} from "sith-api-client";
 
-type DatosResponse = Awaited<ReturnType<SithClient["fetchDatos"]>>;
-
-export type Alumno = DatosResponse["alumno"];
-export type Aviso = DatosResponse["avisos"][number];
-
-export interface Credenciales {
-  user: string;
-  pass: string;
-}
-
-export interface AcademicData {
-  alumno: Alumno;
-  avisos: Aviso[];
-}
+export type { Alumno, Aviso, Credenciales };
 
 export type ApiErrorKind = "invalid-credentials" | "connection" | "unknown";
 
@@ -33,31 +31,30 @@ export class ApiError extends Error {
   }
 }
 
-function classifyCause(cause: unknown): ApiErrorKind {
-  if (typeof cause === "object" && cause !== null && "status" in cause) {
-    const status = (cause as { status: unknown }).status;
-    return status === 401 || status === 403
-      ? "invalid-credentials"
-      : "connection";
-  }
-  if (Array.isArray(cause)) {
-    return "invalid-credentials";
-  }
-  if (cause instanceof Error) {
-    return "connection";
-  }
-  return "unknown";
+function createSithClient(): SithClient {
+  const baseUrl = import.meta.env.VITE_API_URL?.trim();
+
+  return baseUrl ? new SithClient({ baseUrl }) : new SithClient();
 }
 
-const sithClient = new SithClient();
+const sithClient = createSithClient();
 
 export async function fetchAppData(
   credentials: Credenciales,
-): Promise<AcademicData> {
+): Promise<DatosAlumno> {
   try {
     return await sithClient.fetchDatos(credentials);
   } catch (error) {
-    const cause = error instanceof Error ? error.cause : undefined;
-    throw new ApiError(classifyCause(cause), { cause: error });
+    throw new ApiError(classifyError(error), { cause: error });
   }
+}
+
+function classifyError(error: unknown): ApiErrorKind {
+  if (error instanceof SithAuthError) {
+    return "invalid-credentials";
+  }
+  if (error instanceof SithNetworkError || error instanceof SithHttpError) {
+    return "connection";
+  }
+  return "unknown";
 }

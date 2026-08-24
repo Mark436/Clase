@@ -1,4 +1,4 @@
-# TODO — PWA académica
+# TODO — Clase
 
 ## 0. Base del proyecto
 
@@ -11,8 +11,10 @@
 - [ ] Configurar el service worker.
 - [x] Configurar estilos globales.
 - [ ] Definir estrategia responsive mobile-first.
-- [ ] Configurar variables de entorno.
+- [x] Configurar variables de entorno.
+- [ ] Conectar el sitio de Netlify y definir `VITE_API_URL` en producción (apuntando a `/api/sith`).
 - [x] Añadir `sith-api-client` como dependencia de runtime, no como `devDependency`.
+- [x] Añadir función proxy de Netlify (`netlify/functions/sith-proxy.mts`) para evitar CORS/mixed-content — ver `docs/api.md`.
 - [ ] Configurar el consumo del paquete local si se desarrolla junto con la PWA.
 - [ ] Verificar compatibilidad de imports ES con extensión `.js`.
 
@@ -163,7 +165,7 @@ Intentar actualizar
 
 ### Vista diaria
 
-- [ ] Bloqueado: `sith-api-client` no expone el horario (`gins` sin mapear); requiere actualización del paquete o acceso al payload crudo. Ver `docs/api.md`.
+- [x] Bloqueo resuelto: `sith-api-client` ≥2.3 expone el horario (`Alumno.horario`); el nombre de materia se resuelve con la boleta — ver `docs/api.md`.
 - [x] La pantalla principal del horario debe representar el día como una timeline vertical.
 - [x] Mostrar el día actual inicialmente.
 - [x] Mostrar las clases del día.
@@ -175,7 +177,7 @@ Intentar actualizar
 - [x] Destacar visualmente la clase actual.
 - [x] Reducir prioridad visual de las clases futuras.
 - [x] Mostrar ubicación/aula si existe.
-- [ ] Mostrar profesor si existe.
+- [x] Mostrar profesor si existe.
 
 ### Hora actual
 
