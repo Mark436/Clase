@@ -3,6 +3,7 @@ import { AppShell } from "@/components/layout/AppShell";
 import { BottomNavigation } from "@/components/layout/BottomNavigation";
 import { Spinner } from "@/components/ui/Spinner";
 import { Toast } from "@/components/ui/Toast";
+import type { ToastVariant } from "@/components/ui/Toast";
 import { applyDevOverrides } from "@/features/devtools/applyDevOverrides";
 import { useDevConfig } from "@/features/devtools/useDevConfig";
 import { useAuth } from "@/features/auth/auth-context";
@@ -24,14 +25,26 @@ import {
 import { getHomeTab, NAV_ITEMS } from "./navigation";
 import type { TabId } from "./navigation";
 
+interface ActiveToast {
+  message: string;
+  variant: ToastVariant;
+}
+
 function AuthenticatedShell() {
-  const { alumno, hasCredentials, refresh, unseenGradeChanges } = useAuth();
+  const {
+    alumno,
+    hasCredentials,
+    refresh,
+    unseenGradeChanges,
+    gradeChangeCount,
+    adeudoAlertCount,
+  } = useAuth();
   const dev = useDevConfig();
   const [tab, setTab] = useState<TabId>(() =>
     getHomeTab(shouldOpenGradesFirst(alumno, unseenGradeChanges)),
   );
   const [reAuthOpen, setReAuthOpen] = useState(false);
-  const [reminderVisible, setReminderVisible] = useState(false);
+  const [toast, setToast] = useState<ActiveToast | null>(null);
 
   // Dev simulation is presentation-only: the virtual alumno feeds every
   // screen, while fetches and persistence keep using the real data.
@@ -72,13 +85,38 @@ function AuthenticatedShell() {
 
       if (cancelled) return;
       setReAuthOpen(true);
-      setReminderVisible(true);
+      setToast({
+        message:
+          "Se recomienda volver a iniciar sesión para actualizar tus datos.",
+        variant: "neutral",
+      });
     })();
 
     return () => {
       cancelled = true;
     };
   }, [alumno, hasCredentials]);
+
+  // One-shot notifications from real fetch events. Counters start at zero and
+  // only grow when a fetch detects the event after mount, so app startup,
+  // cache restores, and baselines never trigger a toast.
+  useEffect(() => {
+    if (gradeChangeCount > 0) {
+      setToast({
+        message: "Tienes calificaciones nuevas o actualizadas.",
+        variant: "success",
+      });
+    }
+  }, [gradeChangeCount]);
+
+  useEffect(() => {
+    if (adeudoAlertCount > 0) {
+      setToast({
+        message: "Tienes un adeudo nuevo pendiente.",
+        variant: "error",
+      });
+    }
+  }, [adeudoAlertCount]);
 
   function handlePullToRefresh() {
     if (hasCredentials) return refresh();
@@ -115,10 +153,11 @@ function AuthenticatedShell() {
         )}
       </AppShell>
 
-      {reminderVisible ? (
+      {toast ? (
         <Toast
-          message="Se recomienda volver a iniciar sesión para actualizar tus datos."
-          onClose={() => setReminderVisible(false)}
+          message={toast.message}
+          variant={toast.variant}
+          onClose={() => setToast(null)}
         />
       ) : null}
 

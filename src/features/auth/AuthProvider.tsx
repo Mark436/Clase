@@ -32,6 +32,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [hasCredentials, setHasCredentials] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [unseenGradeChanges, setUnseenGradeChanges] = useState(false);
+  const [gradeChangeCount, setGradeChangeCount] = useState(0);
+  const [adeudoAlertCount, setAdeudoAlertCount] = useState(0);
   const [rememberedUsername, setRememberedUsername] = useState<string | null>(
     null,
   );
@@ -92,12 +94,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   // A fetch that reveals new or changed grades re-arms the conditional home
-  // for the next app start; the first fetch only sets the baseline.
-  const handlePersistResult = useCallback((result: { hasChanges: boolean }) => {
-    if (!result.hasChanges) return;
-    setUnseenGradeChanges(true);
-    void setSetting(SETTING_GRADES_SEEN, "false").catch(() => undefined);
-  }, []);
+  // for the next app start; the first fetch only sets the baseline. Event
+  // counters feed one-shot UI notifications (toasts) in the shell.
+  const handlePersistResult = useCallback(
+    (result: { hasChanges: boolean; newAdeudo: boolean }) => {
+      if (result.hasChanges) {
+        setUnseenGradeChanges(true);
+        setGradeChangeCount((count) => count + 1);
+        void setSetting(SETTING_GRADES_SEEN, "false").catch(() => undefined);
+      }
+      if (result.newAdeudo) {
+        setAdeudoAlertCount((count) => count + 1);
+      }
+    },
+    [],
+  );
 
   const login = useCallback(async (user: string, pass: string) => {
     setStatus("authenticating");
@@ -177,6 +188,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       hasCredentials,
       refreshing,
       unseenGradeChanges,
+      gradeChangeCount,
+      adeudoAlertCount,
       rememberedUsername,
       login,
       refresh,
@@ -191,6 +204,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       hasCredentials,
       refreshing,
       unseenGradeChanges,
+      gradeChangeCount,
+      adeudoAlertCount,
       rememberedUsername,
       login,
       refresh,
@@ -217,7 +232,7 @@ async function persistSession(
   alumno: Alumno,
   avisos: Aviso[],
   user: string,
-): Promise<{ hasChanges: boolean }> {
+): Promise<{ hasChanges: boolean; newAdeudo: boolean }> {
   let hasChanges = false;
   try {
     const tracking = await loadGradeTracking();
@@ -234,5 +249,8 @@ async function persistSession(
     console.warn("No se pudieron guardar los datos localmente.", error);
   }
   await notifyNewAdeudos(previousAlumno, alumno);
-  return { hasChanges };
+  // Same transition notifyNewAdeudos alerts on: no debt before, debt now.
+  const newAdeudo =
+    alumno.adeudos.tieneAdeudos && previousAlumno?.adeudos.tieneAdeudos !== true;
+  return { hasChanges, newAdeudo };
 }

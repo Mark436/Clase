@@ -19,6 +19,11 @@ export interface AuthContextValue {
   refreshing: boolean;
   unseenGradeChanges: boolean;
   markGradesSeen: () => void;
+  // Monotonic counters incremented only when a real fetch detects the event
+  // after mount; UI watches them to fire one-shot notifications. Starting at
+  // zero guarantees app startup and cache restores never trigger them.
+  gradeChangeCount: number;
+  adeudoAlertCount: number;
   logout: () => void;
 }
 

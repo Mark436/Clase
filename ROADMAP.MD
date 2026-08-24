@@ -238,6 +238,7 @@ Intentar actualizar
 - [ ] Crear error state.
 - [ ] Evaluar historial de calificaciones si la API lo permite.
 - [x] Detectar cambios entre consultas (materia nueva o calificación modificada) mediante seguimiento local (`TrackedGrade`, sin fechas).
+- [x] Aviso tipo toast (verde) cuando una actualización real detecta calificaciones nuevas o modificadas.
 - [x] Abrir Calificaciones como Home solo con cambios nuevos por ver y promedio del periodo ≠ 0.
 - [ ] Intercambiar posición, icono y etiqueta de navegación.
 - [x] No mostrar una pantalla vacía cuando todavía no existan calificaciones.
@@ -283,6 +284,7 @@ Intentar actualizar
 - [ ] Permitir acceder a detalles si es necesario.
 - [x] Ocultar completamente la alerta cuando no existan adeudos.
 - [x] Alerta local opcional al aparecer un adeudo nuevo (opt-in, solo transición sin→con adeudo).
+- [x] Aviso tipo toast in-app (rojo) en la misma transición sin→con adeudo, independiente del opt-in de notificaciones del sistema.
 - [ ] Evaluar posteriormente notificaciones push para adeudos (requiere backend con sesión/token; ver `docs/api.md`).
 
 ## 11. Actualización de datos
