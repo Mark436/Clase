@@ -5,7 +5,7 @@ import { Page } from "@/components/layout/Page";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { DevPanel } from "@/features/devtools/DevPanel";
-import { DEV_OWNER_CONTROL, UNLOCK_TAP_COUNT, isDevBuild } from "@/features/devtools/config";
+import { UNLOCK_TAP_COUNT, isDevBuild } from "@/features/devtools/config";
 import type { DevToolsController } from "@/features/devtools/useDevConfig";
 import type { Alumno } from "@/lib/api/client";
 
@@ -18,10 +18,7 @@ interface StudentPageProps {
 export function StudentPage({ alumno, onRequestRefresh, dev }: StudentPageProps) {
   const nameTapsRef = useRef(0);
 
-  const devEnabled =
-    dev !== undefined &&
-    (isDevBuild() ||
-      (dev.unlocked && alumno?.numeroControl === DEV_OWNER_CONTROL));
+  const devEnabled = dev !== undefined && (isDevBuild() || dev.unlocked);
 
   function handleNameTap() {
     if (!dev || devEnabled) return;

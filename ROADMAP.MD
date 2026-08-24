@@ -309,7 +309,7 @@ Intentar actualizar
 
 ## 13. Modo dev (herramientas de prueba)
 
-- [x] Panel en Alumno, solo para el dueño (`numeroControl` del API + 7 taps sobre el nombre; siempre visible en builds dev).
+- [x] Panel en Alumno activado con 7 taps sobre el nombre (siempre visible en builds dev). Sin chequeo de dueño: las credenciales del API son la única barrera real; el panel solo oculta UI.
 - [x] Reloj simulado (offset/datetime) que alimenta hora, día, clase en curso y progreso.
 - [x] Agregar/quitar materias del horario (solo presentación).
 - [x] Editar calificaciones simuladas por materia.
