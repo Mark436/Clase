@@ -27,8 +27,9 @@ and Student do not each call the API independently. Notices and debts are part o
 `AppData` and surface as alerts or inline content, not as separate top-level navigation
 tabs.
 
-Navigation picks the home screen once from loaded data: if grades exist, Grades is
-Home; otherwise Schedule is Home.
+Navigation picks the home screen once per launch: Grades opens first only
+when local grade tracking reports unseen changes and the period average is
+non-zero (`shouldOpenGradesFirst`); otherwise Schedule is Home.
 
 ## Code Map
 
@@ -50,8 +51,9 @@ decision of which feature is Home. Key modules: `App.tsx`, `navigation.tsx`.
 **Boundary:** Features are mounted here; `app/` coordinates them but does not
 implement schedule calculations, grade formatting, or login form details.
 
-**Invariant:** Home selection (`hasGrades()` → Grades or Schedule) is implemented
-once here (or in a single shared helper consumed here), not duplicated in feature pages.
+**Invariant:** Home selection (`shouldOpenGradesFirst(alumno, unseenGradeChanges)`
+→ Grades or Schedule) is implemented once here (or in a single shared helper
+consumed here), not duplicated in feature pages.
 
 ### `src/components/ui/`
 
@@ -103,10 +105,12 @@ the current day; the in-progress class stays visible with progress.
 
 ### `src/features/grades/`
 
-Grade summary and per-subject listing. Key concepts: empty state when no grades exist,
-loading/error/offline states. Helper (planned): `hasGrades`.
+Grade summary and per-subject listing. Key concepts: empty state when no grades
+exist, new/changed badges via local `TrackedGrade` records, loading/error/offline
+states. Helper: `shouldOpenGradesFirst`.
 
-When grades exist, this feature becomes the default Home screen.
+When there are unseen grade changes to review (and the period average is
+non-zero), this feature becomes the default Home screen.
 
 **Invariant:** Grades reads from shared `AppData`; it does not call `SithClient`
 directly.
@@ -135,7 +139,9 @@ IndexedDB persistence for the app cache and small settings. Three stores:
 
 - `app-data` — last valid academic snapshot (`CachedAppData`: `alumno`, `avisos`, `loadedAt`);
 - `grade-tracking` — per-subject `TrackedGrade` (`current` vs `previous`) so the grades feature can mark new or changed grades;
-- `settings` — non-sensitive preferences: remembered username and adeudo-alerts opt-in.
+- `settings` — non-sensitive preferences: remembered username, adeudo-alerts
+  opt-in, grades-seen flag, daily re-auth reminder date, and dev-tools
+  simulation config.
 
 The restore flow lives in `features/auth/AuthProvider.tsx`: cached data hydrates
 the session before any network activity, and a successful login overwrites the
@@ -218,7 +224,7 @@ No test runner is configured yet. When added, pure domain logic should be testab
 without React:
 
 - `getCurrentClass`, `getNextClass`, `getVisibleClasses`, `getClassProgress`
-- `hasGrades`, home-selection logic
+- `shouldOpenGradesFirst`, home-selection logic
 
 API integration and UI behavior should be tested separately from schedule math.
 

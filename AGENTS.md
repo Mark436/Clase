@@ -19,7 +19,7 @@ The app should feel like a personal mobile app, not an institutional admin porta
 
 ### Current status
 
-The repository is in early setup. The Vite + React + TypeScript scaffold exists under `src/`. Feature directories, PWA configuration, the `@` alias, and most product functionality described in `TODO.md` are not implemented yet. Follow the target architecture below when adding code.
+Core product functionality (auth, schedule, grades, student, persistence, pull-to-refresh) is implemented under `src/`; PWA configuration (`vite-plugin-pwa`, manifest, service worker) and several roadmap polish items are still pending — see [`ROADMAP.MD`](ROADMAP.MD). Follow the target architecture below when adding code.
 
 ---
 
@@ -262,12 +262,12 @@ Prevent concurrent refresh operations. Individual pages must not each implement 
 Implement this rule once; navigation consumes application state:
 
 ```text
-Has grades?
+Unseen grade changes AND period average ≠ 0?
   ├── yes → Grades is Home
   └── no  → Schedule is Home
 ```
 
-Do not duplicate this logic across components.
+The decision lives in `shouldOpenGradesFirst()` (`features/grades/utils.ts`), consumed once by `app/App.tsx`. Do not duplicate this logic across components.
 
 ### Loading and error states
 
@@ -366,7 +366,7 @@ Never put passwords, API secrets, private keys, or server credentials in fronten
 
 There is no test runner configured yet. When tests are added:
 
-- Pure business logic (for example, `getCurrentClass()`, `hasGrades()`) should be testable without rendering React.
+- Pure business logic (for example, `getCurrentClass()`, `shouldOpenGradesFirst()`) should be testable without rendering React.
 - Keep API integration tests separate from pure domain logic where practical.
 - Do not introduce a large testing architecture unless the project needs it.
 
