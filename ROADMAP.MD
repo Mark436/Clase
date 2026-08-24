@@ -4,10 +4,10 @@
 
 Especificación completa de estas fases en [`docs/plan.md`](docs/plan.md):
 
-- [ ] **Fase A** — Mostrar el salón (código junto a la hora) en las tarjetas de clase en lugar del grupo.
-- [ ] **Fase B** — Pull-to-refresh; sin credenciales en memoria abre el formulario de reingreso.
-- [ ] **Fase C** — Home condicional: Calificaciones abre primero solo con cambios nuevos por ver y promedio del periodo ≠ 0.
-- [ ] **Fase D** — Recordatorio diario (una vez al día) para volver a iniciar sesión, con toast.
+- [x] **Fase A** — Mostrar el salón (código junto a la hora) en las tarjetas de clase en lugar del grupo.
+- [x] **Fase B** — Pull-to-refresh; sin credenciales en memoria abre el formulario de reingreso.
+- [x] **Fase C** — Home condicional: Calificaciones abre primero solo con cambios nuevos por ver y promedio del periodo ≠ 0.
+- [x] **Fase D** — Recordatorio diario (una vez al día) para volver a iniciar sesión, con toast.
 
 ## 0. Base del proyecto
 
@@ -144,7 +144,7 @@ Intentar actualizar
 - [x] Persistir `loadedAt`.
 - [x] No persistir credenciales.
 - [x] Mostrar inmediatamente los últimos datos disponibles.
-- [ ] Intentar actualizar cuando corresponda (pendiente pull-to-refresh).
+- [x] Intentar actualizar cuando corresponda (pull-to-refresh).
 - [ ] Manejar aplicación offline.
 - [x] Mostrar claramente cuando los datos mostrados son antiguos.
 - [x] Invalidar datos locales cuando sea necesario (logout borra todo el almacenamiento).
@@ -288,7 +288,8 @@ Intentar actualizar
 ## 11. Actualización de datos
 
 - [ ] Definir política de actualización manual y automática.
-- [ ] La actualización manual será mediante un botón de refresco con indicador de carga.
+- [x] La actualización manual es mediante pull-to-refresh (gesto principal).
+- [x] Alternativa accesible no-gesto: acción "Actualizar" en la sección Alumno (el gesto no es el único camino).
 - [ ] La actualización automática se activará al abrir la app, al hacer login y cuando haya datos vencidos.
 - [ ] Definir la estrategia de invalidación de caché cuando cambien los datos.
 - [ ] Mostrar claramente el estado de última actualización.

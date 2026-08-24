@@ -86,16 +86,6 @@ function AuthenticatedShell() {
         }
         onPullToRefresh={handlePullToRefresh}
       >
-        {!hasCredentials ? (
-          <button
-            type="button"
-            onClick={() => setReAuthOpen(true)}
-            className="w-full bg-primary-container px-4 py-2.5 text-center text-sm font-medium text-on-primary-container transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary"
-          >
-            Datos guardados · toca para actualizar
-          </button>
-        ) : null}
-
         {alumno?.adeudos.tieneAdeudos ? <DebtBanner adeudos={alumno.adeudos} /> : null}
         <AdeudoAlertsCard alumno={alumno} />
 
@@ -104,7 +94,7 @@ function AuthenticatedShell() {
         ) : tab === "grades" ? (
           <GradesPage alumno={alumno} />
         ) : (
-          <StudentPage />
+          <StudentPage onRequestRefresh={handlePullToRefresh} />
         )}
       </AppShell>
 

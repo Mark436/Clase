@@ -5,12 +5,12 @@ Especificación acordada de las fases pendientes. El checklist global vive en
 para implementarlas. Cada fase se verifica con `pnpm lint` + `pnpm exec tsc -b`
 y se integra en su propio commit.
 
-## Estado al cerrar la sesión
+## Estado
 
-La fase A quedó **a medias y el proyecto no compila**: `features/schedule/types.ts`
-ya renombró el campo a `classroom`, pero `mapHorario.ts` sigue construyendo los
-meetings con `group:` y `ClassCard.tsx` aún muestra "Grupo …". Terminar la fase A
-es lo primero de la siguiente sesión.
+Las fases A–D están implementadas e integradas. Nota posterior: la barra
+"Datos guardados · toca para actualizar" se retiró por decisión del dueño;
+el refresh manual es pull-to-refresh y la alternativa accesible vive como
+acción "Actualizar" en la sección Alumno (ver ROADMAP §11).
 
 ## Fase A — Salón en las tarjetas de clase
 

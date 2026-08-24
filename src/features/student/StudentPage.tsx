@@ -1,8 +1,13 @@
+import { Button } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
 import { Page } from "@/components/layout/Page";
 import { PageHeader } from "@/components/layout/PageHeader";
-import { Card } from "@/components/ui/Card";
 
-export function StudentPage() {
+interface StudentPageProps {
+  onRequestRefresh: () => void;
+}
+
+export function StudentPage({ onRequestRefresh }: StudentPageProps) {
   return (
     <>
       <PageHeader title="Alumno" subtitle="Tu información académica." />
@@ -12,6 +17,24 @@ export function StudentPage() {
           <p className="max-w-xs text-sm text-on-surface-variant">
             Aquí verás tus datos, carrera y avance de créditos.
           </p>
+        </Card>
+
+        <Card className="flex items-center justify-between gap-3">
+          <div className="min-w-0">
+            <p className="text-sm font-medium text-on-surface">
+              Actualizar datos
+            </p>
+            <p className="mt-0.5 text-xs text-on-surface-variant">
+              También puedes deslizar hacia abajo en cualquier pantalla.
+            </p>
+          </div>
+          <Button
+            variant="secondary"
+            onClick={onRequestRefresh}
+            className="shrink-0"
+          >
+            Actualizar
+          </Button>
         </Card>
       </Page>
     </>
