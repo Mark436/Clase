@@ -35,6 +35,28 @@ export interface CustomSubject {
   slots: CustomSubjectSlot[];
 }
 
+/** Text fields a user may override on a fetched subject. */
+export type EditedField = "subjectName" | "professor" | "classroom";
+
+const EDITED_FIELDS: readonly EditedField[] = [
+  "subjectName",
+  "professor",
+  "classroom",
+];
+
+/**
+ * The school changed one of the subject's text fields while the user kept a
+ * manual override on it. Persisted until the user picks which value wins.
+ */
+export interface PendingEditConflict {
+  clave: string;
+  field: EditedField;
+  /** The value the user saved manually. */
+  savedValue: string;
+  /** The fresh value coming from the API. */
+  newValue: string;
+}
+
 export interface ScheduleEdits {
   // Subject-wide overrides keyed by clave: they apply to every occurrence
   // of the subject across the week.
@@ -45,6 +67,10 @@ export interface ScheduleEdits {
   // Conflict display preferences: groupKey -> preferred clave. Applies to
   // every weekday where the same conflict repeats.
   conflictOverrides: Record<string, string>;
+  // Last raw values seen per `${clave}|${field}`; lets drift detection tell
+  // "the school changed this" apart from "the user edited this".
+  fieldSnapshots: Record<string, string>;
+  pendingConflicts: PendingEditConflict[];
 }
 
 export const EMPTY_SCHEDULE_EDITS: ScheduleEdits = {
@@ -52,6 +78,8 @@ export const EMPTY_SCHEDULE_EDITS: ScheduleEdits = {
   timeEdits: {},
   customSubjects: [],
   conflictOverrides: {},
+  fieldSnapshots: {},
+  pendingConflicts: [],
 };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -133,6 +161,30 @@ function parseCustomSubject(value: unknown): CustomSubject | null {
   };
 }
 
+function parsePendingConflict(value: unknown): PendingEditConflict | null {
+  if (!isRecord(value)) return null;
+  if (typeof value.clave !== "string" || value.clave === "") return null;
+  if (
+    typeof value.field !== "string" ||
+    !EDITED_FIELDS.includes(value.field as EditedField)
+  ) {
+    return null;
+  }
+  if (
+    typeof value.savedValue !== "string" ||
+    typeof value.newValue !== "string"
+  ) {
+    return null;
+  }
+
+  return {
+    clave: value.clave,
+    field: value.field as EditedField,
+    savedValue: value.savedValue,
+    newValue: value.newValue,
+  };
+}
+
 export function parseScheduleEdits(raw: string | null): ScheduleEdits {
   if (!raw) return EMPTY_SCHEDULE_EDITS;
 
@@ -154,6 +206,15 @@ export function parseScheduleEdits(raw: string | null): ScheduleEdits {
         parsed.conflictOverrides,
         (value): string | null => (typeof value === "string" ? value : null),
       ),
+      fieldSnapshots: parseRecord(
+        parsed.fieldSnapshots,
+        (value): string | null => (typeof value === "string" ? value : null),
+      ),
+      pendingConflicts: Array.isArray(parsed.pendingConflicts)
+        ? parsed.pendingConflicts
+            .map(parsePendingConflict)
+            .filter((conflict): conflict is PendingEditConflict => conflict !== null)
+        : [],
     };
   } catch {
     return EMPTY_SCHEDULE_EDITS;

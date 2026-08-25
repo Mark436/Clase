@@ -78,4 +78,32 @@ describe("parseScheduleEdits", () => {
 
     expect(parsed.customSubjects).toHaveLength(0);
   });
+
+  it("parses drift snapshots and pending conflicts, dropping invalid rows", () => {
+    const parsed = parseScheduleEdits(
+      JSON.stringify({
+        fieldSnapshots: { "MAT|classroom": "A-101", bad: 42 },
+        pendingConflicts: [
+          {
+            clave: "MAT",
+            field: "classroom",
+            savedValue: "Mi salón",
+            newValue: "B-202",
+          },
+          { clave: "FIS", field: "horario", savedValue: "a", newValue: "b" },
+          { clave: "", field: "professor", savedValue: "a", newValue: "b" },
+        ],
+      }),
+    );
+
+    expect(parsed.fieldSnapshots).toEqual({ "MAT|classroom": "A-101" });
+    expect(parsed.pendingConflicts).toEqual([
+      {
+        clave: "MAT",
+        field: "classroom",
+        savedValue: "Mi salón",
+        newValue: "B-202",
+      },
+    ]);
+  });
 });
