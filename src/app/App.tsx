@@ -12,7 +12,7 @@ import { useAuth } from "@/features/auth/auth-context";
 import { AuthProvider } from "@/features/auth/AuthProvider";
 import { LoginPage } from "@/features/auth/LoginPage";
 import { ReAuthSheet } from "@/features/auth/components/ReAuthSheet";
-import { shouldPromptReAuth, toDateKey } from "@/features/auth/utils";
+import { toDateKey } from "@/features/auth/utils";
 import { GradesPage } from "@/features/grades/GradesPage";
 import { shouldOpenGradesFirst } from "@/features/grades/utils";
 import { SchedulePage } from "@/features/schedule/SchedulePage";
@@ -22,10 +22,22 @@ import { StudentPage } from "@/features/student/StudentPage";
 import {
   getSetting,
   setSetting,
+  SETTING_LAST_LOGIN_AT,
   SETTING_LAST_REAUTH_PROMPT_DATE,
 } from "@/lib/storage/settingsStore";
+import {
+  CAREER_PROGRESS_TOAST_PREFIX,
+  GRADE_CHANGES_TOAST,
+  NEW_ADEUDO_TOAST,
+  REFRESH_NUDGE_TOAST,
+} from "@/lib/toastMessages";
+import { formatProgressDelta } from "@/lib/notifications/progress";
 import { getHomeTab, NAV_ITEMS } from "./navigation";
 import type { TabId } from "./navigation";
+
+// A session older than this gets one gentle reminder per day suggesting a
+// pull-to-refresh; the re-auth sheet itself only appears on demand.
+const STALE_SESSION_NUDGE_MS = 23 * 60 * 60 * 1000;
 
 interface ActiveToast {
   id: number;
@@ -41,6 +53,9 @@ function AuthenticatedShell() {
     unseenGradeChanges,
     gradeChangeCount,
     adeudoAlertCount,
+    lastProgressGain,
+    progressAlertCount,
+    rememberedUsername,
   } = useAuth();
   const dev = useDevConfig();
   const [tab, setTab] = useState<TabId>(() =>
@@ -76,62 +91,83 @@ function AuthenticatedShell() {
     setToast({ id: toastIdRef.current, message, variant });
   }, []);
 
-  // Daily re-auth reminder: with a session restored from cache and no
-  // credentials in memory, suggest re-entering the password once per day.
-  // The date is saved when the prompt fires, so closing the sheet without
-  // logging in still consumes the day.
+  // Stale-data nudge: once the session is ~23h old, remind with a plain
+  // toast suggesting a pull-to-refresh. The re-auth sheet is never pushed
+  // automatically; it stays reachable through pull-to-refresh without
+  // credentials. Consumption is once per calendar day.
   useEffect(() => {
-    if (hasCredentials || !alumno) return;
+    if (!alumno) return;
 
     let cancelled = false;
 
     void (async () => {
-      let lastPromptDate: string | null = null;
+      let lastLoginAt: string | null = null;
+      let lastNudgeDate: string | null = null;
       try {
-        lastPromptDate = await getSetting(SETTING_LAST_REAUTH_PROMPT_DATE);
+        lastLoginAt = await getSetting(SETTING_LAST_LOGIN_AT);
       } catch {
-        lastPromptDate = null;
+        lastLoginAt = null;
+      }
+      try {
+        lastNudgeDate = await getSetting(SETTING_LAST_REAUTH_PROMPT_DATE);
+      } catch {
+        lastNudgeDate = null;
       }
 
       const today = new Date();
-      if (!shouldPromptReAuth(lastPromptDate, today)) return;
+      if (lastNudgeDate === toDateKey(today)) return;
+
+      const startedAtMs =
+        lastLoginAt === null ? Number.NaN : Date.parse(lastLoginAt);
+      // Unknown start (first run after this change): nudge once; from then on
+      // lastLoginAt exists and the 23h rule governs.
+      const stale = Number.isFinite(startedAtMs)
+        ? today.getTime() - startedAtMs >= STALE_SESSION_NUDGE_MS
+        : true;
+      if (!stale) return;
 
       try {
-        await setSetting(
-          SETTING_LAST_REAUTH_PROMPT_DATE,
-          toDateKey(today),
-        );
+        await setSetting(SETTING_LAST_REAUTH_PROMPT_DATE, toDateKey(today));
       } catch {
-        // A storage failure should not block the prompt itself.
+        // A storage failure should not block the nudge itself.
       }
 
       if (cancelled) return;
-      setReAuthOpen(true);
-      showToast(
-        "Se recomienda volver a iniciar sesión para actualizar tus datos.",
-        "neutral",
-      );
+      showToast(REFRESH_NUDGE_TOAST, "neutral");
     })();
 
     return () => {
       cancelled = true;
     };
-  }, [alumno, hasCredentials, showToast]);
+  }, [alumno, showToast]);
 
   // One-shot notifications from real fetch events. Counters start at zero and
   // only grow when a fetch detects the event after mount, so app startup,
   // cache restores, and baselines never trigger a toast.
   useEffect(() => {
     if (gradeChangeCount > 0) {
-      showToast("Tienes calificaciones nuevas o actualizadas.", "success");
+      showToast(GRADE_CHANGES_TOAST, "success");
     }
   }, [gradeChangeCount, showToast]);
 
   useEffect(() => {
     if (adeudoAlertCount > 0) {
-      showToast("Tienes un adeudo nuevo pendiente.", "error");
+      showToast(NEW_ADEUDO_TOAST, "error");
     }
   }, [adeudoAlertCount, showToast]);
+
+  useEffect(() => {
+    if (
+      progressAlertCount > 0 &&
+      lastProgressGain !== null &&
+      lastProgressGain > 0
+    ) {
+      showToast(
+        `${CAREER_PROGRESS_TOAST_PREFIX} ${formatProgressDelta(lastProgressGain)} en tu carrera.`,
+        "success",
+      );
+    }
+  }, [progressAlertCount, lastProgressGain, showToast]);
 
   function handlePullToRefresh() {
     if (hasCredentials) return refresh();
@@ -159,6 +195,8 @@ function AuthenticatedShell() {
           <SchedulePage
             alumno={effectiveAlumno}
             longPressDurationMs={longPressDurationMs}
+            simulated={timingsActive}
+            onShowToast={showToast}
           />
         ) : tab === "grades" ? (
           <GradesPage alumno={effectiveAlumno} />
@@ -184,6 +222,7 @@ function AuthenticatedShell() {
 
       <ReAuthSheet
         open={reAuthOpen}
+        initialUser={rememberedUsername ?? ""}
         onClose={() => setReAuthOpen(false)}
         onSuccess={() => setReAuthOpen(false)}
       />
