@@ -1,10 +1,11 @@
 import type { ReactNode } from "react";
-import type { ClassMeeting } from "../types";
+import type { ResolvedMeeting } from "../types";
 import {
   formatMinutes,
   getClassProgress,
   getCurrentClass,
   getNextClass,
+  getNextClassNote,
   getVisibleClasses,
   minutesOf,
 } from "../utils";
@@ -13,15 +14,21 @@ import type { ClassCardVariant } from "./ClassCard";
 import { CurrentTimeIndicator } from "./CurrentTimeIndicator";
 
 interface ScheduleDayViewProps {
-  dayMeetings: ClassMeeting[];
+  dayMeetings: ResolvedMeeting[];
   now: Date;
   isToday: boolean;
+  longPressDurationMs?: number;
+  onEditRequest?: (meeting: ResolvedMeeting) => void;
+  onSwapToggle?: (meeting: ResolvedMeeting) => void;
 }
 
 export function ScheduleDayView({
   dayMeetings,
   now,
   isToday,
+  longPressDurationMs,
+  onEditRequest,
+  onSwapToggle,
 }: ScheduleDayViewProps) {
   if (dayMeetings.length === 0) {
     return <EmptyState message="Sin clases este día." />;
@@ -44,7 +51,7 @@ export function ScheduleDayView({
     if (isToday && !indicatorInserted && meeting.endMinutes > minutesNow) {
       items.push(
         <CurrentTimeIndicator
-          key="current-time"
+          key={`current-time-${meeting.clave}`}
           timeLabel={formatMinutes(minutesNow)}
         />,
       );
@@ -62,11 +69,7 @@ export function ScheduleDayView({
     } else if (!nextAssigned && meeting === next) {
       variant = "next";
       nextAssigned = true;
-      const startsIn = meeting.startMinutes - minutesNow;
-      note =
-        startsIn > 0
-          ? `${Math.floor(startsIn / 60)} ${Math.floor(startsIn / 60) === 1 ? "hr" : "hrs"} y ${startsIn % 60} min`
-          : `Empieza a las ${formatMinutes(meeting.startMinutes)}`;
+      note = getNextClassNote(meeting, minutesNow);
     } else if (meeting.endMinutes <= minutesNow && isToday) {
       variant = "past";
     } else {
@@ -76,11 +79,18 @@ export function ScheduleDayView({
 
     items.push(
       <ClassCard
-        key={`${meeting.subjectName}-${meeting.startMinutes}`}
+        key={`${meeting.clave}-${meeting.weekday}-${meeting.startMinutes}`}
         meeting={meeting}
         variant={variant}
         progressPercent={progressPercent}
         note={note}
+        longPressDurationMs={longPressDurationMs}
+        onEditRequest={
+          onEditRequest ? () => onEditRequest(meeting) : undefined
+        }
+        onSwapRequest={
+          onSwapToggle ? () => onSwapToggle(meeting) : undefined
+        }
       />,
     );
   }

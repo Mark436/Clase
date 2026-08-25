@@ -1,14 +1,21 @@
+import { useLongPress } from "../hooks/useLongPress";
 import { ProgressBar } from "@/components/ui/ProgressBar";
-import type { ClassMeeting } from "../types";
+import { PencilIcon } from "@/components/ui/icons";
+import type { ResolvedMeeting } from "../types";
 import { formatMinutes } from "../utils";
 
 export type ClassCardVariant = "current" | "next" | "upcoming" | "past";
 
 interface ClassCardProps {
-  meeting: ClassMeeting;
+  meeting: ResolvedMeeting;
   variant: ClassCardVariant;
   progressPercent?: number;
   note?: string;
+  /** Hold-to-edit gesture; undefined disables it. */
+  longPressDurationMs?: number;
+  onEditRequest?: () => void;
+  /** Cycles the conflict swap: day → week → default. */
+  onSwapRequest?: () => void;
 }
 
 const CONTAINER_CLASSES: Record<ClassCardVariant, string> = {
@@ -18,23 +25,43 @@ const CONTAINER_CLASSES: Record<ClassCardVariant, string> = {
   past: "bg-surface ring-outline-variant opacity-70",
 };
 
+function conflictLabel(
+  conflicts: NonNullable<ResolvedMeeting["conflicts"]>,
+): string {
+  return conflicts
+    .map((conflict) =>
+      conflict.portionLabel === ""
+        ? conflict.subjectName
+        : `${conflict.portionLabel} ${conflict.subjectName}`,
+    )
+    .join(" · ");
+}
+
 export function ClassCard({
   meeting,
   variant,
   progressPercent,
   note,
+  longPressDurationMs,
+  onEditRequest,
+  onSwapRequest,
 }: ClassCardProps) {
   const isCurrent = variant === "current";
+  const longPress = useLongPress({
+    durationMs: longPressDurationMs ?? 0,
+    onLongPress: () => onEditRequest?.(),
+  });
 
   return (
     <article
-      className={`rounded-2xl p-4 shadow-sm ring-1 ${
+      className={`relative rounded-2xl p-4 shadow-sm ring-1 select-none ${
         CONTAINER_CLASSES[variant]
       }`}
+      {...(onEditRequest ? longPress : {})}
     >
-      <div className="flex items-baseline justify-between gap-3">
+      <div className="flex items-center justify-between gap-3">
         <h3
-          className={`font-semibold ${
+          className={`min-w-0 font-semibold ${
             isCurrent ? "text-on-primary-container" : "text-on-surface"
           }`}
         >
@@ -48,6 +75,20 @@ export function ClassCard({
           {formatMinutes(meeting.startMinutes)} –{" "}
           {formatMinutes(meeting.endMinutes)}
         </span>
+        {onEditRequest ? (
+          <button
+            type="button"
+            onClick={onEditRequest}
+            aria-label={`Editar ${meeting.subjectName}`}
+            className={`-my-1 shrink-0 rounded-lg p-1.5 transition-colors hover:bg-primary-container/50 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary ${
+              isCurrent
+                ? "text-on-primary-container/80 hover:text-on-primary-container"
+                : "text-on-surface-variant hover:text-on-surface"
+            }`}
+          >
+            <PencilIcon size={16} />
+          </button>
+        ) : null}
       </div>
 
       <div
@@ -80,6 +121,22 @@ export function ClassCard({
           >
             {note}
           </p>
+        ) : null}
+        {meeting.conflicts?.length && onSwapRequest ? (
+          <button
+            type="button"
+            onClick={onSwapRequest}
+            aria-label={`Ver ${meeting.conflicts
+              .map((conflict) => conflict.subjectName)
+              .join(" o ")} en lugar de ${meeting.subjectName}`}
+            title="Toca para alternar el orden: una vez solo hoy, dos veces toda la semana"
+            className={`ml-auto rounded-lg px-1.5 py-0.5 text-xs font-semibold underline-offset-2 transition-colors hover:underline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary ${
+              isCurrent ? "text-on-primary-container/90" : "text-error"
+            }`}
+          >
+            {meeting.swapped ? "↔ " : ""}
+            {conflictLabel(meeting.conflicts)}
+          </button>
         ) : null}
       </div>
     </article>

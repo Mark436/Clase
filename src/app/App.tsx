@@ -1,10 +1,12 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AppShell } from "@/components/layout/AppShell";
 import { BottomNavigation } from "@/components/layout/BottomNavigation";
 import { Spinner } from "@/components/ui/Spinner";
 import { Toast } from "@/components/ui/Toast";
 import type { ToastVariant } from "@/components/ui/toastVariants";
+import { DEFAULT_TOAST_DURATION_MS } from "@/components/ui/toastVariants";
 import { applyDevOverrides } from "@/features/devtools/applyDevOverrides";
+import { DEFAULT_LONG_PRESS_MS } from "@/features/devtools/types";
 import { useDevConfig } from "@/features/devtools/useDevConfig";
 import { useAuth } from "@/features/auth/auth-context";
 import { AuthProvider } from "@/features/auth/AuthProvider";
@@ -26,6 +28,7 @@ import { getHomeTab, NAV_ITEMS } from "./navigation";
 import type { TabId } from "./navigation";
 
 interface ActiveToast {
+  id: number;
   message: string;
   variant: ToastVariant;
 }
@@ -45,6 +48,7 @@ function AuthenticatedShell() {
   );
   const [reAuthOpen, setReAuthOpen] = useState(false);
   const [toast, setToast] = useState<ActiveToast | null>(null);
+  const toastIdRef = useRef(0);
 
   // Dev simulation is presentation-only: the virtual alumno feeds every
   // screen, while fetches and persistence keep using the real data. Overrides
@@ -57,8 +61,19 @@ function AuthenticatedShell() {
     [alumno, dev.loaded, dev.enabled, dev.config],
   );
 
+  // UX timings follow the same convention as every other override: they apply
+  // only while the panel is enabled; otherwise the built-in defaults rule.
+  const timingsActive = dev.loaded && dev.enabled;
+  const toastDurationMs = timingsActive
+    ? dev.config.toastDurationMs
+    : DEFAULT_TOAST_DURATION_MS;
+  const longPressDurationMs = timingsActive
+    ? dev.config.longPressDurationMs
+    : DEFAULT_LONG_PRESS_MS;
+
   const showToast = useCallback((message: string, variant: ToastVariant) => {
-    setToast({ message, variant });
+    toastIdRef.current += 1;
+    setToast({ id: toastIdRef.current, message, variant });
   }, []);
 
   // Daily re-auth reminder: with a session restored from cache and no
@@ -92,38 +107,31 @@ function AuthenticatedShell() {
 
       if (cancelled) return;
       setReAuthOpen(true);
-      setToast({
-        message:
-          "Se recomienda volver a iniciar sesión para actualizar tus datos.",
-        variant: "neutral",
-      });
+      showToast(
+        "Se recomienda volver a iniciar sesión para actualizar tus datos.",
+        "neutral",
+      );
     })();
 
     return () => {
       cancelled = true;
     };
-  }, [alumno, hasCredentials]);
+  }, [alumno, hasCredentials, showToast]);
 
   // One-shot notifications from real fetch events. Counters start at zero and
   // only grow when a fetch detects the event after mount, so app startup,
   // cache restores, and baselines never trigger a toast.
   useEffect(() => {
     if (gradeChangeCount > 0) {
-      setToast({
-        message: "Tienes calificaciones nuevas o actualizadas.",
-        variant: "success",
-      });
+      showToast("Tienes calificaciones nuevas o actualizadas.", "success");
     }
-  }, [gradeChangeCount]);
+  }, [gradeChangeCount, showToast]);
 
   useEffect(() => {
     if (adeudoAlertCount > 0) {
-      setToast({
-        message: "Tienes un adeudo nuevo pendiente.",
-        variant: "error",
-      });
+      showToast("Tienes un adeudo nuevo pendiente.", "error");
     }
-  }, [adeudoAlertCount]);
+  }, [adeudoAlertCount, showToast]);
 
   function handlePullToRefresh() {
     if (hasCredentials) return refresh();
@@ -148,7 +156,10 @@ function AuthenticatedShell() {
         <AdeudoAlertsCard alumno={effectiveAlumno} />
 
         {tab === "schedule" ? (
-          <SchedulePage alumno={effectiveAlumno} />
+          <SchedulePage
+            alumno={effectiveAlumno}
+            longPressDurationMs={longPressDurationMs}
+          />
         ) : tab === "grades" ? (
           <GradesPage alumno={effectiveAlumno} />
         ) : (
@@ -163,8 +174,10 @@ function AuthenticatedShell() {
 
       {toast ? (
         <Toast
+          key={toast.id}
           message={toast.message}
           variant={toast.variant}
+          durationMs={toastDurationMs}
           onClose={() => setToast(null)}
         />
       ) : null}
