@@ -1,4 +1,4 @@
-import type { ClassMeeting, WeekSchedule } from "./types";
+import type { ClassMeeting } from "./types";
 
 export interface ClassProgress {
   percent: number;
@@ -24,42 +24,42 @@ export function minutesOf(date: Date): number {
   return date.getHours() * 60 + date.getMinutes();
 }
 
-export function getScheduleForDay(
-  meetings: WeekSchedule,
+export function getScheduleForDay<T extends ClassMeeting>(
+  meetings: T[],
   date: Date,
-): ClassMeeting[] {
+): T[] {
   return meetings
     .filter((meeting) => meeting.weekday === date.getDay())
     .sort((a, b) => a.startMinutes - b.startMinutes);
 }
 
-export function getCurrentClass(
-  dayMeetings: ClassMeeting[],
+export function getCurrentClass<T extends ClassMeeting>(
+  dayMeetings: T[],
   now: Date,
-): ClassMeeting | null {
+): T | null {
   const minutes = minutesOf(now);
 
   return (
     dayMeetings.find(
-      (meeting) => minutes >= meeting.startMinutes && minutes < meeting.endMinutes,
+      (meeting) => minutes > meeting.startMinutes && minutes < meeting.endMinutes,
     ) ?? null
   );
 }
 
-export function getNextClass(
-  dayMeetings: ClassMeeting[],
+export function getNextClass<T extends ClassMeeting>(
+  dayMeetings: T[],
   now: Date,
-): ClassMeeting | null {
+): T | null {
   const minutes = minutesOf(now);
 
-  return dayMeetings.find((meeting) => meeting.startMinutes > minutes) ?? null;
+  return dayMeetings.find((meeting) => meeting.startMinutes >= minutes) ?? null;
 }
 
-export function getVisibleClasses(
-  dayMeetings: ClassMeeting[],
+export function getVisibleClasses<T extends ClassMeeting>(
+  dayMeetings: T[],
   now: Date,
   isToday: boolean,
-): ClassMeeting[] {
+): T[] {
   if (!isToday) {
     return dayMeetings;
   }
@@ -87,6 +87,49 @@ export function formatMinutes(minutes: number): string {
   const rest = minutes % 60;
 
   return `${String(hours).padStart(2, "0")}:${String(rest).padStart(2, "0")}`;
+}
+
+// Inverse of formatMinutes for "HH:MM" inputs; null when out of range.
+export function parseMinutes(value: string): number | null {
+  const match = /^(\d{1,2}):(\d{2})$/.exec(value.trim());
+  if (match === null) return null;
+
+  const hours = Number(match[1]);
+  const minutes = Number(match[2]);
+  if (hours > 23 || minutes > 59) return null;
+
+  return hours * 60 + minutes;
+}
+
+// Compact countdown for positive minute deltas only: zero units are omitted
+// and units join with " y " ("1 hr", "20 min", "1 hr y 20 min"). Values <= 0
+// are the caller's responsibility ("Empieza pronto" at zero).
+export function formatRelativeTime(startsInMinutes: number): string {
+  if (startsInMinutes <= 0) return "";
+
+  const hours = Math.floor(startsInMinutes / 60);
+  const minutes = startsInMinutes % 60;
+  const parts: string[] = [];
+
+  if (hours > 0) parts.push(`${hours} hr`);
+  if (minutes > 0) parts.push(`${minutes} min`);
+
+  return parts.join(" y ");
+}
+
+// Note shown on the next-class card. Zero means the class reaches its start
+// minute right now; negative never happens with getNextClass but falls back
+// to the scheduled time instead of showing a wrong countdown.
+export function getNextClassNote(
+  meeting: ClassMeeting,
+  minutesNow: number,
+): string {
+  const startsIn = meeting.startMinutes - minutesNow;
+
+  if (startsIn === 0) return "Empieza pronto";
+  if (startsIn > 0) return formatRelativeTime(startsIn);
+
+  return `Empieza a las ${formatMinutes(meeting.startMinutes)}`;
 }
 
 function clamp(value: number, min: number, max: number): number {
