@@ -2,11 +2,18 @@ import { CredentialsForm } from "./CredentialsForm";
 
 interface ReAuthSheetProps {
   open: boolean;
+  /** Remembered control number to prefill the form. */
+  initialUser?: string;
   onClose: () => void;
   onSuccess?: () => void;
 }
 
-export function ReAuthSheet({ open, onClose, onSuccess }: ReAuthSheetProps) {
+export function ReAuthSheet({
+  open,
+  initialUser = "",
+  onClose,
+  onSuccess,
+}: ReAuthSheetProps) {
   if (!open) return null;
 
   return (
@@ -33,6 +40,7 @@ export function ReAuthSheet({ open, onClose, onSuccess }: ReAuthSheetProps) {
         </p>
         <CredentialsForm
           submitLabel="Actualizar datos"
+          initialUser={initialUser}
           autoFocusPassword
           onSuccess={onSuccess}
         />

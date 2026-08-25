@@ -31,13 +31,13 @@ export function CredentialsForm({
   autoFocusPassword = false,
   onSuccess,
 }: CredentialsFormProps) {
-  const { status, errorKind, login } = useAuth();
+  const { status, errorKind, login, pendingAuth } = useAuth();
   const [user, setUser] = useState(initialUser);
   const [pass, setPass] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
 
-  const isLoading = status === "authenticating";
+  const isLoading = status === "authenticating" || pendingAuth;
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();

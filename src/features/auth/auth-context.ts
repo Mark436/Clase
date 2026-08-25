@@ -9,6 +9,9 @@ export type AuthStatus =
 
 export interface AuthContextValue {
   status: AuthStatus;
+  /** A login request is in flight; true even while resuming an
+   * authenticated session (re-auth), where `status` stays untouched. */
+  pendingAuth: boolean;
   alumno: Alumno | null;
   avisos: Aviso[];
   errorKind: ApiErrorKind | null;
@@ -24,6 +27,9 @@ export interface AuthContextValue {
   // zero guarantees app startup and cache restores never trigger them.
   gradeChangeCount: number;
   adeudoAlertCount: number;
+  /** Career progress percentage-point gain of the latest real fetch. */
+  lastProgressGain: number | null;
+  progressAlertCount: number;
   logout: () => void;
 }
 
