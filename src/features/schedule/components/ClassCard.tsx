@@ -1,5 +1,6 @@
 import { useLongPress } from "../hooks/useLongPress";
 import { ProgressBar } from "@/components/ui/ProgressBar";
+import { Badge } from "@/components/ui/Badge";
 import { PencilIcon } from "@/components/ui/icons";
 import type { ResolvedMeeting } from "../types";
 import { formatMinutes } from "../utils";
@@ -19,8 +20,8 @@ interface ClassCardProps {
 }
 
 const CONTAINER_CLASSES: Record<ClassCardVariant, string> = {
-  current: "bg-primary-container ring-primary",
-  next: "bg-surface ring-outline-variant",
+  current: "bg-primary text-on-primary ring-primary elevated",
+  next: "bg-surface ring-primary/35 elevated",
   upcoming: "bg-surface ring-outline-variant",
   past: "bg-surface ring-outline-variant opacity-70",
 };
@@ -61,15 +62,15 @@ export function ClassCard({
     >
       <div className="flex items-center justify-between gap-3">
         <h3
-          className={`min-w-0 font-semibold ${
-            isCurrent ? "text-on-primary-container" : "text-on-surface"
+          className={`min-w-0 font-display font-bold ${
+            isCurrent ? "text-on-primary" : "text-on-surface"
           }`}
         >
           {meeting.subjectName}
         </h3>
         <span
           className={`shrink-0 text-sm tabular-nums ${
-            isCurrent ? "text-on-primary-container/80" : "text-on-surface-variant"
+            isCurrent ? "text-on-primary/85" : "text-on-surface-variant"
           }`}
         >
           {formatMinutes(meeting.startMinutes)} –{" "}
@@ -80,9 +81,9 @@ export function ClassCard({
             type="button"
             onClick={onEditRequest}
             aria-label={`Editar ${meeting.subjectName}`}
-            className={`-my-1 shrink-0 rounded-lg p-1.5 transition-colors hover:bg-primary-container/50 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary ${
+            className={`-my-1 shrink-0 rounded-lg p-1.5 transition-colors hover:bg-primary-container/50 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-white ${
               isCurrent
-                ? "text-on-primary-container/80 hover:text-on-primary-container"
+                ? "text-on-primary/80 hover:text-on-primary"
                 : "text-on-surface-variant hover:text-on-surface"
             }`}
           >
@@ -93,7 +94,7 @@ export function ClassCard({
 
       <div
         className={`mt-1 flex flex-col gap-0.5 text-sm ${
-          isCurrent ? "text-on-primary-container/80" : "text-on-surface-variant"
+          isCurrent ? "text-on-primary/85" : "text-on-surface-variant"
         }`}
       >
         {meeting.classroom ? <p>Salón {meeting.classroom}</p> : null}
@@ -110,13 +111,13 @@ export function ClassCard({
 
       <div className="mt-2 flex items-center gap-2">
         {variant === "current" ? (
-          <Badge>En curso</Badge>
+          <Badge className="bg-white/20 text-on-primary">En curso</Badge>
         ) : null}
-        {variant === "next" ? <Badge>Siguiente</Badge> : null}
+        {variant === "next" ? <Badge variant="primary">Siguiente</Badge> : null}
         {note ? (
           <p
             className={`text-xs font-medium ${
-              isCurrent ? "text-on-primary-container/80" : "text-primary"
+              isCurrent ? "text-on-primary/90" : "text-primary-strong"
             }`}
           >
             {note}
@@ -130,8 +131,8 @@ export function ClassCard({
               .map((conflict) => conflict.subjectName)
               .join(" o ")} en lugar de ${meeting.subjectName}`}
             title="Toca para alternar el orden: una vez solo hoy, dos veces toda la semana"
-            className={`ml-auto rounded-lg px-1.5 py-0.5 text-xs font-semibold underline-offset-2 transition-colors hover:underline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary ${
-              isCurrent ? "text-on-primary-container/90" : "text-error"
+            className={`ml-auto rounded-lg px-1.5 py-0.5 text-xs font-semibold underline-offset-2 transition-colors hover:underline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-white ${
+              isCurrent ? "text-on-primary/90" : "text-error"
             }`}
           >
             {meeting.swapped ? "↔ " : ""}
@@ -140,13 +141,5 @@ export function ClassCard({
         ) : null}
       </div>
     </article>
-  );
-}
-
-function Badge({ children }: { children: string }) {
-  return (
-    <span className="rounded-full bg-primary px-2 py-0.5 text-xs font-semibold text-on-primary">
-      {children}
-    </span>
   );
 }

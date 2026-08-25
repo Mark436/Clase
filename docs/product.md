@@ -394,7 +394,9 @@ When there is no outstanding balance, the application stays silent.
 
 Local alerts fire only while the application runs or checks data. Silent background push would require server-side credential handling and remains out of scope pending backend token support (see `docs/api.md`).
 
-The application also surfaces short in-app messages (toasts) when a data refresh detects a relevant event: new or changed grades (positive styling) and a newly appearing outstanding balance (alert styling). These in-app messages are informational, require no permission, and are independent of the opt-in for platform notifications.
+The application also surfaces short in-app messages when a data refresh detects a relevant event: new or changed grades (including which subject and grade changed), a newly appearing outstanding balance, and career progress gains. These in-app messages are informational, require no permission, and are independent of the opt-in for platform notifications.
+
+By default these events surface through the persistent context capsule, which expands on its own, shows the event detail first (for grades: subject and grade), then the period average, and collapses back. A development setting switches the channel to classic toasts; both channels show the same events exactly once per real fetch detection.
 
 Relevant notices and important academic information continue to be surfaced within the application.
 

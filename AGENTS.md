@@ -67,6 +67,7 @@ Before making significant changes, read the relevant sections of:
 | ---------------------------------------------- | ------------------------------------------------ |
 | [`docs/product.md`](docs/product.md)           | Product behavior and UX requirements             |
 | [`docs/architecture.md`](docs/architecture.md) | Architecture and code organization               |
+| [`docs/design.md`](docs/design.md)             | Design system: tokens, typography, capsule, motion |
 | [`ROADMAP.MD`](ROADMAP.MD)                     | Current implementation status and task checklist |
 
 If an implementation decision conflicts with product or architecture documentation, stop and reassess before proceeding.

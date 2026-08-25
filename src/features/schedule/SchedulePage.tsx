@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Page } from "@/components/layout/Page";
-import { PageHeader } from "@/components/layout/PageHeader";
 import { Card } from "@/components/ui/Card";
 import { PlusIcon } from "@/components/ui/icons";
 import { Spinner } from "@/components/ui/Spinner";
@@ -12,18 +11,15 @@ import { CUSTOM_CLAVE_PREFIX } from "@/lib/storage/scheduleEditsStore";
 import type { EditedField } from "@/lib/storage/scheduleEditsStore";
 import { SUBJECT_ADDED_TOAST } from "@/lib/toastMessages";
 import type { ResolvedMeeting } from "./types";
-import { applyScheduleEdits, isCustomClave } from "./edits";
+import { isCustomClave } from "./edits";
 import {
   collectSubjectFields,
   detectManualEditConflicts,
   sameStringMap,
 } from "./drift";
-import {
-  dailySwapKey,
-  resolveConflicts,
-} from "./conflicts";
+import { dailySwapKey } from "./conflicts";
 import { mapHorario } from "./mapHorario";
-import { useScheduleEdits } from "./hooks/useScheduleEdits";
+import { useScheduleState } from "./scheduleStateContext";
 import { DayNavigation } from "./components/DayNavigation";
 import { ScheduleDayView } from "./components/ScheduleDayView";
 import { SubjectEditorSheet } from "./components/SubjectEditorSheet";
@@ -52,32 +48,10 @@ export function SchedulePage({
   onShowToast,
 }: SchedulePageProps) {
   const now = useCurrentTime();
+  const { edits: scheduleEdits, daySwaps, setDaySwaps, resolvedWeek } =
+    useScheduleState();
   const [selectedDate, setSelectedDate] = useState<Date>(() => getNow());
-  const scheduleEdits = useScheduleEdits();
-  const [daySwaps, setDaySwaps] = useState<Record<string, string>>({});
   const [editor, setEditor] = useState<EditorState>({ mode: "closed" });
-
-  const weekMeetings = useMemo(
-    () =>
-      alumno && scheduleEdits.loaded
-        ? applyScheduleEdits(
-            mapHorario(alumno.horario, alumno.boleta),
-            scheduleEdits.edits,
-          )
-        : [],
-    [alumno, scheduleEdits.loaded, scheduleEdits.edits],
-  );
-
-  // Deterministic resolution: one card per conflicting interval, honoring
-  // weekly preferences and this-session day swaps.
-  const resolvedWeek = useMemo(
-    () =>
-      resolveConflicts(weekMeetings, {
-        weekly: scheduleEdits.edits.conflictOverrides,
-        daily: daySwaps,
-      }),
-    [weekMeetings, scheduleEdits.edits.conflictOverrides, daySwaps],
-  );
 
   const dayMeetings = useMemo(
     () => getScheduleForDay(resolvedWeek, selectedDate),
@@ -147,13 +121,13 @@ export function SchedulePage({
 
   const subjectNames = useMemo(() => {
     const names: Record<string, string> = {};
-    for (const meeting of weekMeetings) {
+    for (const meeting of resolvedWeek) {
       if (names[meeting.clave] === undefined) {
         names[meeting.clave] = meeting.subjectName;
       }
     }
     return names;
-  }, [weekMeetings]);
+  }, [resolvedWeek]);
 
   const handleSwapToggle = useCallback(
     (target: ResolvedMeeting) => {
@@ -187,7 +161,7 @@ export function SchedulePage({
         setDaySwaps((previous) => ({ ...previous, [dKey]: displaced.clave }));
       }
     },
-    [daySwaps, scheduleEdits],
+    [daySwaps, scheduleEdits, setDaySwaps],
   );
 
   function handleEditorSubmit(submit: SubjectEditorSubmit) {
@@ -238,7 +212,6 @@ export function SchedulePage({
 
   return (
     <>
-      <PageHeader title="Horario" />
       <Page>
         {!alumno ? (
           <Card className="py-8 text-center text-sm text-on-surface-variant">

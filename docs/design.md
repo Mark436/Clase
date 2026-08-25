@@ -1,56 +1,170 @@
-# Design Tokens (temporal)
+# Design System — Studia
 
-Provisional design reference. Light theme only, derived from the palette the
-project already used (Tailwind slate/sky). Names follow Material-style roles so
-a future dark theme can remap values without touching component classes.
+Fuente de verdad del sistema visual y de movimiento. Complementa
+[`product.md`](product.md) (qué hace la app) y [`architecture.md`](architecture.md)
+(cómo se organiza el código). Un cambio visual significativo empieza aquí.
 
-## Rules
+## 1. Concepto
 
-- Components reference semantic tokens (`bg-surface`,
-  `text-on-surface-variant`), never raw Tailwind colors (`slate-*`, `sky-*`).
-- Tokens are declared once in `src/index.css` inside the Tailwind v4 `@theme`
-  block, which generates utilities named after each token.
-- Disabled controls use ~40% opacity over their normal colors (Material
-  convention) instead of dedicated gray tokens.
-- Interactive hover/pressed states darken via opacity modifiers
-  (`bg-primary/90`) so the token system stays intact.
-- Focus visibility: 2px `primary` outline with offset on all interactive
-  elements.
-- Shape/elevation baseline: cards `rounded-2xl` + `shadow-sm` + 1px
-  `outline-variant` ring; controls `rounded-xl`; minimum touch target 44px.
+> El lujo del vacío bien administrado, interrumpido por un solo evento de color:
+> la cápsula que siempre sabe qué toca ahora.
 
-## Neutral roles
+- Superficies neutras estrictas; jerarquía por tipografía, no por decoración.
+- La **Cápsula de Contexto** es el único objeto cromático por pantalla y codifica
+  el principio de producto *contexto sobre navegación*.
+- Personalidad: herramienta costosa con movimiento vivo. Calma estructural tipo
+  Notion; micro-vida tipo Duolingo solo donde el tiempo fluye.
+- Sin wordmark en la interfaz diaria. «Studia» vive en login, instalación PWA y
+  splash.
 
-| Token                | Value     | Origin   | Usage                                  |
-| -------------------- | --------- | -------- | -------------------------------------- |
-| `background`         | `#f8fafc` | slate-50 | App background (PWA `background_color`) |
-| `on-background`      | `#0f172a` | slate-900 | Primary text (PWA `theme_color`)      |
-| `surface`            | `#ffffff` | white    | Cards, sheets, navigation bar          |
-| `on-surface`         | `#0f172a` | slate-900 | Text on surfaces                      |
-| `on-surface-variant` | `#475569` | slate-600 | Secondary/muted text                  |
-| `outline`            | `#94a3b8` | slate-400 | Input borders                         |
-| `outline-variant`    | `#e2e8f0` | slate-200 | Dividers, card rings                  |
+## 2. Tokens
 
-## Brand roles
+Variables CSS semánticas en `src/index.css`, intercambiadas por
+`prefers-color-scheme` y expuestas a Tailwind v4 mediante `@theme inline` (las
+utilidades leen la variable directamente: sin JS de tema ni clases duplicadas).
 
-| Token                 | Value     | Origin  | Usage                                     |
-| --------------------- | --------- | ------- | ----------------------------------------- |
-| `primary`             | `#0369a1` | sky-700 | Filled actions, active navigation, accents |
-| `on-primary`          | `#ffffff` | —       | Content on primary                        |
-| `primary-container`   | `#e0f2fe` | sky-100 | Tinted highlight (active tab pill)        |
-| `on-primary-container`| `#075985` | sky-800 | Content on primary-container              |
+| Token | Claro | Oscuro | Rol |
+| --- | --- | --- | --- |
+| `background` | `#FAFAFB` | `#12141A` | fondo de app |
+| `surface` | `#FFFFFF` | `#1A1D24` | tarjetas |
+| `on-surface` / tinta | `#17181C` | `#F2F4F8` | texto principal |
+| `on-surface-variant` | `#5C6270` | `#9BA3B4` | texto secundario |
+| `outline` | `#D9DCE3` | `#333845` | bordes de input |
+| `outline-variant` | `#ECEDF1` | `#262A33` | hairlines y anillos |
+| **`primary` / cobalto** | **`#2E6BFF`** | **`#6B93FF`** | identidad: cápsula, foco, activo |
+| `primary-strong` | `#1B49C8` | `#B4CBFF` | texto/énfasis cobalto legible |
+| `primary-container` | `#EAF0FF` | `#1C2B4A` | tintes contenedores |
+| `success` | `#1DA55A` | `#3DD68C` | funcional (calificaciones nuevas) |
+| `error` | `#E5484D` | `#FF6369` | funcional (adeudos, conflictos) |
 
-## State roles
+Reglas de uso:
 
-Login needs `error` now. Warning/success tokens arrive together with the
-notices feature (`warn`/`info` aviso types).
+- El cobalto es escaso por diseño: cápsula activa, clase en curso, elemento de
+  navegación activo, foco visible, números héroe. Si todo es azul, nada lo es.
+- Éxito/error son funcionales, nunca identidad.
+- Modo oscuro = carbón suave (`#12141A`), no negro puro; elevación por capas de
+  superficie, no por sombras duras.
 
-| Token                 | Value     | Origin  | Usage                            |
-| --------------------- | --------- | ------- | -------------------------------- |
-| `error`               | `#dc2626` | red-600 | Error text, invalid input border |
-| `on-error`            | `#ffffff` | —       | Content on error fills           |
-| `error-container`     | `#fee2e2` | red-100 | Error banner background          |
-| `on-error-container`  | `#991b1b` | red-800 | Text in error banners            |
+### Forma y elevación
 
-Dark mode: TBD — override these variables under `prefers-color-scheme`; no
-component class should change.
+- Radios: tarjetas `20px`, botones/badges/toast píldora completa, inputs `12px`.
+- Sombra clara: suave y profunda (utilidad `elevated`). Oscura: casi nula, la
+  separación la dan superficie y anillo.
+- **Liquid glass** (utilidades `glass-panel` / `glass-panel-accent`):
+  `backdrop-blur(20px) saturate(1.6)` + tinte semitransparente + brillo
+  especular superior + anillo luminoso. Fallback sólido vía `@supports`.
+  Reservado a: cápsula, navegación inferior, toast neutro.
+
+## 3. Tipografía
+
+Dos voces, self-hosted en `src/assets/fonts/` (woff2, subset latino, precache
+del service worker). Sin tipografía mono: los datos usan `tabular-nums`.
+
+| Voz | Fuente | Uso |
+| --- | --- | --- |
+| Display | **Schibsted Grotesk** variable 400–900 | Títulos de página, nombre de materia en curso, promedios héroe, cápsula expandida. Bold 700+, `tracking-tight`. |
+| UI / cuerpo | **General Sans** 400/500/600/700 | Todo lo demás: listas, etiquetas, formularios, toasts. |
+
+Clases Tailwind: `font-display` / `font-sans` (por defecto en `body`).
+
+## 4. Cápsula de contexto
+
+Primitiva genérica: [`components/ui/Capsule.tsx`](../src/components/ui/Capsule.tsx)
+(sin conceptos académicos). Estado y contenido:
+`features/schedule/components/ScheduleCapsule.tsx`. Montaje único y persistente
+en el shell autenticado (`ContextCapsule` en `app/App.tsx`, vía `topSlot` de
+`AppShell` → `TopZoneProvider`): visible en todas las secciones, alimentada por
+el estado compartido del horario (`ScheduleStateProvider`). Altura reservada
+constante para no mover el layout.
+
+Las páginas no montan su propia cápsula (la variante académica de calificaciones
+fue retirada): una sola isla sirve toda la app. Los headers de página
+desaparecieron; la barra inferior orienta la sección.
+
+### Estados
+
+| Estado | Tono | Contenido minimizado |
+| --- | --- | --- |
+| En clase | acento | materia + minutos restantes |
+| Próxima clase | neutro | cuenta regresiva + materia |
+| Por hoy terminaste / Sin clases hoy | neutro | mensaje calmado (+ "mañana HH:MM" si hay clase) |
+| Evento académico | neutro | título del evento + dato clave |
+
+### Expansión automática (solo eventos importantes)
+
+```text
+cambio de clase            → "class-start"
+cuenta cruza T-60 min      → "one-hour"
+cuenta cruza T-1 min       → "one-minute"
+```
+
+- La primera observación tras abrir la app nunca dispara eventos (entrar a
+  mitad de ventana no grita).
+- Cada evento dispara una vez por clase (dedupe por id).
+- Nunca se dispara por minutos que simplemente bajan.
+
+### Secuencia de eventos académicos (canal cápsula)
+
+Calificaciones nuevas/cambiadas, adeudos y progreso llegan a la cápsula en dos
+fases: detalle (~2.2 s) → seguimiento (~2 s) → colapso. Ejemplo: "Nueva
+calificación · Redes · 9.5" y después "Promedio del periodo · 8.75". El canal
+es configurable en modo dev → Interacción ("Cápsula" / "Toast"); con toast los
+eventos usan el snackbar clásico. Ambos canales disparan una sola vez por
+evento real.
+- Auto-colapso tras `DEFAULT_CAPSULE_COLLAPSE_MS` (1500 ms); tap alterna manual
+  siempre y cancela el temporizador. Blur, toque fuera y Escape también
+  colapsan; la apertura manual igualmente programa su colapso.
+- Al expandirse se **centra** horizontalmente (`mx-auto` dentro de la zona
+  flex); el Flip anima el salto de posición.
+
+### Variantes visuales
+
+- **A · Píldora total**: círculo minimizado y estadio al expandir.
+- **B · Morf iOS**: círculo minimizado → tarjeta redondeada 20 px.
+
+Ambas construidas; el toggle vive en modo dev → Interacción. Decisión pendiente
+de verlas funcionando.
+
+### Radio animable
+
+El radio nunca usa `9999px`: se calcula como la mitad de la altura medida
+(`border-radius: calc(h/2)`), así la interpolación ocurre entre valores px
+concretos y el morfo es limpio frame a frame.
+
+## 5. Movimiento
+
+Motor: **GSAP** (`gsap` + `@gsap/react`) para morfos y contadores;
+transiciones CSS para micro-feedback. Sin librerías adicionales.
+
+| Momento | Tratamiento |
+| --- | --- |
+| Morfo de cápsula | GSAP Flip `expo.out` 0.55 s + radio paralelo `power2.out` |
+| Números héroe | contador GSAP `power3.out` 0.9 s (`AnimatedNumber`) |
+| Toque (botones, cápsula) | `active:scale-[0.97]` CSS 150 ms |
+| Hora actual / clase en curso | punto que respira (`studia-breathe` 2.6 s, `motion-safe`) |
+| Entrada de contenido de cápsula / toast | `studia-fade-up` 0.3–0.35 s |
+| Pull-to-refresh | indicador spinner existente, opacidad ligada al gesto |
+
+`prefers-reduced-motion`: los springs/morfos se vuelven fundidos o salto
+directo (la regla global en `index.css` + guardas explícitas en Capsule y
+AnimatedNumber).
+
+## 6. Accesibilidad
+
+- La cápsula es un `<button>` real: foco con teclado, Enter/Espacio alternan,
+  `aria-expanded` y `aria-label` descriptivo del estado.
+- Los gestos nunca son el único camino (pull-to-refresh tiene botón en Alumno).
+- Contraste: `primary-strong` existe para texto cobalto pequeño sobre claro.
+- `focus-visible` global en cobalto; sin outline en click táctil.
+
+## 7. Inventario de primitivas
+
+`Button` (píldora), `Card` (20 px + elevated), `Badge` (+`className`),
+`ProgressBar`, `Input`, `Spinner`, `Slider`, `TimeInput`, `Toast` (glass/píldora),
+`Capsule`, `AnimatedNumber`, iconos propios en `icons.tsx`.
+
+## 8. Branding
+
+- Manifest: nombre «Studia», `theme_color` cobalto, `background_color`
+  `#FAFAFB`; `index.html` declara `theme-color` por esquema (claro/oscuro).
+- Iconos actuales en `public/`; rediseño pendiente hacia el lenguaje cobalto.

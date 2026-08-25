@@ -7,9 +7,9 @@ import { DEFAULT_TOAST_DURATION_MS } from "./toastVariants";
 const FADE_OUT_MS = 200;
 
 const VARIANT_CLASSES: Record<ToastVariant, string> = {
-  neutral: "bg-on-surface/90 backdrop-blur-sm text-surface",
-  success: "bg-success/90 backdrop-blur-sm text-on-success",
-  error: "bg-error/90 backdrop-blur-sm text-on-error",
+  neutral: "glass-panel text-on-surface",
+  success: "bg-success/95 text-on-success",
+  error: "bg-error/95 text-on-error",
 } as const;
 
 interface ToastProps {
@@ -50,11 +50,11 @@ export function Toast({
   }, [durationMs]);
 
   return createPortal(
-    <div className="pointer-events-none fixed inset-x-0 bottom-[calc(5rem+env(safe-area-inset-bottom))] z-50 flex justify-center px-4">
+    <div className="pointer-events-none fixed inset-x-0 bottom-[calc(6rem+env(safe-area-inset-bottom))] z-50 flex justify-center px-4">
       <p
         role="status"
         style={{ transitionDuration: `${FADE_OUT_MS}ms` }}
-        className={`pointer-events-auto max-w-md rounded-xl px-4 py-2.5 text-sm font-medium shadow-lg transition-opacity ease-out ${
+        className={`pointer-events-auto max-w-md rounded-full px-5 py-2.5 text-sm font-medium elevated transition-opacity ease-out motion-safe:animate-[studia-fade-up_0.3s_var(--ease-out-soft)] ${
           fading ? "opacity-0" : "opacity-100"
         } ${VARIANT_CLASSES[variant]}`}
       >

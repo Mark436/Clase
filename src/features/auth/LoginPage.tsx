@@ -9,10 +9,15 @@ export function LoginPage() {
     <div className="flex min-h-dvh items-center justify-center bg-background px-4 py-8">
       <div className="w-full max-w-sm">
         <header className="mb-6 text-center">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">
+          <span
+            aria-hidden="true"
+            className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-[16px] bg-primary text-xl font-bold text-on-primary elevated"
+          >
+            S
+          </span>
+          <h1 className="font-display text-3xl font-bold tracking-tight text-on-background">
             Studia
-          </p>
-          <h1 className="mt-2 text-3xl font-bold text-on-background">Studia</h1>
+          </h1>
           <p className="mt-1 text-sm text-on-surface-variant">
             Tu información académica en un solo lugar.
           </p>

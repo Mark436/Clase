@@ -359,7 +359,31 @@ Intentar actualizar
 - [x] Pruebas de reconciliación de drift (`collectSubjectFields`, `detectManualEditConflicts`, fusión de conflictos) y de las nuevas formas persistidas (snapshots, conflictos pendientes).
 - [x] Pruebas de sincronización del temporizador por minuto (`msUntilNextMinute`, independiente de zona horaria).
 
-## 14. Criterio de finalización
+## 14. Sistema de diseño
+
+Fuente de verdad: [`docs/design.md`](docs/design.md).
+
+- [x] Tokens semánticos dual-theme (`prefers-color-scheme`) vía `@theme inline`.
+- [x] Tipografías self-hosted: Schibsted Grotesk (display) + General Sans (UI).
+- [x] Receta liquid glass con fallback sólido (`glass-panel`, `glass-panel-accent`).
+- [x] Restyle de primitivas: Button, Card, Badge, Input, Toast, ProgressBar.
+- [x] Bottom navigation como píldora glass flotante.
+- [x] Cápsula de contexto: primitiva `Capsule` (GSAP Flip) + estados de horario.
+- [x] Eventos importantes de expansión: cambio de clase, T-60 min, T-1 min; auto-colapso 1.5 s.
+- [x] Variantes A/B de cápsula con toggle en modo dev + slider de colapso.
+- [x] Cápsula persistente en todo el shell (`ContextCapsule` vía `topSlot`); expansión centrada.
+- [x] Estado compartido del horario (`ScheduleStateProvider`) entre cápsula y página.
+- [x] Canal de avisos cápsula/toast: calificación nueva → detalle y luego promedio; adeudos y progreso.
+- [x] Promedios con máximo 2 decimales (`formatAverage` + `AnimatedNumber`).
+- [x] Headers de página retirados; la barra inferior orienta la sección.
+- [x] Números héroe animados (promedios, progreso) con GSAP.
+- [x] Branding PWA: manifest Studia + theme-color por esquema.
+- [x] Pruebas de la lógica pura de la cápsula (`capsuleState.test.ts`).
+- [ ] Decidir variante de cápsula (A píldora total vs B morf iOS) comparándolas en funcionamiento.
+- [ ] Rediseñar iconos PWA al lenguaje cobalto.
+- [ ] Auditoría de contraste AA en ambos temas.
+
+## 15. Criterio de finalización
 
 - [ ] La app puede iniciar en modo PWA.
 - [ ] El usuario puede iniciar sesión correctamente.

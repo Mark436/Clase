@@ -9,13 +9,20 @@ const VARIANT_CLASSES: Record<BadgeVariant, string> = {
 
 interface BadgeProps {
   variant?: BadgeVariant;
+  className?: string;
   children: ReactNode;
 }
 
-export function Badge({ variant = "neutral", children }: BadgeProps) {
+export function Badge({
+  variant = "neutral",
+  className,
+  children,
+}: BadgeProps) {
   return (
     <span
-      className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${VARIANT_CLASSES[variant]}`}
+      className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
+        className ?? ""
+      } ${VARIANT_CLASSES[variant]}`}
     >
       {children}
     </span>

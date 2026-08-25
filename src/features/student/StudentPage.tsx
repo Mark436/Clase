@@ -1,8 +1,8 @@
 import { useRef } from "react";
 import { Button } from "@/components/ui/Button";
+import { AnimatedNumber } from "@/components/ui/AnimatedNumber";
 import { Card } from "@/components/ui/Card";
 import { Page } from "@/components/layout/Page";
-import { PageHeader } from "@/components/layout/PageHeader";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import type { ToastVariant } from "@/components/ui/toastVariants";
 import { DevPanel } from "@/features/devtools/DevPanel";
@@ -39,7 +39,6 @@ export function StudentPage({
 
   return (
     <>
-      <PageHeader title="Alumno" subtitle="Tu información académica." />
       <Page>
         {alumno ? (
           <>
@@ -63,8 +62,14 @@ export function StudentPage({
                   <p className="text-sm font-medium text-on-surface">
                     Progreso de la carrera
                   </p>
-                  <span className="text-sm font-bold text-primary tabular-nums">
-                    {Math.round(alumno.progreso)}%
+                  <span className="flex items-baseline gap-0.5">
+                    <AnimatedNumber
+                      value={Math.round(alumno.progreso)}
+                      className="font-display text-xl font-bold tabular-nums text-primary-strong"
+                    />
+                    <span className="text-sm font-bold text-primary-strong">
+                      %
+                    </span>
                   </span>
                 </div>
                 <ProgressBar

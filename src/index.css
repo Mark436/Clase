@@ -4,25 +4,285 @@ html {
   overscroll-behavior-y: contain;
 }
 
-@theme {
-  --color-background: #f8fafc;
-  --color-on-background: #0f172a;
-  --color-surface: #ffffff;
-  --color-on-surface: #0f172a;
-  --color-on-surface-variant: #475569;
-  --color-outline: #94a3b8;
-  --color-outline-variant: #e2e8f0;
+/* ---------------------------------------------------------------------------
+   Studia design system — docs/design.md is the source of truth.
+   Semantic tokens swap with prefers-color-scheme; Tailwind utilities read
+   them through @theme inline so no JS or duplicated classes are involved.
+--------------------------------------------------------------------------- */
 
-  --color-primary: #0369a1;
+:root {
+  color-scheme: light;
+
+  /* Identity */
+  --studia-cobalto: #2e6bff;
+  --studia-cobalto-strong: #1b49c8;
+
+  /* Neutral surfaces (light) */
+  --studia-bg: #fafafb;
+  --studia-fg: #17181c;
+  --studia-fg-muted: #5c6270;
+  --studia-surface: #ffffff;
+  --studia-line: #d9dce3;
+  --studia-line-soft: #ecedf1;
+
+  /* Tinted containers */
+  --studia-primary-container: #eaf0ff;
+  --studia-on-primary-container: #1b49c8;
+
+  /* Functional */
+  --studia-success: #1da55a;
+  --studia-on-success: #ffffff;
+  --studia-success-container: #dcf5e6;
+  --studia-on-success-container: #0d5a30;
+  --studia-error: #e5484d;
+  --studia-on-error: #ffffff;
+  --studia-error-container: #fee7e8;
+  --studia-on-error-container: #9f1a1f;
+
+  /* Liquid glass recipe (light) */
+    --studia-glass-tint: rgb(255 255 255 / 62%);
+    --studia-glass-border: rgb(255 255 255 / 55%);
+    --studia-glass-shadow: 0 1px 1px rgb(255 255 255 / 60%) inset,
+      0 -1px 1px rgb(23 24 28 / 4%) inset, 0 8px 32px rgb(23 24 28 / 14%);
+    --studia-glass-blur: 20px;
+
+    --studia-accent-glass-tint: rgb(46 107 255 / 14%);
+    --studia-accent-glass-border: rgb(46 107 255 / 30%);
+
+  /* Elevation (light) */
+  --studia-shadow-card: 0 1px 2px rgb(23 24 28 / 4%),
+    0 10px 30px -14px rgb(23 24 28 / 14%);
+  --studia-shadow-pop: 0 18px 50px -16px rgb(23 24 28 / 26%);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+
+    --studia-cobalto: #6b93ff;
+    --studia-cobalto-strong: #b4cbff;
+
+    --studia-bg: #12141a;
+    --studia-fg: #f2f4f8;
+    --studia-fg-muted: #9ba3b4;
+    --studia-surface: #1a1d24;
+    --studia-line: #333845;
+    --studia-line-soft: #262a33;
+
+    --studia-primary-container: #1c2b4a;
+    --studia-on-primary-container: #b4cbff;
+
+    --studia-success: #3dd68c;
+    --studia-on-success: #06281a;
+    --studia-success-container: #12301f;
+    --studia-on-success-container: #8fe9bb;
+    --studia-error: #ff6369;
+    --studia-on-error: #3b0407;
+    --studia-error-container: #3b1214;
+    --studia-on-error-container: #ffb3b6;
+
+    --studia-glass-tint: rgb(26 29 36 / 62%);
+    --studia-glass-border: rgb(255 255 255 / 9%);
+    --studia-glass-shadow: 0 1px 1px rgb(255 255 255 / 8%) inset,
+      0 -1px 1px rgb(0 0 0 / 20%) inset, 0 8px 32px rgb(0 0 0 / 42%);
+    --studia-glass-blur: 20px;
+
+    --studia-accent-glass-tint: rgb(107 147 255 / 18%);
+    --studia-accent-glass-border: rgb(107 147 255 / 34%);
+
+    --studia-shadow-card: 0 1px 2px rgb(0 0 0 / 24%),
+      0 12px 32px -16px rgb(0 0 0 / 52%);
+    --studia-shadow-pop: 0 18px 50px -14px rgb(0 0 0 / 62%);
+  }
+}
+
+/* Self-hosted type: display voice + UI voice (see docs/design.md §Tipografía) */
+
+@font-face {
+  font-family: "Schibsted Grotesk";
+  src: url("./assets/fonts/schibsted-grotesk-var.woff2") format("woff2");
+  font-weight: 400 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "General Sans";
+  src: url("./assets/fonts/general-sans-400.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "General Sans";
+  src: url("./assets/fonts/general-sans-500.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "General Sans";
+  src: url("./assets/fonts/general-sans-600.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "General Sans";
+  src: url("./assets/fonts/general-sans-700.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Utilities read the swapped variables directly (inline keeps var() refs). */
+@theme inline {
+  --color-background: var(--studia-bg);
+  --color-on-background: var(--studia-fg);
+  --color-surface: var(--studia-surface);
+  --color-on-surface: var(--studia-fg);
+  --color-on-surface-variant: var(--studia-fg-muted);
+  --color-outline: var(--studia-line);
+  --color-outline-variant: var(--studia-line-soft);
+
+  --color-primary: var(--studia-cobalto);
   --color-on-primary: #ffffff;
-  --color-primary-container: #e0f2fe;
-  --color-on-primary-container: #075985;
+  --color-primary-strong: var(--studia-cobalto-strong);
+  --color-primary-container: var(--studia-primary-container);
+  --color-on-primary-container: var(--studia-on-primary-container);
 
-  --color-error: #dc2626;
-  --color-on-error: #ffffff;
-  --color-error-container: #fee2e2;
-  --color-on-error-container: #991b1b;
+  --color-success: var(--studia-success);
+  --color-on-success: var(--studia-on-success);
+  --color-success-container: var(--studia-success-container);
+  --color-on-success-container: var(--studia-on-success-container);
 
-  --color-success: #16a34a;
-  --color-on-success: #ffffff;
+  --color-error: var(--studia-error);
+  --color-on-error: var(--studia-on-error);
+  --color-error-container: var(--studia-error-container);
+  --color-on-error-container: var(--studia-on-error-container);
+
+  --font-sans: "General Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Schibsted Grotesk", "General Sans", ui-sans-serif, system-ui,
+    sans-serif;
+}
+
+body {
+  background-color: var(--studia-bg);
+  color: var(--studia-fg);
+  font-family: "General Sans", ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+
+:focus-visible {
+  outline: 2px solid var(--studia-cobalto);
+  outline-offset: 2px;
+}
+
+::selection {
+  background: color-mix(in oklab, var(--studia-cobalto) 25%, transparent);
+}
+
+/* Motion vocabulary. Springs live in GSAP (capsule, counters); these ease
+   plain CSS transitions. */
+:root {
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring: linear(
+    0,
+    0.0083 6.3%,
+    0.033 13.4%,
+    0.0739 20.2%,
+    0.1618 29.2%,
+    0.2762 39.9%,
+    0.3893 48.6%,
+    0.5121 58.4%,
+    0.6336 69.4%,
+    0.74 79.5%,
+    0.8296 88.6%,
+    0.9004 96.4%,
+    0.9439 102.4%,
+    0.9657 108.8%,
+    0.9777 114.6%,
+    0.9811 122.1%,
+    0.9822 133.5%,
+    1
+  );
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Liquid glass surface: one recipe, both themes, solid fallback when
+   backdrop-filter is unavailable. */
+@utility glass-panel {
+  position: relative;
+  background: var(--studia-glass-tint);
+  -webkit-backdrop-filter: blur(var(--studia-glass-blur)) saturate(1.6);
+  backdrop-filter: blur(var(--studia-glass-blur)) saturate(1.6);
+  box-shadow: var(--studia-glass-shadow), 0 0 0 1px var(--studia-glass-border);
+}
+
+@supports not (
+  (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))
+) {
+  .glass-panel {
+    background: var(--studia-surface);
+  }
+}
+
+/* Card elevation shared by every floating container. */
+@utility elevated {
+  box-shadow: var(--studia-shadow-card);
+}
+
+/* Accent variant of the glass recipe: the capsule's cobalt moment. */
+@utility glass-panel-accent {
+  position: relative;
+  background: var(--studia-accent-glass-tint);
+  -webkit-backdrop-filter: blur(var(--studia-glass-blur)) saturate(1.6);
+  backdrop-filter: blur(var(--studia-glass-blur)) saturate(1.6);
+  box-shadow: var(--studia-glass-shadow), 0 0 0 1px var(--studia-accent-glass-border);
+}
+
+@supports not (
+  (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))
+) {
+  .glass-panel-accent {
+    background: color-mix(in oklab, var(--studia-cobalto) 12%, var(--studia-surface));
+  }
+}
+
+/* Content swap inside the capsule (minimized ⇄ expanded). */
+@keyframes studia-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* The living minute: soft breathing pulse for the current-time dot. */
+@keyframes studia-breathe {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.35);
+    opacity: 0.55;
+  }
 }

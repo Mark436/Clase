@@ -69,7 +69,7 @@ Generic visual primitives with no academic domain knowledge. Examples: `Button`,
 
 ### `src/components/layout/`
 
-Application shell and page structure. Examples: `AppShell`, `Page`, `PageHeader`,
+Application shell and page structure. Examples: `AppShell`, `Page`, `TopZone`,
 `BottomNavigation`.
 
 Handles safe areas and mobile layout. Wires navigation slots; does not fetch data or

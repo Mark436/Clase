@@ -20,8 +20,8 @@ export default defineConfig({
         short_name: "Studia",
         description:
           "Studia: aplicación móvil para consultar horario, calificaciones y alumno.",
-        theme_color: "#0f172a",
-        background_color: "#f8fafc",
+        theme_color: "#2e6bff",
+        background_color: "#fafafb",
         display: "standalone",
         start_url: "/",
         scope: "/",

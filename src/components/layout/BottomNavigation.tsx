@@ -12,6 +12,8 @@ interface BottomNavigationProps<T extends string> {
   onSelect: (id: T) => void;
 }
 
+// Floating glass pill: the navigation reads as one object hovering over the
+// content instead of a full-width bar bolted to the viewport edge.
 export function BottomNavigation<T extends string>({
   items,
   activeId,
@@ -20,9 +22,9 @@ export function BottomNavigation<T extends string>({
   return (
     <nav
       aria-label="Navegación principal"
-      className="border-t border-outline-variant bg-surface pb-[env(safe-area-inset-bottom)]"
+      className="pointer-events-none flex justify-center pb-[max(env(safe-area-inset-bottom),10px)]"
     >
-      <div className="mx-auto flex w-full max-w-md">
+      <div className="glass-panel elevated pointer-events-auto mx-4 flex w-full max-w-sm items-center gap-1 rounded-full p-1.5">
         {items.map((item) => {
           const isActive = item.id === activeId;
 
@@ -32,15 +34,13 @@ export function BottomNavigation<T extends string>({
               type="button"
               onClick={() => onSelect(item.id)}
               aria-current={isActive ? "page" : undefined}
-              className={`flex min-h-14 flex-1 flex-col items-center justify-center gap-0.5 pt-1.5 text-xs font-medium transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary ${
-                isActive ? "text-primary" : "text-on-surface-variant"
+              className={`flex min-h-12 flex-1 flex-col items-center justify-center gap-0.5 rounded-full text-[11px] font-medium transition-all duration-200 ease-out focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary ${
+                isActive
+                  ? "bg-primary text-on-primary"
+                  : "text-on-surface-variant hover:text-on-surface"
               }`}
             >
-              <span
-                className={`flex h-7 w-16 items-center justify-center rounded-full ${
-                  isActive ? "bg-primary-container" : ""
-                }`}
-              >
+              <span className="flex h-6 items-center justify-center">
                 {item.icon}
               </span>
               <span>{item.label}</span>
