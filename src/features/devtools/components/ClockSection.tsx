@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { getNow, subscribeToClock } from "@/lib/devtools/clock";
+// Shared app timer (minute-boundary synced): the panel displays the same
+// notion of "now" as every screen instead of running its own interval.
+import { useCurrentTime } from "@/lib/devtools/useCurrentTime";
 import type { DevToolsController } from "../useDevConfig";
 
 const QUICK_OFFSETS: ReadonlyArray<readonly [label: string, minutes: number]> = [
@@ -10,22 +11,6 @@ const QUICK_OFFSETS: ReadonlyArray<readonly [label: string, minutes: number]> = 
   ["+1 h", 60],
   ["+1 día", 1440],
 ];
-
-function useSimulatedNow(): Date {
-  const [now, setNow] = useState(() => getNow());
-
-  useEffect(() => {
-    const unsubscribe = subscribeToClock(() => setNow(getNow()));
-    const intervalId = window.setInterval(() => setNow(getNow()), 15_000);
-
-    return () => {
-      unsubscribe();
-      window.clearInterval(intervalId);
-    };
-  }, []);
-
-  return now;
-}
 
 function pad(value: number): string {
   return String(value).padStart(2, "0");
@@ -44,7 +29,7 @@ function formatNow(date: Date): string {
 }
 
 export function ClockSection({ dev }: { dev: DevToolsController }) {
-  const now = useSimulatedNow();
+  const now = useCurrentTime();
   const simulated = dev.config.clockOffsetMinutes !== null;
 
   function shiftOffset(deltaMinutes: number) {
