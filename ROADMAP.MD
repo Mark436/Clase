@@ -195,9 +195,15 @@ Intentar actualizar
 - [x] Posicionar la línea según la hora real.
 - [x] Actualizar la posición periódicamente.
 - [x] No actualizar cada segundo si no es necesario.
+- [x] Alinear el temporizador al borde del minuto real (recalcula exactamente cuando cambia el minuto relevante).
 - [x] Pausar actualizaciones innecesarias cuando la aplicación esté en background.
 - [x] Recalcular al volver a foreground.
 - [x] Mantener la clase actual correctamente aunque la hora cambie.
+
+### Cuenta regresiva de la siguiente clase
+
+- [x] Mostrar tiempo relativo ("20 min", "1 hr y 30 min"; se omiten los valores en cero).
+- [x] Mostrar "Empieza pronto" en el minuto exacto de inicio.
 
 ### Progreso de clase
 
@@ -205,6 +211,19 @@ Intentar actualizar
 - [x] Representar visualmente el progreso.
 - [x] Mostrar tiempo restante.
 - [x] Evitar errores en clases que cruzan cambios de hora/día.
+
+### Edición y personalización del horario
+
+- [x] Editar materia (nombre, profesor, salón) manteniendo presionada la tarjeta o con el botón de lápiz; duración de la presión larga configurable desde modo dev.
+- [x] Editar el horario de una ocurrencia específica (día) sin afectar las demás.
+- [x] Agregar materias manuales (p. ej. Inglés) con días y rango horario.
+- [x] Eliminar materias agregadas manualmente.
+- [x] Persistir ediciones y materias manuales en IndexedDB (sobreviven recargas; se borran con logout).
+- [x] Resolver empalmes con una sola tarjeta por intervalo: la clase ganadora conserva su rango completo y muestra un aviso con las clases desplazadas ("Matemáticas" o "1/4 Matemáticas").
+- [x] Fracciones amigables en el aviso (1/4, 1/3, 1/2, 2/3, 3/4) con respaldo en minutos.
+- [x] Prioridad: materias manuales sobre las consultadas; entre iguales, el horario más temprano.
+- [x] Alternar el orden con un toque en el aviso: primer toque solo hoy (efímero), segundo toque toda la semana (persistente), tercer toque restaura el orden original.
+- [x] Limpiar preferencias de empalme obsoletas al desaparecer el empalme (por edición o datos nuevos).
 
 ### Navegación entre días
 
@@ -319,7 +338,17 @@ Intentar actualizar
 - [x] Toggle de adeudos (banner y alertas).
 - [x] Config persistida en settings store con botón "Restaurar datos reales".
 - [x] Sección de pruebas de toast: variante y mensaje arbitrarios (los estados nuevos aparecen solos al registrarse en `TOAST_VARIANTS`).
+- [x] Slider de duración del toast (1–10 s) y de duración de presión larga (200–1500 ms); aplican solo con el panel abierto (pausa al cerrar, igual que el resto de overrides).
+- [x] Toast con desvanecimiento de salida y temporizadores que no se reinician con re-renders del host.
 - [ ] Evaluar retirar el panel antes de compartir la app con otros alumnos.
+
+## 13.1 Pruebas
+
+- [x] Configurar vitest (`pnpm test`).
+- [x] Pruebas de lógica pura del horario: cuenta regresiva, selección de clase actual/siguiente en el minuto exacto, `parseMinutes`/`formatMinutes`.
+- [x] Pruebas de resolución de empalmes: agrupamiento, prioridad, fracciones amigables y preferencias de alternancia.
+- [x] Pruebas de aplicación de ediciones y validación de la persistencia del horario.
+- [x] Pruebas de sincronización del temporizador por minuto (`msUntilNextMinute`, independiente de zona horaria).
 
 ## 14. Criterio de finalización
 
