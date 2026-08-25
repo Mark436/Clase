@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { TimeInput } from "@/components/ui/TimeInput";
 import type { ClassMeeting } from "../types";
 import { formatMinutes, parseMinutes } from "../utils";
 
@@ -22,6 +23,13 @@ export interface SubjectEditorSubmit {
   startMinutes: number;
   endMinutes: number;
   days: number[];
+}
+
+interface FieldErrors {
+  name?: string;
+  start?: string;
+  end?: string;
+  days?: string;
 }
 
 interface SubjectEditorSheetProps {
@@ -57,7 +65,7 @@ export function SubjectEditorSheet({
     meeting ? formatMinutes(meeting.endMinutes) : "",
   );
   const [days, setDays] = useState<number[]>([]);
-  const [error, setError] = useState<string | null>(null);
+  const [errors, setErrors] = useState<FieldErrors>({});
 
   function toggleDay(day: number) {
     setDays((previous) =>
@@ -65,38 +73,49 @@ export function SubjectEditorSheet({
         ? previous.filter((value) => value !== day)
         : [...previous, day],
     );
+    setErrors((previous) => ({ ...previous, days: undefined }));
   }
 
   function handleSubmit() {
+    const nextErrors: FieldErrors = {};
     const name = subjectName.trim();
     if (name === "") {
-      setError("La materia necesita un nombre.");
-      return;
+      nextErrors.name = "Ingresa el nombre de la materia.";
     }
 
     const startMinutes = parseMinutes(inicio);
+    if (startMinutes === null) {
+      nextErrors.start = "Ingresa la hora de inicio.";
+    }
+
     const endMinutes = parseMinutes(fin);
-    if (
-      startMinutes === null ||
-      endMinutes === null ||
-      startMinutes >= endMinutes
-    ) {
-      setError("El horario de inicio y fin no es válido.");
-      return;
+    if (endMinutes === null) {
+      nextErrors.end = "Ingresa la hora de fin.";
+    } else if (startMinutes !== null && startMinutes >= endMinutes) {
+      nextErrors.end = "La hora de fin debe ser posterior al inicio.";
     }
 
     if (isCreating && days.length === 0) {
-      setError("Selecciona al menos un día.");
+      nextErrors.days = "Selecciona al menos un día.";
+    }
+
+    if (
+      nextErrors.name !== undefined ||
+      nextErrors.start !== undefined ||
+      nextErrors.end !== undefined ||
+      nextErrors.days !== undefined
+    ) {
+      setErrors(nextErrors);
       return;
     }
 
-    setError(null);
+    setErrors({});
     onSubmit({
       subjectName: name,
       professor: professor.trim(),
       classroom: classroom.trim(),
-      startMinutes,
-      endMinutes,
+      startMinutes: startMinutes as number,
+      endMinutes: endMinutes as number,
       days,
     });
   }
@@ -129,7 +148,11 @@ export function SubjectEditorSheet({
           <Input
             label="Nombre"
             value={subjectName}
-            onChange={(event) => setSubjectName(event.target.value)}
+            onChange={(event) => {
+              setSubjectName(event.target.value);
+              setErrors((previous) => ({ ...previous, name: undefined }));
+            }}
+            error={errors.name}
           />
           <div className="grid grid-cols-2 gap-2">
             <Input
@@ -163,29 +186,34 @@ export function SubjectEditorSheet({
                   {label}
                 </label>
               ))}
+              {errors.days ? (
+                <p role="alert" className="text-sm text-error">
+                  {errors.days}
+                </p>
+              ) : null}
             </fieldset>
           ) : null}
 
           <div className="grid grid-cols-2 gap-2">
-            <Input
+            <TimeInput
               label="Inicio"
-              type="time"
               value={inicio}
-              onChange={(event) => setInicio(event.target.value)}
+              onChange={(event) => {
+                setInicio(event.target.value);
+                setErrors((previous) => ({ ...previous, start: undefined }));
+              }}
+              error={errors.start}
             />
-            <Input
+            <TimeInput
               label="Fin"
-              type="time"
               value={fin}
-              onChange={(event) => setFin(event.target.value)}
+              onChange={(event) => {
+                setFin(event.target.value);
+                setErrors((previous) => ({ ...previous, end: undefined }));
+              }}
+              error={errors.end}
             />
           </div>
-
-          {error ? (
-            <p role="alert" className="text-sm text-error">
-              {error}
-            </p>
-          ) : null}
 
           <div className="mt-1 flex gap-2">
             {onRemove ? (
