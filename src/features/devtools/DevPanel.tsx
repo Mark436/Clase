@@ -46,9 +46,9 @@ export function DevPanel({ alumno, dev, onShowToast }: DevPanelProps) {
       <div className="border-t border-outline-variant pt-4" />
       <MateriasSection alumno={alumno} dev={dev} />
       <div className="border-t border-outline-variant pt-4" />
-      <GradesSection alumno={alumno} dev={dev} />
+      <GradesSection alumno={alumno} dev={dev} onShowToast={onShowToast} />
       <div className="border-t border-outline-variant pt-4" />
-      <AdeudosSection dev={dev} />
+      <AdeudosSection dev={dev} onShowToast={onShowToast} />
       <div className="border-t border-outline-variant pt-4" />
       <InteractionSection dev={dev} />
       <div className="border-t border-outline-variant pt-4" />

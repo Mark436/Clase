@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/Input";
 import { Slider } from "@/components/ui/Slider";
 import type { ToastVariant } from "@/components/ui/toastVariants";
 import { TOAST_VARIANTS } from "@/components/ui/toastVariants";
+import { GRADE_CHANGES_TOAST, NEW_ADEUDO_TOAST } from "@/lib/toastMessages";
 import type { DevToolsController } from "../useDevConfig";
 
 const VARIANT_LABELS: Record<ToastVariant, string> = {
@@ -15,8 +16,8 @@ const VARIANT_LABELS: Record<ToastVariant, string> = {
 // Example copy per state, used when the message field is left empty.
 const PLACEHOLDERS: Record<ToastVariant, string> = {
   neutral: "Recordatorio de sesión.",
-  success: "Tienes calificaciones nuevas o actualizadas.",
-  error: "Tienes un adeudo nuevo pendiente.",
+  success: GRADE_CHANGES_TOAST,
+  error: NEW_ADEUDO_TOAST,
 };
 
 const DURATION_MIN_MS = 1000;

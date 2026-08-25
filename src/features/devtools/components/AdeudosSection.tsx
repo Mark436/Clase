@@ -1,3 +1,5 @@
+import { NEW_ADEUDO_TOAST } from "@/lib/toastMessages";
+import type { ToastVariant } from "@/components/ui/toastVariants";
 import type { DevToolsController } from "../useDevConfig";
 
 type AdeudoOption = { label: string; value: boolean | null };
@@ -8,8 +10,25 @@ const OPTIONS: ReadonlyArray<AdeudoOption> = [
   { label: "Sin adeudo", value: false },
 ];
 
-export function AdeudosSection({ dev }: { dev: DevToolsController }) {
+interface AdeudosSectionProps {
+  dev: DevToolsController;
+  onShowToast?: (message: string, variant: ToastVariant) => void;
+}
+
+export function AdeudosSection({ dev, onShowToast }: AdeudosSectionProps) {
   const current = dev.config.adeudoOverride;
+
+  function select(option: AdeudoOption) {
+    // Mirrors the production trigger: the designed toast fires only on the
+    // clean -> with-debt transition, never when debt persists or clears.
+    if (option.value === true && current !== true) {
+      onShowToast?.(NEW_ADEUDO_TOAST, "error");
+    }
+    dev.updateConfig((previous) => ({
+      ...previous,
+      adeudoOverride: option.value,
+    }));
+  }
 
   return (
     <section className="flex flex-col gap-3">
@@ -26,12 +45,7 @@ export function AdeudosSection({ dev }: { dev: DevToolsController }) {
               key={option.label}
               type="button"
               aria-pressed={selected}
-              onClick={() =>
-                dev.updateConfig((previous) => ({
-                  ...previous,
-                  adeudoOverride: option.value,
-                }))
-              }
+              onClick={() => select(option)}
               className={`h-9 flex-1 rounded-xl text-xs font-semibold transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary ${
                 selected
                   ? "bg-primary text-on-primary"
@@ -45,6 +59,7 @@ export function AdeudosSection({ dev }: { dev: DevToolsController }) {
       </div>
       <p className="text-xs text-on-surface-variant">
         Solo cambia lo que se muestra en la app; los datos guardados no se tocan.
+        Al entrar en adeudo se muestra el mismo aviso que en producción.
       </p>
     </section>
   );
