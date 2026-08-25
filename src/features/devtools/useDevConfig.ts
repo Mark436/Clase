@@ -87,10 +87,24 @@ function parseDevConfig(raw: string | null): DevConfig {
         typeof parsed.adeudoOverride === "boolean"
           ? parsed.adeudoOverride
           : null,
+      toastDurationMs: toPositiveNumber(
+        parsed.toastDurationMs,
+        EMPTY_DEV_CONFIG.toastDurationMs,
+      ),
+      longPressDurationMs: toPositiveNumber(
+        parsed.longPressDurationMs,
+        EMPTY_DEV_CONFIG.longPressDurationMs,
+      ),
     };
   } catch {
     return EMPTY_DEV_CONFIG;
   }
+}
+
+function toPositiveNumber(value: unknown, fallback: number): number {
+  return typeof value === "number" && Number.isFinite(value) && value > 0
+    ? value
+    : fallback;
 }
 
 async function saveDevConfig(config: DevConfig): Promise<void> {

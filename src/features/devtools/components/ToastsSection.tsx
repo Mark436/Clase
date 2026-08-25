@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { Slider } from "@/components/ui/Slider";
 import type { ToastVariant } from "@/components/ui/toastVariants";
 import { TOAST_VARIANTS } from "@/components/ui/toastVariants";
+import type { DevToolsController } from "../useDevConfig";
 
 const VARIANT_LABELS: Record<ToastVariant, string> = {
   neutral: "Neutral",
@@ -17,14 +19,23 @@ const PLACEHOLDERS: Record<ToastVariant, string> = {
   error: "Tienes un adeudo nuevo pendiente.",
 };
 
+const DURATION_MIN_MS = 1000;
+const DURATION_MAX_MS = 10_000;
+const DURATION_STEP_MS = 500;
+
+function formatSeconds(ms: number): string {
+  return `${ms / 1000} s`;
+}
+
 interface ToastsSectionProps {
+  dev: DevToolsController;
   onShowToast?: (message: string, variant: ToastVariant) => void;
 }
 
 // Generic preview playground: any message combined with any registered
 // variant. New toast states appear here automatically once added to
 // TOAST_VARIANTS; nothing in this section is variant-specific.
-export function ToastsSection({ onShowToast }: ToastsSectionProps) {
+export function ToastsSection({ dev, onShowToast }: ToastsSectionProps) {
   const [variant, setVariant] = useState<ToastVariant>("neutral");
   const [message, setMessage] = useState("");
 
@@ -62,11 +73,23 @@ export function ToastsSection({ onShowToast }: ToastsSectionProps) {
         onChange={(event) => setMessage(event.target.value)}
         placeholder={PLACEHOLDERS[variant]}
       />
+      <Slider
+        label="Duración del toast"
+        min={DURATION_MIN_MS}
+        max={DURATION_MAX_MS}
+        step={DURATION_STEP_MS}
+        value={dev.config.toastDurationMs}
+        displayValue={formatSeconds(dev.config.toastDurationMs)}
+        onChange={(toastDurationMs) =>
+          dev.updateConfig((previous) => ({ ...previous, toastDurationMs }))
+        }
+      />
       <Button variant="secondary" onClick={show} className="h-9 text-xs">
         Mostrar toast
       </Button>
       <p className="text-xs text-on-surface-variant">
-        Con el mensaje vacío se usa el ejemplo de la variante.
+        Con el mensaje vacío se usa el ejemplo de la variante. Los ajustes se
+        aplican mientras el modo dev esté activo.
       </p>
     </section>
   );

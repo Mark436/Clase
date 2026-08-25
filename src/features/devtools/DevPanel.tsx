@@ -7,6 +7,7 @@ import type { DevConfig } from "./types";
 import { AdeudosSection } from "./components/AdeudosSection";
 import { ClockSection } from "./components/ClockSection";
 import { GradesSection } from "./components/GradesSection";
+import { InteractionSection } from "./components/InteractionSection";
 import { MateriasSection } from "./components/MateriasSection";
 import { ToastsSection } from "./components/ToastsSection";
 import type { DevToolsController } from "./useDevConfig";
@@ -49,7 +50,9 @@ export function DevPanel({ alumno, dev, onShowToast }: DevPanelProps) {
       <div className="border-t border-outline-variant pt-4" />
       <AdeudosSection dev={dev} />
       <div className="border-t border-outline-variant pt-4" />
-      <ToastsSection onShowToast={onShowToast} />
+      <InteractionSection dev={dev} />
+      <div className="border-t border-outline-variant pt-4" />
+      <ToastsSection dev={dev} onShowToast={onShowToast} />
 
       <div className="flex flex-col gap-2 border-t border-outline-variant pt-4">
         {simulating ? (
