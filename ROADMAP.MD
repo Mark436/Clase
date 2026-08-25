@@ -7,7 +7,7 @@ Especificación completa de estas fases en [`docs/plan.md`](docs/plan.md):
 - [x] **Fase A** — Mostrar el salón (código junto a la hora) en las tarjetas de clase en lugar del grupo.
 - [x] **Fase B** — Pull-to-refresh; sin credenciales en memoria abre el formulario de reingreso.
 - [x] **Fase C** — Home condicional: Calificaciones abre primero solo con cambios nuevos por ver y promedio del periodo ≠ 0.
-- [x] **Fase D** — Recordatorio diario (una vez al día) para volver a iniciar sesión, con toast.
+- [x] **Fase D** — Recordatorio diario (una vez al día) para volver a iniciar sesión, con toast. *(Evolucionado: hoy es un nudge de datos obsoletos ≥ 23 h — solo toast sugiriendo pull-to-refresh; el sheet de reingreso ya no se abre solo.)*
 
 ## 0. Base del proyecto
 
@@ -114,6 +114,7 @@ Sesión de la aplicación
 - [ ] Definir expiración de sesión.
 - [x] Definir comportamiento al recargar la PWA (se restauran los datos cacheados; sin contraseña guardada, se pide reingreso al actualizar).
 - [x] Recordar el usuario (nunca la contraseña) para agilizar accesos posteriores.
+- [x] Reingreso sin perder la sesión: un fallo durante la revalidación mantiene los datos en pantalla y reporta el error dentro del sheet (con usuario prellenado); el nudge de datos obsoletos (≥ 23 h) es solo un toast que sugiere pull-to-refresh, el sheet ya no se abre automáticamente.
 
 ### Accesos posteriores
 
@@ -224,6 +225,11 @@ Intentar actualizar
 - [x] Prioridad: materias manuales sobre las consultadas; entre iguales, el horario más temprano.
 - [x] Alternar el orden con un toque en el aviso: primer toque solo hoy (efímero), segundo toque toda la semana (persistente), tercer toque restaura el orden original.
 - [x] Limpiar preferencias de empalme obsoletas al desaparecer el empalme (por edición o datos nuevos).
+- [x] Botón circular "+" (solo icono) para agregar materia, reemplazando el botón con texto.
+- [x] Validación por campo en el editor (nombre vacío, rango inválido, sin días) con mensajes junto a cada campo y `TimeInput` dedicado; al corregir el error desaparece al instante.
+- [x] Al crear una materia, el horario salta al primer día seleccionado y muestra un toast de éxito.
+- [x] Presión larga con umbral por defecto de 550 ms (`DEFAULT_LONG_PRESS_MS`); la web no puede leer el umbral del sistema operativo (limitación documentada en `docs/app-flow.md`).
+- [x] Reconciliación de ediciones manuales vs. cambios de la escuela (drift): tras cada fetch real se comparan los campos de texto contra la línea base guardada; los choques con ediciones vivas persisten como conflictos pendientes y se resuelven en un sheet ("Usar el nuevo" / "Conservar el mío"). Pausado durante simulación dev.
 
 ### Navegación entre días
 
@@ -284,6 +290,7 @@ Intentar actualizar
 - [x] Mostrar semestre actual.
 - [ ] Mostrar progreso por semestre si la información lo permite.
 - [x] Crear componente visual de progreso.
+- [x] Notificar avance de carrera: toast in-app y notificación local opcional (mismo opt-in que adeudos) cuando `progreso` aumenta entre fetchs reales, indicando cuánto subió.
 - [ ] Evitar presentar información académica redundante.
 
 ## 9. Avisos
@@ -340,6 +347,7 @@ Intentar actualizar
 - [x] Sección de pruebas de toast: variante y mensaje arbitrarios (los estados nuevos aparecen solos al registrarse en `TOAST_VARIANTS`).
 - [x] Slider de duración del toast (1–10 s) y de duración de presión larga (200–1500 ms); aplican solo con el panel abierto (pausa al cerrar, igual que el resto de overrides).
 - [x] Toast con desvanecimiento de salida y temporizadores que no se reinician con re-renders del host.
+- [x] Los toggles de calificaciones y adeudos disparan los toasts reales de producción (mismo texto y variante que un fetch real), a través del mismo `onShowToast` del shell.
 - [ ] Evaluar retirar el panel antes de compartir la app con otros alumnos.
 
 ## 13.1 Pruebas
@@ -348,6 +356,7 @@ Intentar actualizar
 - [x] Pruebas de lógica pura del horario: cuenta regresiva, selección de clase actual/siguiente en el minuto exacto, `parseMinutes`/`formatMinutes`.
 - [x] Pruebas de resolución de empalmes: agrupamiento, prioridad, fracciones amigables y preferencias de alternancia.
 - [x] Pruebas de aplicación de ediciones y validación de la persistencia del horario.
+- [x] Pruebas de reconciliación de drift (`collectSubjectFields`, `detectManualEditConflicts`, fusión de conflictos) y de las nuevas formas persistidas (snapshots, conflictos pendientes).
 - [x] Pruebas de sincronización del temporizador por minuto (`msUntilNextMinute`, independiente de zona horaria).
 
 ## 14. Criterio de finalización

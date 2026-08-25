@@ -159,8 +159,14 @@ IndexedDB persistence for the app cache and small settings. Three stores:
 - `app-data` — last valid academic snapshot (`CachedAppData`: `alumno`, `avisos`, `loadedAt`);
 - `grade-tracking` — per-subject `TrackedGrade` (`current` vs `previous`) so the grades feature can mark new or changed grades;
 - `settings` — non-sensitive preferences: remembered username, adeudo-alerts
-  opt-in, grades-seen flag, daily re-auth reminder date, and dev-tools
-  simulation config.
+  opt-in, grades-seen flag, last login timestamp (drives the 23h stale-data
+  nudge), last reminder date, and dev-tools simulation config.
+
+A fourth store, `schedule-edits`, holds the user's schedule customization
+overlay: per-subject text overrides, per-occurrence time moves, manually
+added subjects (`USR-*` claves), weekly conflict preferences, drift
+baselines (`fieldSnapshots`), and unresolved reconciliation prompts
+(`pendingConflicts`). All of it is wiped on logout.
 
 The restore flow lives in `features/auth/AuthProvider.tsx`: cached data hydrates
 the session before any network activity, and a successful login overwrites the
@@ -174,12 +180,18 @@ IndexedDB APIs.
 **Invariant:** Passwords and long-lived credential secrets are never written here;
 only the username is remembered.
 
+**Invariant:** The edit overlay never mutates API data. Fetched schedules are the
+base layer; overrides apply on top at render time, so a fresh fetch can always be
+re-reconciled against stored baselines (`features/schedule/drift.ts`).
+
 ### `src/lib/notifications/`
 
-Local notification infrastructure. Owns permission management and exposes a single
-entry point, `notifyNewAdeudos(previousAlumno, nextAlumno)`, which fires an adeudo
-alert only on a clean→indebt transition and only when the stored opt-in allows it.
-Future server-push support implements the same seam without touching features.
+Local notification infrastructure. Owns permission management and exposes
+entry points that share one opt-in and permission gate: `notifyNewAdeudos(previousAlumno, nextAlumno)`
+fires an adeudo alert only on a clean→indebt transition, and `notifyCareerProgress(delta)`
+fires when academic progress increases between real fetches. Both dispatch via the
+service worker registration with distinct tags so repeats coalesce.
+Future server-push support implements the same seams without touching features.
 
 **Invariant:** Features never touch the Notification or ServiceWorker APIs directly.
 

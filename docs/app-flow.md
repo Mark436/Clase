@@ -91,18 +91,27 @@ User submits usuario + contrasena
   |
   v
 login(user, pass)                       [AuthProvider]
-  |-- status = "authenticating"         (button shows spinner)
+  |-- already authenticated? (resume from ReAuthSheet)
+  |      yes -> pendingAuth = true only; global status untouched,
+  |            shell keeps rendering behind the sheet
+  |      no  -> status = "authenticating"  (button shows spinner)
   |-- fetchAppData({ user, pass })      -> SithClient -> API
   |
-  |-- failure -> errorKind mapped to a friendly Spanish message,
-  |              status = "unauthenticated", form stays filled
+  |-- failure while resuming -> session survives; error shown inside
+  |            the sheet, form stays filled (no kick back to login)
+  |-- failure on fresh login -> errorKind mapped to a friendly Spanish
+  |            message, status = "unauthenticated"
   |
   |-- success
        |-- credentialsRef.current = { user, pass }   (memory only!)
        |-- previousAlumno = loadAppData()?.alumno    (baseline for alerts)
        |-- state = authenticated; UI switches to shell
+       |-- setSetting(lastLoginAt, now ISO)          (drives the 23h nudge)
        |-- fire-and-forget persistSession(...)       (see section 4)
 ```
+
+The username is remembered (`SETTING_REMEMBERED_USERNAME`) and prefilled
+in both `CredentialsForm` instances; only the password must be retyped.
 
 `persistSession` never blocks navigation; it merges grade tracking,
 saves the snapshot with a fresh `loadedAt`, remembers the username, then
@@ -116,54 +125,57 @@ persistSession(previousAlumno, alumno, avisos, user)
   |-- saveAppData({ alumno, avisos, loadedAt })
   |-- setSetting(rememberedUsername, user)
   |-- notifyNewAdeudos(previousAlumno, alumno)     (section 7)
-  |-- return { hasChanges, newAdeudo }
+  |-- progressGain = progressDelta(previousAlumno, alumno)
+  |-- notifyCareerProgress(progressGain)           (section 7)
+  |-- return { hasChanges, newAdeudo, progressGain }
         |
         v
 handlePersistResult
-  |-- hasChanges -> unseenGradeChanges = true
-  |                 gradesSeen = "false"
-  |                 gradeChangeCount += 1        (drives green toast)
-  |-- newAdeudo  -> adeudoAlertCount += 1        (drives red toast)
+  |-- hasChanges   -> unseenGradeChanges = true
+  |                  gradesSeen = "false"
+  |                  gradeChangeCount += 1        (drives green toast)
+  |-- newAdeudo    -> adeudoAlertCount += 1        (drives red toast)
+  |-- progressGain -> lastProgressGain / progressAlertCount += 1
+                                       (drives progress toast + alert)
 ```
 
 The very first login sets the grade baseline: `mergeGradeTracking`
 reports no changes when there was no previous tracking, so a fresh
 install never toasts about "new" grades.
 
-## 3. Credentials lifecycle and the daily re-auth reminder
+## 3. Credentials lifecycle and the stale-data nudge
 
 Because the password dies with the page (refresh, close, OS reclaim), a
-restored session has data but no way to refresh. The app surfaces this
-honestly instead of failing silently on pull-to-refresh.
+restored session has data but no way to refresh. The app never pushes
+the re-auth sheet on its own; instead, once a session is ~23 hours old
+it nudges with a plain toast suggesting a pull-to-refresh.
 
 ```text
-Session restored from cache (hasCredentials = false)
+AuthenticatedShell effect (runs when alumno changes)
   |
-  v
-AuthenticatedShell effect (runs whenever hasCredentials/alumno change)
-  |
-  |-- already has credentials? -> do nothing
-  |
+  |-- getSetting(lastLoginAt)        written only on credential success
   |-- getSetting(lastReAuthPromptDate)
-  |-- shouldPromptReAuth(lastPromptDate, today)?
-  |      (compares local YYYY-MM-DD strings)
+  |-- already consumed today (local YYYY-MM-DD)? -> done for today
   |
-  |-- no  -> done for today
+  |-- age >= STALE_SESSION_NUDGE_MS (23 h)?
+  |      unknown lastLoginAt (legacy installs) counts as stale once
   |
-  |-- yes -> save today as lastReAuthPromptDate   (consumes the day
-  |           even if the sheet is dismissed without logging in)
-  |-- open ReAuthSheet + neutral toast:
-       "Se recomienda volver a iniciar sesion para actualizar tus datos."
+  |-- not stale -> done
+  |
+  |-- stale -> save today as lastReAuthPromptDate   (once per day)
+  |-- neutral toast: "Llevas mas de un dia sin actualizar tus datos.
+       Desliza hacia abajo para refrescar."
 ```
 
-`ReAuthSheet` is a bottom sheet with the shared `CredentialsForm`
-(`autoFocusPassword`, submit label "Actualizar datos"). A successful
-submit runs the same `login()` path as section 2: credentials return to
-memory, data refreshes, cache updates. Closing the backdrop just hides
-the sheet until the next day.
+`ReAuthSheet` is demand-only: it opens from pull-to-refresh without
+credentials (section 4) and stays reachable there. It renders the shared
+`CredentialsForm` (`autoFocusPassword`, username prefilled from
+`rememberedUsername`, submit label "Actualizar datos"). A successful
+submit resumes through `login()` while the shell keeps rendering — a
+failed attempt leaves the session intact and reports inside the sheet.
 
 The same sheet opens on demand when pull-to-refresh fires without
-credentials (section 5).
+credentials.
 
 ## 4. Data refresh
 
@@ -252,15 +264,21 @@ order always wins once the conflict no longer exists.
 ### Editing subjects
 
 ```text
-Long-press card (>= configured ms)  OR  tap pencil icon
-  |
-  v
+Long-press card (>= DEFAULT_LONG_PRESS_MS = 550)  OR  tap pencil icon
+   |
+   v
 SubjectEditorSheet
   |-- edit mode: rename / professor / classroom (whole subject),
   |              time range for THIS occurrence only
-  |-- create mode ("Agregar materia"): days checkboxes + time range;
-  |              clave generated as `USR-<base36 timestamp>`
+  |-- create mode ("Agregar materia", circular "+" button):
+  |              days checkboxes + time range; clave generated as
+  |              `USR-<base36 timestamp>`; on save the schedule jumps
+  |              to the first selected weekday so the new subject is
+  |              visible immediately + success toast
   |-- remove mode: only for manually added subjects
+  |-- validation: per-field messages (empty name, invalid range,
+  |              no days); errors clear as the field changes — never a
+  |              single generic banner
   |
   v
 useScheduleEdits.commit     optimistic setState + fire-and-forget
@@ -270,6 +288,42 @@ useScheduleEdits.commit     optimistic setState + fire-and-forget
 Empty text fields mean "revert to fetched value"; clearing a time edit
 deletes the override. Logout wipes everything (section 9), so edits are
 per-installation, not portable.
+
+Long-press threshold note: 550 ms is a sensible default, but the web has
+no access to the OS haptic/long-press timeout (Android's ViewConfigurat-
+ion is unreachable from a browser). The devtools slider exists precisely
+to tune this per taste; on Android, very long system thresholds may make
+the gesture feel late.
+
+### Manual-edit drift (reconciliation)
+
+The school can change what was already edited locally (renamed subject,
+moved classroom). After each **real** fetch (dev simulation pauses the
+check), the pipeline compares fresh raw values against stored baselines:
+
+```text
+fetch processes alumno.horario
+  |
+  v
+collectSubjectFields(mapHorario(...))     raw `${clave}|${field}` map,
+  |                                       text fields only (name,
+  |                                       professor, classroom)
+  v
+detectManualEditConflicts(next, previousSnapshots, fieldEdits)
+  |-- key seen for the first time  -> baseline saved, never a conflict
+  |-- school value unchanged       -> nothing
+  |-- manual edit == new value     -> silent, already satisfied
+  |-- else                         -> PendingEditConflict
+  v
+registerDrift(conflicts, snapshots)   persists both (survive restarts)
+```
+
+Unresolved conflicts render `EditConflictsSheet` (bottom sheet): per
+conflict it shows "Guardaste X / La escuela ahora dice Y" with two
+actions — "Usar el nuevo" deletes that single field override; "Conservar
+el mío" only dismisses the prompt and keeps the override. Times are out
+of scope: they are per-occurrence and have no single school-side value
+to diff against.
 
 ### Minute-boundary timing
 
@@ -303,26 +357,41 @@ Three channels, all local today; server push would slot in behind the
 same seams later.
 
 **Toasts (in-app).** One toast at a time, hosted in `AuthenticatedShell`.
-Each notification gets an incrementing id used as the React key, so
-back-to-back toasts remount cleanly instead of restarting timers mid-
-flight. Timers are two-phase: hide at `durationMs`, unmount 200 ms later
+Default duration is 1300 ms with a translucent, blurred surface; each
+notification gets an incrementing id used as the React key, so back-to-
+back toasts remount cleanly instead of restarting timers mid-flight.
+Timers are two-phase: hide at `durationMs`, unmount 200 ms later
 (fade-out). Host re-renders cannot reset them (latest callback kept in a
 ref).
 
 ```text
 Trigger                              Variant   Message
 -----------------------------------  --------  ------------------------------
-fetch detects grade changes          success   calificaciones nuevas...
+fetch detects grade changes          success   "Tienes calificaciones nuevas."
 fetch detects clean->debt            error     adeudo nuevo pendiente
-daily reminder fired                 neutral   se recomienda volver a...
+career progress increases            success   "Avanzaste X% en tu carrera."
+session ~23h old (once/day)          neutral   desliza para refrescar...
+dev panel: grades toggle             success   same grade-change message
+dev panel: debt toggle               error     same debt message
+dev panel: grade edit commit         success   same grade-change message
 dev panel test buttons               any       arbitrary message
 ```
+
+Dev toggles fire the real production toasts through the same
+`onShowToast` seam the shell uses — the dev panel tests the actual copy,
+not a parallel channel.
 
 **Debt system notification (opt-in).** `notifyNewAdeudos` fires only on
 the clean→indebt transition, never while the debt persists. Requires the
 stored opt-in **and** granted `Notification.permission`; dispatches via
 the service worker registration with `tag: "adeudos"` so repeats
 coalesce.
+
+**Career-progress system notification (opt-in).** Same gate and seam as
+debts (`notifyCareerProgress`, `tag: "career-progress"`): fires when
+`alumno.progreso` increases between two real fetches, with the rounded
+percentage-point gain in the body. The in-app toast mirrors it with the
+same delta.
 
 **Conditional home.** Not a notification per se, but the third way grade
 changes surface (section 6).
@@ -337,11 +406,18 @@ While the panel is **open and enabled**, `applyDevOverrides` wraps the
 real `alumno` into a virtual one consumed by every screen (clock offset,
 fake grades, debt toggles, added schedule items) and the UX timings take
 their slider values (toast 1–10 s, long-press 200–1500 ms). Fetches and
-persistence keep using real data — simulation is presentation-only.
+persistence keep using real data — simulation is presentation-only, and
+the `simulated` flag also pauses manual-edit drift detection so virtual
+values never overwrite stored baselines.
+
+The Calificaciones and Adeudos sections do not just flip data: on their
+respective transitions (grade edit commit on blur; debt appearing after
+a clean state) they invoke the shell's real toast — production copy,
+production timing.
 
 Closing the panel pauses everything: overrides vanish, timings revert to
-built-in defaults (`DEFAULT_TOAST_DURATION_MS` = 3500 ms,
-`DEFAULT_LONG_PRESS_MS` = 500 ms). Configuration survives; "Restaurar
+built-in defaults (`DEFAULT_TOAST_DURATION_MS` = 1300 ms,
+`DEFAULT_LONG_PRESS_MS` = 550 ms). Configuration survives; "Restaurar
 datos reales" clears it.
 
 ## 9. Logout and data lifecycle
