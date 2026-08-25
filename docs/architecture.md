@@ -1,6 +1,6 @@
 # Architecture
 
-Clase is a mobile-first academic PWA for students. It lets a logged-in student
+Studia is a mobile-first academic PWA for students. It lets a logged-in student
 see their schedule, grades, profile, notices, and debt alerts without navigating an
 institutional portal. Data comes from the academic API through `sith-api-client`; the
 frontend owns presentation, caching, and refresh orchestration.

@@ -16,10 +16,10 @@ export default defineConfig({
     VitePWA({
       registerType: "autoUpdate",
       manifest: {
-        name: "Clase",
-        short_name: "Clase",
+        name: "Studia",
+        short_name: "Studia",
         description:
-          "Clase: aplicación móvil para consultar horario, calificaciones y alumno.",
+          "Studia: aplicación móvil para consultar horario, calificaciones y alumno.",
         theme_color: "#0f172a",
         background_color: "#f8fafc",
         display: "standalone",

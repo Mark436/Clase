@@ -1,4 +1,4 @@
-# Roadmap — Clase
+# Roadmap — Studia
 
 ## Pendientes inmediatos
 
@@ -7,7 +7,7 @@ Especificación completa de estas fases en [`docs/plan.md`](docs/plan.md):
 - [x] **Fase A** — Mostrar el salón (código junto a la hora) en las tarjetas de clase en lugar del grupo.
 - [x] **Fase B** — Pull-to-refresh; sin credenciales en memoria abre el formulario de reingreso.
 - [x] **Fase C** — Home condicional: Calificaciones abre primero solo con cambios nuevos por ver y promedio del periodo ≠ 0.
-- [x] **Fase D** — Recordatorio diario (una vez al día) para volver a iniciar sesión, con toast. *(Evolucionado: hoy es un nudge de datos obsoletos ≥ 23 h — solo toast sugiriendo pull-to-refresh; el sheet de reingreso ya no se abre solo.)*
+- [x] **Fase D** — Recordatorio diario (una vez al día) para volver a iniciar sesión, con toast. _(Evolucionado: hoy es un nudge de datos obsoletos ≥ 23 h — solo toast sugiriendo pull-to-refresh; el sheet de reingreso ya no se abre solo.)_
 
 ## 0. Base del proyecto
 
