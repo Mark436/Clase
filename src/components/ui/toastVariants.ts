@@ -4,3 +4,8 @@
 export const TOAST_VARIANTS = ["neutral", "success", "error"] as const;
 
 export type ToastVariant = (typeof TOAST_VARIANTS)[number];
+
+// Default visibility window before a toast starts fading out. Deliberately
+// short: notifications here are confirmations, not reading material. Dev
+// settings may override it per session; this is the built-in fallback.
+export const DEFAULT_TOAST_DURATION_MS = 1300;
