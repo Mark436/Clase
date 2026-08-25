@@ -8,6 +8,7 @@ export const SETTING_DEV_CONFIG = "devConfig";
 // Legacy flag from the previous unlock-only flow; read once for migration.
 export const SETTING_DEV_UNLOCKED = "devUnlocked";
 export const SETTING_DEV_MODE_ENABLED = "devModeEnabled";
+export const SETTING_SCHEDULE_EDITS = "scheduleEdits";
 
 // Settings hold non-sensitive values only. The password must never be stored.
 export async function getSetting(key: string): Promise<string | null> {

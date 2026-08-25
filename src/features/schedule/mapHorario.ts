@@ -39,6 +39,7 @@ export function mapHorario(
         seen.add(key);
 
         meetings.push({
+          clave: subject.clave,
           subjectName,
           classroom: slot.classroom,
           professor: subject.docente.trim(),
