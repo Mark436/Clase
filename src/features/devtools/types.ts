@@ -13,7 +13,10 @@ export interface DevMateria {
 }
 
 // Built-in hold time before a long-press activates subject-card editing.
-export const DEFAULT_LONG_PRESS_MS = 500;
+// The web platform exposes no OS-specific long-press threshold (Android's
+// ViewConfiguration timeout is not reachable from browsers), so one value
+// rules every device. 550 ms sits close to common native defaults.
+export const DEFAULT_LONG_PRESS_MS = 550;
 
 export interface DevConfig {
   clockOffsetMinutes: number | null;
