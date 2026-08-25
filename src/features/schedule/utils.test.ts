@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { ClassMeeting } from "./types";
 import {
+  dateForWeekday,
   formatMinutes,
   formatRelativeTime,
   getCurrentClass,
@@ -107,5 +108,20 @@ describe("minutes helpers", () => {
 
   it("computes minutes-of-day", () => {
     expect(minutesOf(at(605))).toBe(605);
+  });
+});
+
+describe("dateForWeekday", () => {
+  // Monday 2026-08-24.
+  const monday = at(600);
+
+  it("stays on the same day when it already matches", () => {
+    const result = dateForWeekday(monday, 1);
+    expect(result.getDay()).toBe(1);
+    expect(result.getDate()).toBe(24);
+  });
+
+  it("moves forward inside the same week", () => {
+    expect(dateForWeekday(monday, 6).getDate()).toBe(29); // Saturday
   });
 });

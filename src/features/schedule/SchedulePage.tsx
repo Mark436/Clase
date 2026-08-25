@@ -1,16 +1,23 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Page } from "@/components/layout/Page";
 import { PageHeader } from "@/components/layout/PageHeader";
-import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { PlusIcon } from "@/components/ui/icons";
 import { Spinner } from "@/components/ui/Spinner";
+import type { ToastVariant } from "@/components/ui/toastVariants";
 import { getNow } from "@/lib/devtools/clock";
 import { useCurrentTime } from "@/lib/devtools/useCurrentTime";
 import type { Alumno } from "@/lib/api/client";
 import { CUSTOM_CLAVE_PREFIX } from "@/lib/storage/scheduleEditsStore";
+import type { EditedField } from "@/lib/storage/scheduleEditsStore";
+import { SUBJECT_ADDED_TOAST } from "@/lib/toastMessages";
 import type { ResolvedMeeting } from "./types";
 import { applyScheduleEdits, isCustomClave } from "./edits";
+import {
+  collectSubjectFields,
+  detectManualEditConflicts,
+  sameStringMap,
+} from "./drift";
 import {
   dailySwapKey,
   resolveConflicts,
@@ -21,12 +28,16 @@ import { DayNavigation } from "./components/DayNavigation";
 import { ScheduleDayView } from "./components/ScheduleDayView";
 import { SubjectEditorSheet } from "./components/SubjectEditorSheet";
 import type { SubjectEditorSubmit } from "./components/SubjectEditorSheet";
-import { getScheduleForDay, isSameDay } from "./utils";
+import { EditConflictsSheet } from "./components/EditConflictsSheet";
+import { dateForWeekday, getScheduleForDay, isSameDay } from "./utils";
 
 interface SchedulePageProps {
   alumno: Alumno | null;
   /** Hold time before long-press opens the editor (dev-configurable). */
   longPressDurationMs?: number;
+  /** True while dev simulation feeds the screens: drift detection pauses. */
+  simulated?: boolean;
+  onShowToast?: (message: string, variant: ToastVariant) => void;
 }
 
 type EditorState =
@@ -37,6 +48,8 @@ type EditorState =
 export function SchedulePage({
   alumno,
   longPressDurationMs,
+  simulated = false,
+  onShowToast,
 }: SchedulePageProps) {
   const now = useCurrentTime();
   const [selectedDate, setSelectedDate] = useState<Date>(() => getNow());
@@ -93,6 +106,54 @@ export function SchedulePage({
       setWeeklyPreference(key, null);
     }
   }, [resolvedWeek, editsLoaded, edits.conflictOverrides, setWeeklyPreference]);
+
+  // Manual-edit drift: after each real fetch, compare the fresh raw values
+  // against the stored baseline. School changes colliding with a live manual
+  // override become pending conflicts the user must settle. Paused while dev
+  // simulation feeds the screens so virtual data never pollutes baselines.
+  const { registerDrift } = scheduleEdits;
+  useEffect(() => {
+    if (simulated || !alumno || !editsLoaded) return;
+
+    const rawFields = collectSubjectFields(
+      mapHorario(alumno.horario, alumno.boleta),
+    );
+    const conflicts = detectManualEditConflicts(
+      rawFields,
+      edits.fieldSnapshots,
+      edits.fieldEdits,
+    );
+    const snapshotsChanged = !sameStringMap(rawFields, edits.fieldSnapshots);
+
+    if (conflicts.length > 0 || snapshotsChanged) {
+      registerDrift(conflicts, rawFields);
+    }
+  }, [
+    alumno,
+    simulated,
+    editsLoaded,
+    edits.fieldSnapshots,
+    edits.fieldEdits,
+    registerDrift,
+  ]);
+
+  function handleResolveConflict(
+    clave: string,
+    field: EditedField,
+    useNewValue: boolean,
+  ) {
+    scheduleEdits.resolvePendingConflict(clave, field, useNewValue);
+  }
+
+  const subjectNames = useMemo(() => {
+    const names: Record<string, string> = {};
+    for (const meeting of weekMeetings) {
+      if (names[meeting.clave] === undefined) {
+        names[meeting.clave] = meeting.subjectName;
+      }
+    }
+    return names;
+  }, [weekMeetings]);
 
   const handleSwapToggle = useCallback(
     (target: ResolvedMeeting) => {
@@ -159,6 +220,11 @@ export function SchedulePage({
           endMinutes: submit.endMinutes,
         })),
       });
+      // Jump to the first scheduled day so the new subject is visible
+      // immediately, even when it does not meet today.
+      const firstDay = Math.min(...submit.days);
+      setSelectedDate(dateForWeekday(now, firstDay));
+      onShowToast?.(SUBJECT_ADDED_TOAST, "success");
     }
     setEditor({ mode: "closed" });
   }
@@ -190,14 +256,15 @@ export function SchedulePage({
               onSelectDate={setSelectedDate}
             />
             <div className="mb-3 flex justify-end">
-              <Button
-                variant="ghost"
+              <button
+                type="button"
                 onClick={() => setEditor({ mode: "create" })}
-                className="h-9 px-3 text-xs"
+                aria-label="Agregar materia"
+                title="Agregar materia"
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-container text-on-primary-container transition-colors hover:bg-primary-container/70 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary"
               >
-                <PlusIcon size={16} />
-                Agregar materia
-              </Button>
+                <PlusIcon size={20} />
+              </button>
             </div>
             <ScheduleDayView
               dayMeetings={dayMeetings}
@@ -223,6 +290,15 @@ export function SchedulePage({
               : undefined
           }
           onClose={() => setEditor({ mode: "closed" })}
+        />
+      ) : null}
+
+      {edits.pendingConflicts.length > 0 ? (
+        <EditConflictsSheet
+          conflicts={edits.pendingConflicts}
+          subjectNames={subjectNames}
+          onResolve={handleResolveConflict}
+          onClose={() => undefined}
         />
       ) : null}
     </>

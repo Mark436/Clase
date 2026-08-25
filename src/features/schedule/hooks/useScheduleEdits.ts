@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type {
   CustomSubject,
+  EditedField,
   MeetingTimeEdit,
+  PendingEditConflict,
   ScheduleEdits,
   SubjectFieldEdit,
 } from "@/lib/storage/scheduleEditsStore";
@@ -10,6 +12,7 @@ import {
   loadScheduleEdits,
   saveScheduleEdits,
 } from "@/lib/storage/scheduleEditsStore";
+import { mergePendingConflicts } from "../drift";
 import { timeEditKey } from "../edits";
 
 export interface ScheduleEditsController {
@@ -24,6 +27,20 @@ export interface ScheduleEditsController {
   addCustomSubject: (subject: CustomSubject) => void;
   removeCustomSubject: (clave: string) => void;
   setWeeklyPreference: (groupKey: string, clave: string | null) => void;
+  /** Records fresh raw values as the new baseline and queues any conflicts. */
+  registerDrift: (
+    conflicts: PendingEditConflict[],
+    snapshots: Record<string, string>,
+  ) => void;
+  /**
+   * Settles one pending conflict: `useNewValue` drops the manual override for
+   * that field; otherwise the override stays and only the prompt is cleared.
+   */
+  resolvePendingConflict: (
+    clave: string,
+    field: EditedField,
+    useNewValue: boolean,
+  ) => void;
 }
 
 // Persistence is fire-and-forget: state updates optimistically and a storage
@@ -139,6 +156,47 @@ export function useScheduleEdits(): ScheduleEditsController {
     [commit],
   );
 
+  const registerDrift = useCallback(
+    (conflicts: PendingEditConflict[], snapshots: Record<string, string>) => {
+      commit({
+        ...ref.current,
+        fieldSnapshots: snapshots,
+        pendingConflicts: mergePendingConflicts(
+          ref.current.pendingConflicts,
+          conflicts,
+        ),
+      });
+    },
+    [commit],
+  );
+
+  const resolvePendingConflict = useCallback(
+    (clave: string, field: EditedField, useNewValue: boolean) => {
+      const pendingConflicts = ref.current.pendingConflicts.filter(
+        (pending) =>
+          !(pending.clave === clave && pending.field === field),
+      );
+
+      let fieldEdits = ref.current.fieldEdits;
+      if (useNewValue) {
+        const edit = fieldEdits[clave];
+        if (edit !== undefined) {
+          const nextEdit = { ...edit };
+          delete nextEdit[field];
+          fieldEdits = { ...fieldEdits };
+          if (Object.keys(nextEdit).length === 0) {
+            delete fieldEdits[clave];
+          } else {
+            fieldEdits[clave] = nextEdit;
+          }
+        }
+      }
+
+      commit({ ...ref.current, fieldEdits, pendingConflicts });
+    },
+    [commit],
+  );
+
   return {
     edits,
     loaded,
@@ -147,5 +205,7 @@ export function useScheduleEdits(): ScheduleEditsController {
     addCustomSubject,
     removeCustomSubject,
     setWeeklyPreference,
+    registerDrift,
+    resolvePendingConflict,
   };
 }

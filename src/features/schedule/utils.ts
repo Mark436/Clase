@@ -14,6 +14,14 @@ export function isSameDay(a: Date, b: Date): boolean {
   );
 }
 
+/** Date within `from`'s week (Sun-based) matching the given weekday 1-6. */
+export function dateForWeekday(from: Date, weekday: number): Date {
+  const delta = (weekday - from.getDay() + 7) % 7;
+  const date = new Date(from);
+  date.setDate(date.getDate() + delta);
+  return date;
+}
+
 export function addDays(date: Date, amount: number): Date {
   const next = new Date(date);
   next.setDate(next.getDate() + amount);
