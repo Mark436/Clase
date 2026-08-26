@@ -13,9 +13,11 @@ html {
 :root {
   color-scheme: light;
 
-  /* Identity */
-  --studia-cobalto: #2e6bff;
-  --studia-cobalto-strong: #1b49c8;
+  /* Identity — cobalto vivo (#4c7cef, matiz 222°). Por doctrina de escasez
+     (docs/design.md §2) aparece puro en UN momento por pantalla; el resto de
+     la UI usa contenedores tenues o neutros. */
+  --studia-cobalto: #4c7cef;
+  --studia-cobalto-strong: #325bad;
 
   /* Neutral surfaces (light) */
   --studia-bg: #fafafb;
@@ -26,8 +28,8 @@ html {
   --studia-line-soft: #ecedf1;
 
   /* Tinted containers */
-  --studia-primary-container: #eaf0ff;
-  --studia-on-primary-container: #1b49c8;
+  --studia-primary-container: #ebf1fb;
+  --studia-on-primary-container: #325bad;
 
   /* Functional */
   --studia-success: #1da55a;
@@ -46,8 +48,8 @@ html {
       0 -1px 1px rgb(23 24 28 / 4%) inset, 0 8px 32px rgb(23 24 28 / 14%);
     --studia-glass-blur: 20px;
 
-    --studia-accent-glass-tint: rgb(46 107 255 / 14%);
-    --studia-accent-glass-border: rgb(46 107 255 / 30%);
+    --studia-accent-glass-tint: rgb(76 124 239 / 16%);
+    --studia-accent-glass-border: rgb(76 124 239 / 32%);
 
   /* Elevation (light) */
   --studia-shadow-card: 0 1px 2px rgb(23 24 28 / 4%),
@@ -59,18 +61,18 @@ html {
   :root {
     color-scheme: dark;
 
-    --studia-cobalto: #6b93ff;
-    --studia-cobalto-strong: #b4cbff;
+    --studia-cobalto: #8aa6e4;
+    --studia-cobalto-strong: #bccdf2;
 
     --studia-bg: #12141a;
     --studia-fg: #f2f4f8;
-    --studia-fg-muted: #9ba3b4;
+    --studia-fg-muted: #b0b9cc;
     --studia-surface: #1a1d24;
     --studia-line: #333845;
     --studia-line-soft: #262a33;
 
-    --studia-primary-container: #1c2b4a;
-    --studia-on-primary-container: #b4cbff;
+    --studia-primary-container: #1f2b47;
+    --studia-on-primary-container: #bccdf2;
 
     --studia-success: #3dd68c;
     --studia-on-success: #06281a;
@@ -87,8 +89,8 @@ html {
       0 -1px 1px rgb(0 0 0 / 20%) inset, 0 8px 32px rgb(0 0 0 / 42%);
     --studia-glass-blur: 20px;
 
-    --studia-accent-glass-tint: rgb(107 147 255 / 18%);
-    --studia-accent-glass-border: rgb(107 147 255 / 34%);
+    --studia-accent-glass-tint: rgb(133 165 240 / 20%);
+    --studia-accent-glass-border: rgb(133 165 240 / 36%);
 
     --studia-shadow-card: 0 1px 2px rgb(0 0 0 / 24%),
       0 12px 32px -16px rgb(0 0 0 / 52%);
@@ -190,6 +192,8 @@ body {
    plain CSS transitions. */
 :root {
   --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+  /* Signature glide for larger surfaces (cards entering, sheets). */
+  --ease-glide: cubic-bezier(0.32, 0.72, 0, 1);
   --ease-spring: linear(
     0,
     0.0083 6.3%,
@@ -285,4 +289,78 @@ body {
     transform: scale(1.35);
     opacity: 0.55;
   }
+}
+
+/* Micro-pill eyebrow: precedes major headings and stat labels. */
+@utility eyebrow {
+  font-size: 10px;
+  line-height: 1.2;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--studia-fg-muted);
+}
+
+/* Staggered entry for a container's direct children. GPU-safe: only
+   transform + opacity animate; prefers-reduced-motion neutralizes it via
+   the global rule above. */
+@keyframes studia-rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.stagger > * {
+  animation: studia-rise 0.55s var(--ease-glide) both;
+}
+.stagger > *:nth-child(2) {
+  animation-delay: 60ms;
+}
+.stagger > *:nth-child(3) {
+  animation-delay: 120ms;
+}
+.stagger > *:nth-child(4) {
+  animation-delay: 180ms;
+}
+.stagger > *:nth-child(5) {
+  animation-delay: 240ms;
+}
+.stagger > *:nth-child(6) {
+  animation-delay: 300ms;
+}
+.stagger > *:nth-child(7) {
+  animation-delay: 360ms;
+}
+.stagger > *:nth-child(n + 8) {
+  animation-delay: 420ms;
+}
+
+/* Border-as-progress ring for the context capsule: a conic arc painted on
+   the border band via mask compositing, so it follows any radius (circle or
+   stadium) and survives morphs. Driven by the --p custom property (0-100). */
+.studia-ring-progress::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 2px;
+  background: conic-gradient(
+    from 180deg,
+    var(--studia-cobalto) calc(var(--p, 0) * 1%),
+    transparent 0
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  pointer-events: none;
 }
