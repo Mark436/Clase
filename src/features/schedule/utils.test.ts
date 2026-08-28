@@ -1,11 +1,15 @@
 import { describe, expect, it } from "vitest";
 import type { ClassMeeting } from "./types";
 import {
+  FREE_GAP_MIN_MINUTES,
   dateForWeekday,
+  formatFreeDuration,
   formatMinutes,
   formatRelativeTime,
   formatTomorrowCapsuleLabel,
+  freeMinutesBetween,
   getCurrentClass,
+  getFreeGaps,
   getNextClass,
   getNextClassNote,
   getVisibleClasses,
@@ -129,6 +133,62 @@ describe("formatTomorrowCapsuleLabel", () => {
     expect(
       formatTomorrowCapsuleLabel(new Date(2026, 7, 24, 21, 30), now, "21:30"),
     ).toBe("mañana 21:30");
+  });
+});
+
+describe("freeMinutesBetween", () => {
+  it("counts the free minutes between the previous end and the next start", () => {
+    expect(freeMinutesBetween(660, 800)).toBe(140);
+    expect(freeMinutesBetween(660, 675)).toBe(15);
+  });
+
+  it("never reports negative gaps for overlapping meetings", () => {
+    expect(freeMinutesBetween(690, 660)).toBe(0);
+    expect(freeMinutesBetween(700, 700)).toBe(0);
+  });
+});
+
+describe("formatFreeDuration", () => {
+  it("formats hours, minutes and short readings", () => {
+    expect(formatFreeDuration(70)).toBe("1h 10m");
+    expect(formatFreeDuration(120)).toBe("2h");
+    expect(formatFreeDuration(45)).toBe("45m");
+    expect(formatFreeDuration(0)).toBe("");
+  });
+});
+
+describe("getFreeGaps", () => {
+  const day = [
+    meeting({ clave: "A", startMinutes: 480, endMinutes: 600 }),
+    meeting({ clave: "B", startMinutes: 615, endMinutes: 675 }),
+    meeting({ clave: "C", startMinutes: 675, endMinutes: 735 }),
+    meeting({ clave: "D", startMinutes: 840, endMinutes: 900 }),
+  ];
+
+  it("surfaces only gaps meeting the default 15-minute floor, in order", () => {
+    expect(getFreeGaps(day)).toEqual([
+      { fromMinutes: 600, toMinutes: 615, freeMinutes: 15 },
+      { fromMinutes: 735, toMinutes: 840, freeMinutes: 105 },
+    ]);
+  });
+
+  it("skips overlapping meetings entirely", () => {
+    const overlapping = [
+      meeting({ clave: "A", startMinutes: 480, endMinutes: 600 }),
+      meeting({ clave: "B", startMinutes: 540, endMinutes: 620 }),
+    ];
+    expect(getFreeGaps(overlapping)).toEqual([]);
+  });
+
+  it("honors a custom minimum threshold", () => {
+    expect(getFreeGaps(day, 120)).toEqual([]);
+    expect(getFreeGaps(day, 100)).toEqual([
+      { fromMinutes: 735, toMinutes: 840, freeMinutes: 105 },
+    ]);
+  });
+
+  it("uses 15 minutes as the default threshold", () => {
+    expect(FREE_GAP_MIN_MINUTES).toBe(15);
   });
 });
 
