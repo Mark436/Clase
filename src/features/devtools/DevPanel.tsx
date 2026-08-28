@@ -26,9 +26,15 @@ interface DevPanelProps {
   alumno: Alumno | null;
   dev: DevToolsController;
   onShowToast?: (message: string, variant: ToastVariant) => void;
+  onSendTestNotification?: () => void;
 }
 
-export function DevPanel({ alumno, dev, onShowToast }: DevPanelProps) {
+export function DevPanel({
+  alumno,
+  dev,
+  onShowToast,
+  onSendTestNotification,
+}: DevPanelProps) {
   if (!dev.loaded) return null;
 
   const simulating = hasActiveSimulation(dev.config);
@@ -50,7 +56,10 @@ export function DevPanel({ alumno, dev, onShowToast }: DevPanelProps) {
       <div className="border-t border-outline-variant pt-4" />
       <AdeudosSection dev={dev} onShowToast={onShowToast} />
       <div className="border-t border-outline-variant pt-4" />
-      <InteractionSection dev={dev} />
+      <InteractionSection
+        dev={dev}
+        onSendTestNotification={onSendTestNotification}
+      />
       <div className="border-t border-outline-variant pt-4" />
       <ToastsSection dev={dev} onShowToast={onShowToast} />
 

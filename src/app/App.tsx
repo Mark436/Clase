@@ -335,6 +335,22 @@ function AuthenticatedShell() {
     setReAuthOpen(true);
   }
 
+  // Dev-only test event: uses whichever channel is selected in the panel, so
+  // both surfaces can be exercised without waiting for a real fetch change.
+  const sendTestNotification = useCallback(() => {
+    if (notificationChannel === "capsule") {
+      setCapsuleNotification({
+        id: `dev-test:${Date.now()}`,
+        title: "Notificación de prueba",
+        detail: "Canal de cápsula funcionando",
+        followUpTitle: "Resumen",
+        followUpDetail: "Siguiente evento de prueba",
+      });
+    } else {
+      showToast("Notificación de prueba desde modo dev", "neutral");
+    }
+  }, [notificationChannel, showToast]);
+
   return (
     <ScheduleStateProvider alumno={effectiveAlumno}>
       <AppShell
@@ -374,6 +390,7 @@ function AuthenticatedShell() {
                 alumno={effectiveAlumno}
                 onRequestRefresh={handlePullToRefresh}
                 onShowToast={showToast}
+                onSendTestNotification={sendTestNotification}
                 dev={dev}
               />
             )

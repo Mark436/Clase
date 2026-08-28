@@ -1,4 +1,5 @@
 import { Slider } from "@/components/ui/Slider";
+import { Button } from "@/components/ui/Button";
 import { DEFAULT_CAPSULE_COLLAPSE_MS, DEFAULT_LONG_PRESS_MS } from "../types";
 import type { CapsuleVariant } from "@/components/ui/Capsule";
 import type { NotificationChannel } from "../types";
@@ -14,7 +15,13 @@ const COLLAPSE_STEP_MS = 250;
 
 // Controls how long a subject card must be held before the editor opens,
 // plus how the context capsule presents and collapses.
-export function InteractionSection({ dev }: { dev: DevToolsController }) {
+export function InteractionSection({
+  dev,
+  onSendTestNotification,
+}: {
+  dev: DevToolsController;
+  onSendTestNotification?: () => void;
+}) {
   return (
     <section className="flex flex-col gap-3">
       <h4 className="text-sm font-semibold text-on-surface">Interacción</h4>
@@ -143,6 +150,23 @@ export function InteractionSection({ dev }: { dev: DevToolsController }) {
           {" "}el toast clásico aparece abajo. Por defecto: cápsula.
         </p>
       </div>
+
+      {onSendTestNotification ? (
+        <div className="flex flex-col gap-2">
+          <Button
+            variant="secondary"
+            onClick={onSendTestNotification}
+            className="w-full"
+          >
+            Enviar notificación de prueba
+          </Button>
+          <p className="text-xs text-on-surface-variant">
+            Dispara un evento usando el canal seleccionado arriba: la cápsula
+            se expande mostrando el detalle y luego el resumen; el toast
+            aparece abajo.
+          </p>
+        </div>
+      ) : null}
     </section>
   );
 }

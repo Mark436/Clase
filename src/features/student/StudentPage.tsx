@@ -15,6 +15,7 @@ interface StudentPageProps {
   alumno: Alumno | null;
   onRequestRefresh: () => void;
   onShowToast?: (message: string, variant: ToastVariant) => void;
+  onSendTestNotification?: () => void;
   dev?: DevToolsController;
 }
 
@@ -22,6 +23,7 @@ export function StudentPage({
   alumno,
   onRequestRefresh,
   onShowToast,
+  onSendTestNotification,
   dev,
 }: StudentPageProps) {
   const nameTapsRef = useRef(0);
@@ -83,7 +85,12 @@ export function StudentPage({
             <DebtsCard adeudos={alumno.adeudos} />
 
             {devEnabled && dev ? (
-              <DevPanel alumno={alumno} dev={dev} onShowToast={onShowToast} />
+              <DevPanel
+                alumno={alumno}
+                dev={dev}
+                onShowToast={onShowToast}
+                onSendTestNotification={onSendTestNotification}
+              />
             ) : null}
           </>
         ) : (
