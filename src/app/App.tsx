@@ -33,6 +33,7 @@ import { StudentPage } from "@/features/student/StudentPage";
 import { useCurrentTime } from "@/lib/devtools/useCurrentTime";
 import { formatAverage } from "@/lib/formatAverage";
 import type { CapsuleNotification } from "@/lib/notifications/capsuleEvents";
+import { sendPushNotificationTest } from "@/lib/notifications/testPush";
 import {
   getSetting,
   setSetting,
@@ -335,9 +336,12 @@ function AuthenticatedShell() {
     setReAuthOpen(true);
   }
 
-  // Dev-only test event: uses whichever channel is selected in the panel, so
-  // both surfaces can be exercised without waiting for a real fetch change.
+  // Dev-only test event: fires a real system push notification and uses
+  // whichever in-app channel is selected in the panel, so every surface can
+  // be exercised without waiting for a real fetch change.
   const sendTestNotification = useCallback(() => {
+    void sendPushNotificationTest().catch(() => undefined);
+
     if (notificationChannel === "capsule") {
       setCapsuleNotification({
         id: `dev-test:${Date.now()}`,

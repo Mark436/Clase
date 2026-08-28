@@ -161,9 +161,10 @@ export function InteractionSection({
             Enviar notificación de prueba
           </Button>
           <p className="text-xs text-on-surface-variant">
-            Dispara un evento usando el canal seleccionado arriba: la cápsula
-            se expande mostrando el detalle y luego el resumen; el toast
-            aparece abajo.
+            Pide permiso y muestra una notificación push de prueba (la misma
+            vía que usará un push real), además del canal seleccionado arriba:
+            la cápsula se expande mostrando el detalle y luego el resumen; el
+            toast aparece abajo.
           </p>
         </div>
       ) : null}
