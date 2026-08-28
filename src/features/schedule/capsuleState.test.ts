@@ -31,6 +31,7 @@ describe("buildCapsuleState", () => {
     expect(state.kind).toBe("in-class");
     if (state.kind !== "in-class") return;
     expect(state.subjectName).toBe("Cálculo");
+    expect(state.classroom).toBe("LB-24");
     expect(state.remainingMinutes).toBe(40);
     expect(state.progressPercent).toBeCloseTo(50);
   });
@@ -40,6 +41,7 @@ describe("buildCapsuleState", () => {
     expect(state.kind).toBe("upcoming");
     if (state.kind !== "upcoming") return;
     expect(state.clave).toBe("B");
+    expect(state.classroom).toBe("LB-24");
     expect(state.minutesUntil).toBe(80);
   });
 

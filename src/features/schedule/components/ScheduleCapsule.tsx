@@ -11,6 +11,7 @@ import {
 } from "../capsuleState";
 import type { UpcomingClassInfo } from "../capsuleState";
 import {
+  formatClassroomLabel,
   formatRelativeTime,
   formatTomorrowCapsuleLabel,
   minutesOf,
@@ -32,6 +33,39 @@ const DETAIL_STAGE_MS = 2200;
 const FLASH_TOTAL_MS = 4200;
 
 type FlashStage = "detail" | "followup" | null;
+
+function DurationCounter({ minutes }: { minutes: number }) {
+  const hours = Math.floor(minutes / 60);
+  const rest = minutes % 60;
+  const hasMinutes = rest > 0 || hours === 0;
+
+  return (
+    <span className="inline-flex shrink-0 items-baseline tabular-nums">
+      {hours > 0 ? (
+        <span className="inline-flex items-baseline gap-px">
+          <span className="text-lg font-bold leading-none text-primary-strong">
+            {hours}
+          </span>
+          <span className="text-[10px] font-normal leading-none text-primary-strong/75">
+            h
+          </span>
+        </span>
+      ) : null}
+      {hasMinutes ? (
+        <span
+          className={`inline-flex items-baseline gap-px ${hours > 0 ? "ml-1" : ""}`}
+        >
+          <span className="text-[16px] font-normal leading-none text-primary-strong">
+            {rest}
+          </span>
+          <span className="text-[9px] font-normal leading-none text-primary-strong/75">
+            m
+          </span>
+        </span>
+      ) : null}
+    </span>
+  );
+}
 
 export function ScheduleCapsule({
   meetings,
@@ -207,6 +241,7 @@ export function ScheduleCapsule({
   }
 
   if (state.kind === "in-class") {
+    const classroomLabel = formatClassroomLabel(state.classroom);
     return (
       <Capsule
         variant={variant}
@@ -216,12 +251,12 @@ export function ScheduleCapsule({
         ariaLabel={`En clase: ${state.subjectName}, termina a las ${state.endsLabel}`}
         minimized={
           <>
-            <span className="truncate text-sm font-semibold text-on-surface">
-              {state.subjectName}
-            </span>
-            <span className="ml-1 shrink-0 text-sm font-semibold tabular-nums text-primary-strong">
-              {state.remainingMinutes}′
-            </span>
+            <DurationCounter minutes={state.remainingMinutes} />
+            {classroomLabel === null ? null : (
+              <span className="truncate text-sm font-medium text-on-surface">
+                {classroomLabel}
+              </span>
+            )}
           </>
         }
         expanded={
@@ -249,6 +284,7 @@ export function ScheduleCapsule({
   }
 
   const relative = formatRelativeTime(state.minutesUntil);
+  const classroomLabel = formatClassroomLabel(state.classroom);
   return (
     <Capsule
       variant={variant}
@@ -257,12 +293,12 @@ export function ScheduleCapsule({
       ariaLabel={`Siguiente clase: ${state.subjectName} a las ${state.startsLabel}`}
       minimized={
         <>
-          <span className="text-sm font-medium tabular-nums text-on-surface-variant">
-            {relative || state.startsLabel}
-          </span>
-          <span className="max-w-28 truncate text-sm font-medium text-on-surface">
-            {state.subjectName}
-          </span>
+          <DurationCounter minutes={state.minutesUntil} />
+          {classroomLabel === null ? null : (
+            <span className="truncate text-sm font-medium text-on-surface">
+              {classroomLabel}
+            </span>
+          )}
         </>
       }
       expanded={

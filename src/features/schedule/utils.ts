@@ -61,6 +61,13 @@ export function minutesOf(date: Date): number {
   return date.getHours() * 60 + date.getMinutes();
 }
 
+/** Classroom for the capsule pill ("LB-24"); null when masked/absent. */
+export function formatClassroomLabel(classroom: string): string | null {
+  const code = classroom.trim();
+  if (code === "" || code === "*") return null;
+  return code;
+}
+
 export function getScheduleForDay<T extends ClassMeeting>(
   meetings: T[],
   date: Date,

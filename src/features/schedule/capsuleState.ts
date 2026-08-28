@@ -12,6 +12,7 @@ export type CapsuleViewModel =
       kind: "in-class";
       clave: string;
       subjectName: string;
+      classroom: string;
       endsLabel: string;
       progressPercent: number;
       remainingMinutes: number;
@@ -49,6 +50,7 @@ export function buildCapsuleState(
         kind: "in-class",
         clave: meeting.clave,
         subjectName: meeting.subjectName,
+        classroom: meeting.classroom,
         endsLabel: formatMinutes(meeting.endMinutes),
         progressPercent: span > 0 ? Math.min((elapsed / span) * 100, 100) : 0,
         remainingMinutes: Math.ceil(meeting.endMinutes - nowMinutes),
