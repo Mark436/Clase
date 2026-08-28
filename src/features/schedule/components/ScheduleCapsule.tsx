@@ -91,7 +91,11 @@ export function ScheduleCapsule({
 
   const flashing = flashStage !== null && notification !== null;
   const effectivePulse =
-    notification !== null ? `flash:${notification.id}` : pulseKey === "" ? undefined : pulseKey;
+    notification !== null
+      ? `flash:${notification.id}`
+      : pulseKey === ""
+        ? undefined
+        : pulseKey;
   const effectiveCollapseMs = flashing ? FLASH_TOTAL_MS : autoCollapseMs;
 
   if (flashing && notification) {
@@ -187,7 +191,9 @@ export function ScheduleCapsule({
             {tomorrowFirst ? (
               <span className="text-xs text-on-surface-variant">
                 Mañana: {tomorrowFirst.subjectName} ·{" "}
-                <span className="tabular-nums">{tomorrowFirst.startsLabel}</span>
+                <span className="tabular-nums">
+                  {tomorrowFirst.startsLabel}
+                </span>
               </span>
             ) : (
               <span className="text-xs text-on-surface-variant">
