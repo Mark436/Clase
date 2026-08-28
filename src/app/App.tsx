@@ -28,7 +28,6 @@ import { ScheduleCapsule } from "@/features/schedule/components/ScheduleCapsule"
 import { SchedulePage } from "@/features/schedule/SchedulePage";
 import { minutesOf, getScheduleForDay } from "@/features/schedule/utils";
 import { AdeudoAlertsCard } from "@/features/student/components/AdeudoAlertsCard";
-import { DebtBanner } from "@/features/student/components/DebtBanner";
 import { StudentPage } from "@/features/student/StudentPage";
 import { useCurrentTime } from "@/lib/devtools/useCurrentTime";
 import { formatAverage } from "@/lib/formatAverage";
@@ -356,9 +355,6 @@ function AuthenticatedShell() {
           />
         }
       >
-        {effectiveAlumno?.adeudos.tieneAdeudos ? (
-          <DebtBanner adeudos={effectiveAlumno.adeudos} />
-        ) : null}
         <AdeudoAlertsCard alumno={effectiveAlumno} />
 
         {tab === "schedule" ? (

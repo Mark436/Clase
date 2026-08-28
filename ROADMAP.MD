@@ -305,10 +305,10 @@ Intentar actualizar
 
 - [x] Tratar los adeudos como una alerta principal, no como una sección central.
 - [x] Detectar adeudos al cargar `AppData`.
-- [x] Mostrar alerta si existen.
+- [x] Lista «Deudas» en Alumno: estado «Sin deudas por el momento» cuando no existen y detalle específico por área cuando sí; reemplaza el banner descartable del shell.
 - [x] No añadir Adeudos como tab principal.
-- [ ] Permitir acceder a detalles si es necesario.
-- [x] Ocultar completamente la alerta cuando no existan adeudos.
+- [x] Permisos de detalle por área con la lista «Deudas» (cada región con su texto).
+- [x] Ocultar el aviso principal cuando no existan adeudos (la tarjeta de Alumno muestra su estado).
 - [x] Alerta local opcional al aparecer un adeudo nuevo (opt-in, solo transición sin→con adeudo).
 - [x] Aviso tipo toast in-app (rojo) en la misma transición sin→con adeudo, independiente del opt-in de notificaciones del sistema.
 - [ ] Evaluar posteriormente notificaciones push para adeudos (requiere backend con sesión/token; ver `docs/api.md`).

@@ -45,8 +45,8 @@ function toCalificacionMateria(materia: DevMateria): CalificacionMateria {
   };
 }
 
-// The banner lists areas from non-empty string fields; a simulated debt needs
-// at least one so the alert reads naturally.
+// The debt list shows areas from non-empty string fields; a simulated debt
+// needs at least one so the list reads naturally.
 function simulateAdeudos(adeudos: Adeudos, present: boolean): Adeudos {
   if (!present) {
     return {

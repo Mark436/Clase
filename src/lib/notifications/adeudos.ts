@@ -4,7 +4,12 @@ import {
   SETTING_ADEUDO_ALERTS_OPT_IN,
 } from "@/lib/storage/settingsStore";
 
-type Adeudos = Alumno["adeudos"];
+export type Adeudos = Alumno["adeudos"];
+
+export interface AdeudoDetail {
+  label: string;
+  detail: string;
+}
 
 const ADEUDO_AREA_LABELS: ReadonlyArray<
   readonly [keyof Omit<Adeudos, "tieneAdeudos">, string]
@@ -16,10 +21,23 @@ const ADEUDO_AREA_LABELS: ReadonlyArray<
   ["administrativo", "Administrativo"],
 ];
 
+// The API marks a debt-free area with "N" (sith-api-client's mapper) while
+// dev simulations use an empty string; both must count as absent.
+function hasAdeudo(value: string): boolean {
+  const trimmed = value.trim();
+  return trimmed !== "" && trimmed.toUpperCase() !== "N";
+}
+
+/** Specific debts per area, in the canonical area order. */
+export function listAdeudoDetails(adeudos: Adeudos): AdeudoDetail[] {
+  return ADEUDO_AREA_LABELS.flatMap(([field, label]) => {
+    const detail = adeudos[field].trim();
+    return hasAdeudo(detail) ? [{ label, detail }] : [];
+  });
+}
+
 export function listAdeudoAreas(adeudos: Adeudos): string[] {
-  return ADEUDO_AREA_LABELS.filter(
-    ([field]) => adeudos[field].trim() !== "",
-  ).map(([, label]) => label);
+  return listAdeudoDetails(adeudos).map(({ label }) => label);
 }
 
 export type AdeudoNotificationOutcome =

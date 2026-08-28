@@ -6,6 +6,7 @@ import { Page } from "@/components/layout/Page";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import type { ToastVariant } from "@/components/ui/toastVariants";
 import { DevPanel } from "@/features/devtools/DevPanel";
+import { DebtsCard } from "./components/DebtsCard";
 import { UNLOCK_TAP_COUNT } from "@/features/devtools/config";
 import type { DevToolsController } from "@/features/devtools/useDevConfig";
 import type { Alumno } from "@/lib/api/client";
@@ -78,6 +79,8 @@ export function StudentPage({
                 />
               </Card>
             ) : null}
+
+            <DebtsCard adeudos={alumno.adeudos} />
 
             {devEnabled && dev ? (
               <DevPanel alumno={alumno} dev={dev} onShowToast={onShowToast} />
