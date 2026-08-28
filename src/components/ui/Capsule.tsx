@@ -3,6 +3,12 @@ import type { FocusEvent, KeyboardEvent } from "react";
 import type { ReactNode } from "react";
 import gsap from "gsap";
 import { Flip } from "gsap/Flip";
+import {
+  CAPSULE_MORPH_DURATION,
+  CAPSULE_MORPH_EASE,
+  CAPSULE_RADIUS_DURATION,
+  CAPSULE_RADIUS_EASE,
+} from "@/lib/motion/eases";
 
 gsap.registerPlugin(Flip);
 
@@ -119,8 +125,7 @@ export function Capsule({
     }
 
     document.addEventListener("pointerdown", handlePointerDown);
-    return () =>
-      document.removeEventListener("pointerdown", handlePointerDown);
+    return () => document.removeEventListener("pointerdown", handlePointerDown);
   }, [isExpanded]);
 
   function handleToggle() {
@@ -168,13 +173,13 @@ export function Capsule({
 
     gsap.to(element, {
       borderRadius: targetRadius,
-      duration: 0.45,
-      ease: "power2.out",
-      overwrite: "auto",
+      duration: CAPSULE_RADIUS_DURATION,
+      ease: CAPSULE_RADIUS_EASE,
+      // overwrite: "auto",
     });
     Flip.from(snapshot, {
-      duration: 0.55,
-      ease: "expo.out",
+      duration: CAPSULE_MORPH_DURATION,
+      ease: CAPSULE_MORPH_EASE,
       absolute: true,
     });
   }, [isExpanded, variant]);
@@ -190,7 +195,9 @@ export function Capsule({
       aria-label={ariaLabel}
       style={{ borderRadius: 22 }}
       className={`pointer-events-auto z-30 inline-flex select-none text-left transition-transform duration-150 ease-out active:scale-[0.97] ${
-        isExpanded ? "mx-auto max-w-full items-stretch p-4" : "h-11 items-center px-3.5"
+        isExpanded
+          ? "mx-auto max-w-full items-stretch p-4"
+          : "h-11 items-center px-3.5"
       } ${tone === "accent" ? "glass-panel-accent" : "glass-panel"} ${
         className ?? ""
       }`}

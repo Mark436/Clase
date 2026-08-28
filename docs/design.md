@@ -138,12 +138,17 @@ transiciones CSS para micro-feedback. Sin librerías adicionales.
 
 | Momento | Tratamiento |
 | --- | --- |
-| Morfo de cápsula | GSAP Flip `expo.out` 0.55 s + radio paralelo `power2.out` |
+| Morfo de cápsula | GSAP Flip `back.out(1.6)` 0.6 s + radio paralelo `back.out(1.3)` 0.5 s (rebote sutil) |
+| Desliz del indicador activo (barra inferior) | GSAP `translateX` `back.out(1.6)` 0.5 s; posiciona sin tween con `prefers-reduced-motion` |
+| Transición de contenido entre tabs | Salida `power2.in` 0.18 s (fade + subida), entrada `back.out(1.5)` 0.5 s (rise + rebote); líquida sobre un solo contenedor persistente |
 | Números héroe | contador GSAP `power3.out` 0.9 s (`AnimatedNumber`) |
 | Toque (botones, cápsula) | `active:scale-[0.97]` CSS 150 ms |
 | Hora actual / clase en curso | punto que respira (`studia-breathe` 2.6 s, `motion-safe`) |
 | Entrada de contenido de cápsula / toast | `studia-fade-up` 0.3–0.35 s |
 | Pull-to-refresh | indicador spinner existente, opacidad ligada al gesto |
+
+Los eases y duraciones del sistema de rebote viven en `src/lib/motion/eases.ts`
+(fuente única: barra inferior, transición de contenido y cápsula).
 
 `prefers-reduced-motion`: los springs/morfos se vuelven fundidos o salto
 directo (la regla global en `index.css` + guardas explícitas en Capsule y
