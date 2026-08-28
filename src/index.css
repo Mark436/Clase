@@ -18,6 +18,7 @@ html {
      la UI usa contenedores tenues o neutros. */
   --studia-cobalto: #4c7cef;
   --studia-cobalto-strong: #325bad;
+  --studia-on-primary: #ffffff;
 
   /* Neutral surfaces (light) */
   --studia-bg: #fafafb;
@@ -43,7 +44,7 @@ html {
 
   /* Liquid glass recipe (light) */
     --studia-glass-tint: rgb(255 255 255 / 62%);
-    --studia-glass-border: rgb(255 255 255 / 55%);
+    --studia-glass-border: rgb(23 24 28 / 12%);
     --studia-glass-shadow: 0 1px 1px rgb(255 255 255 / 60%) inset,
       0 -1px 1px rgb(23 24 28 / 4%) inset, 0 8px 32px rgb(23 24 28 / 14%);
     --studia-glass-blur: 20px;
@@ -63,6 +64,7 @@ html {
 
     --studia-cobalto: #8aa6e4;
     --studia-cobalto-strong: #bccdf2;
+    --studia-on-primary: #0d1330;
 
     --studia-bg: #12141a;
     --studia-fg: #f2f4f8;
@@ -151,7 +153,7 @@ html {
   --color-outline-variant: var(--studia-line-soft);
 
   --color-primary: var(--studia-cobalto);
-  --color-on-primary: #ffffff;
+  --color-on-primary: var(--studia-on-primary);
   --color-primary-strong: var(--studia-cobalto-strong);
   --color-primary-container: var(--studia-primary-container);
   --color-on-primary-container: var(--studia-on-primary-container);
