@@ -143,6 +143,14 @@ export function ScheduleCapsule({
   if (state.kind === "empty" || state.kind === "done") {
     const message =
       state.kind === "empty" ? "Sin clases hoy" : "Por hoy terminaste";
+    const tomorrowLabel = tomorrowFirst
+      ? formatTomorrowCapsuleLabel(
+          tomorrowFirst.startsAt,
+          now,
+          tomorrowFirst.startsLabel,
+        )
+      : undefined;
+    const hoursOnly = state.kind === "done" && tomorrowLabel !== undefined;
     return (
       <Capsule
         variant={variant}
@@ -154,20 +162,22 @@ export function ScheduleCapsule({
             : message
         }
         minimized={
-          <>
-            <span className="text-sm font-medium text-on-surface-variant">
-              {message}
+          hoursOnly ? (
+            <span className="text-sm font-semibold tabular-nums text-primary-strong">
+              {tomorrowLabel}
             </span>
-            {tomorrowFirst ? (
-              <span className="text-sm font-semibold tabular-nums text-primary-strong">
-                {formatTomorrowCapsuleLabel(
-                  tomorrowFirst.startsAt,
-                  now,
-                  tomorrowFirst.startsLabel,
-                )}
+          ) : (
+            <>
+              <span className="text-sm font-medium text-on-surface-variant">
+                {message}
               </span>
-            ) : null}
-          </>
+              {tomorrowLabel !== undefined ? (
+                <span className="text-sm font-semibold tabular-nums text-primary-strong">
+                  {tomorrowLabel}
+                </span>
+              ) : null}
+            </>
+          )
         }
         expanded={
           <>

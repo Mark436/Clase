@@ -1,7 +1,13 @@
 import type { ReactNode } from "react";
 import type { ResolvedMeeting } from "../types";
+import { ClassCard } from "./ClassCard";
+import type { ClassCardVariant } from "./ClassCard";
+import { CurrentTimeIndicator } from "./CurrentTimeIndicator";
+import { FreeGapCard } from "./FreeGapCard";
 import {
+  FREE_GAP_MIN_MINUTES,
   formatMinutes,
+  freeMinutesBetween,
   getClassProgress,
   getCurrentClass,
   getNextClass,
@@ -9,9 +15,6 @@ import {
   getVisibleClasses,
   minutesOf,
 } from "../utils";
-import { ClassCard } from "./ClassCard";
-import type { ClassCardVariant } from "./ClassCard";
-import { CurrentTimeIndicator } from "./CurrentTimeIndicator";
 
 interface ScheduleDayViewProps {
   dayMeetings: ResolvedMeeting[];
@@ -46,8 +49,24 @@ export function ScheduleDayView({
   const items: ReactNode[] = [];
   let indicatorInserted = false;
   let nextAssigned = false;
+  let previousMeeting: ResolvedMeeting | undefined;
 
   for (const meeting of dayMeetings) {
+    if (previousMeeting) {
+      const free = freeMinutesBetween(
+        previousMeeting.endMinutes,
+        meeting.startMinutes,
+      );
+      if (free >= FREE_GAP_MIN_MINUTES) {
+        items.push(
+          <FreeGapCard
+            key={`free-${meeting.clave}-${meeting.weekday}-${meeting.startMinutes}`}
+            freeMinutes={free}
+          />,
+        );
+      }
+    }
+
     if (isToday && !indicatorInserted && meeting.endMinutes > minutesNow) {
       items.push(
         <CurrentTimeIndicator
@@ -93,6 +112,8 @@ export function ScheduleDayView({
         }
       />,
     );
+
+    previousMeeting = meeting;
   }
 
   return (

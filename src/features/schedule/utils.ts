@@ -169,6 +169,60 @@ export function getNextClassNote(
   return `Empieza a las ${formatMinutes(meeting.startMinutes)}`;
 }
 
+export interface FreeGap {
+  /** Minute the gap starts (end of the preceding class). */
+  fromMinutes: number;
+  /** Minute the gap ends (start of the following class). */
+  toMinutes: number;
+  freeMinutes: number;
+}
+
+/** Minimum gap (minutes) before the day view surfaces a "libres" card. */
+export const FREE_GAP_MIN_MINUTES = 15;
+
+/** Free time between the previous class ending and the next one starting. */
+export function freeMinutesBetween(
+  previousEndMinutes: number,
+  nextStartMinutes: number,
+): number {
+  return Math.max(0, nextStartMinutes - previousEndMinutes);
+}
+
+/** Compact duration reading: "1h 10m", "2h", "45m"; "" at zero. */
+export function formatFreeDuration(minutes: number): string {
+  if (minutes <= 0) return "";
+
+  const hours = Math.floor(minutes / 60);
+  const rest = minutes % 60;
+
+  if (hours > 0 && rest > 0) return `${hours}h ${rest}m`;
+  if (hours > 0) return `${hours}h`;
+  return `${rest}m`;
+}
+
+/** Consecutive-meeting gaps long enough to matter, in reading order. */
+export function getFreeGaps(
+  meetings: readonly ClassMeeting[],
+  minGapMinutes: number = FREE_GAP_MIN_MINUTES,
+): FreeGap[] {
+  const gaps: FreeGap[] = [];
+
+  for (let i = 1; i < meetings.length; i++) {
+    const previous = meetings[i - 1];
+    const current = meetings[i];
+    const free = freeMinutesBetween(previous.endMinutes, current.startMinutes);
+    if (free >= minGapMinutes) {
+      gaps.push({
+        fromMinutes: previous.endMinutes,
+        toMinutes: current.startMinutes,
+        freeMinutes: free,
+      });
+    }
+  }
+
+  return gaps;
+}
+
 function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
 }
