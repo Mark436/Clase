@@ -39,8 +39,8 @@ utilidades leen la variable directamente: sin JS de tema ni clases duplicadas).
 
 Reglas de uso:
 
-- El cobalto es escaso por diseño: cápsula activa, clase en curso, elemento de
-  navegación activo, foco visible, números héroe. Si todo es azul, nada lo es.
+- El cobalto es escaso por diseño: cápsula activa, clase en curso, foco visible,
+  números héroe. Si todo es azul, nada lo es.
 - Éxito/error son funcionales, nunca identidad.
 - Modo oscuro = carbón suave (`#12141A`), no negro puro; elevación por capas de
   superficie, no por sombras duras.
@@ -85,8 +85,12 @@ desaparecieron; la barra inferior orienta la sección.
 
 | Estado | Tono | Contenido minimizado |
 | --- | --- | --- |
-| En clase | acento | materia + minutos restantes |
-| Próxima clase | neutro | cuenta regresiva + materia |
+| En clase | acento | contador de horas y minutos + salón |
+| Próxima clase | neutro | contador de horas y minutos + salón |
+
+El contador jerarquiza por tamaño (no por color): la hora va grande y bold, la
+unidad "h" fino; los minutos a la mitad del tamaño y la "m" más chiquita aún.
+El salón se muestra crudo ("LB-24"), sin prefijo.
 | Por hoy terminaste / Sin clases hoy | neutro | mensaje calmado (+ "mañana HH:MM" si hay clase) |
 | Evento académico | neutro | título del evento + dato clave |
 
