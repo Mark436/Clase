@@ -88,6 +88,8 @@ export function toCapsuleTick(state: CapsuleViewModel): CapsuleTick {
 export interface UpcomingClassInfo {
   subjectName: string;
   startsLabel: string;
+  /** Absolute Date of that class on tomorrow (derived from `today`). */
+  startsAt: Date;
 }
 
 /** Earliest class of tomorrow, so a finished day still points forward. */
@@ -101,12 +103,21 @@ export function getTomorrowFirstMeeting(
     .sort((a, b) => a.startMinutes - b.startMinutes);
   const first = candidates[0];
 
-  return first
-    ? {
-        subjectName: first.subjectName,
-        startsLabel: formatMinutes(first.startMinutes),
-      }
-    : null;
+  if (!first) return null;
+
+  const startsAt = addDays(today, 1);
+  startsAt.setHours(
+    Math.floor(first.startMinutes / 60),
+    first.startMinutes % 60,
+    0,
+    0,
+  );
+
+  return {
+    subjectName: first.subjectName,
+    startsLabel: formatMinutes(first.startMinutes),
+    startsAt,
+  };
 }
 
 /**

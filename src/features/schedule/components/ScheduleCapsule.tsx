@@ -10,11 +10,16 @@ import {
   toCapsuleTick,
 } from "../capsuleState";
 import type { UpcomingClassInfo } from "../capsuleState";
-import { formatRelativeTime } from "../utils";
+import {
+  formatRelativeTime,
+  formatTomorrowCapsuleLabel,
+  minutesOf,
+} from "../utils";
 
 interface ScheduleCapsuleProps {
   meetings: readonly ResolvedMeeting[];
-  nowMinutes: number;
+  /** Real clock instant driving every state (dev simulation included). */
+  now: Date;
   /** First class of tomorrow, shown once today is over (or empty). */
   tomorrowFirst?: UpcomingClassInfo | null;
   /** Transient event (new grade, debt…) flashed before returning to classes. */
@@ -30,13 +35,13 @@ type FlashStage = "detail" | "followup" | null;
 
 export function ScheduleCapsule({
   meetings,
-  nowMinutes,
+  now,
   tomorrowFirst = null,
   notification = null,
   variant,
   autoCollapseMs,
 }: ScheduleCapsuleProps) {
-  const state = buildCapsuleState(meetings, nowMinutes);
+  const state = buildCapsuleState(meetings, minutesOf(now));
 
   // Important-event detection across minute ticks. Each event id fires once;
   // the first observation is silent by design (see capsuleState.ts).
@@ -155,7 +160,11 @@ export function ScheduleCapsule({
             </span>
             {tomorrowFirst ? (
               <span className="text-sm font-semibold tabular-nums text-primary-strong">
-                mañana {tomorrowFirst.startsLabel}
+                {formatTomorrowCapsuleLabel(
+                  tomorrowFirst.startsAt,
+                  now,
+                  tomorrowFirst.startsLabel,
+                )}
               </span>
             ) : null}
           </>

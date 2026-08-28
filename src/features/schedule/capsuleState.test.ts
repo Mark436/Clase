@@ -136,7 +136,11 @@ describe("getTomorrowFirstMeeting", () => {
       monday,
     );
 
-    expect(result).toEqual({ subjectName: "Redes", startsLabel: "09:30" });
+    expect(result).toEqual({
+      subjectName: "Redes",
+      startsLabel: "09:30",
+      startsAt: new Date(2026, 7, 25, 9, 30, 0, 0),
+    });
   });
 
   it("returns null when tomorrow has no classes", () => {
@@ -151,6 +155,10 @@ describe("getTomorrowFirstMeeting", () => {
       sunday,
     );
 
-    expect(result).toEqual({ subjectName: "Cálculo", startsLabel: "10:00" });
+    expect(result).toEqual({
+      subjectName: "Cálculo",
+      startsLabel: "10:00",
+      startsAt: new Date(2026, 7, 31, 10, 0, 0, 0),
+    });
   });
 });

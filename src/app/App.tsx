@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AppShell } from "@/components/layout/AppShell";
 import { BottomNavigation } from "@/components/layout/BottomNavigation";
+import { PageTransition } from "@/components/layout/PageTransition";
 import { Spinner } from "@/components/ui/Spinner";
 import { Toast } from "@/components/ui/Toast";
 import type { CapsuleVariant } from "@/components/ui/Capsule";
@@ -26,7 +27,7 @@ import { ScheduleStateProvider } from "@/features/schedule/ScheduleStateProvider
 import { useScheduleState } from "@/features/schedule/scheduleStateContext";
 import { ScheduleCapsule } from "@/features/schedule/components/ScheduleCapsule";
 import { SchedulePage } from "@/features/schedule/SchedulePage";
-import { minutesOf, getScheduleForDay } from "@/features/schedule/utils";
+import { getScheduleForDay } from "@/features/schedule/utils";
 import { AdeudoAlertsCard } from "@/features/student/components/AdeudoAlertsCard";
 import { StudentPage } from "@/features/student/StudentPage";
 import { useCurrentTime } from "@/lib/devtools/useCurrentTime";
@@ -83,7 +84,7 @@ function ContextCapsule({
   return (
     <ScheduleCapsule
       meetings={todayMeetings}
-      nowMinutes={minutesOf(now)}
+      now={now}
       tomorrowFirst={tomorrowFirst}
       notification={notification}
       variant={variant}
@@ -357,23 +358,27 @@ function AuthenticatedShell() {
       >
         <AdeudoAlertsCard alumno={effectiveAlumno} />
 
-        {tab === "schedule" ? (
-          <SchedulePage
-            alumno={effectiveAlumno}
-            longPressDurationMs={longPressDurationMs}
-            simulated={timingsActive}
-            onShowToast={showToast}
-          />
-        ) : tab === "grades" ? (
-          <GradesPage alumno={effectiveAlumno} />
-        ) : (
-          <StudentPage
-            alumno={effectiveAlumno}
-            onRequestRefresh={handlePullToRefresh}
-            onShowToast={showToast}
-            dev={dev}
-          />
-        )}
+        <PageTransition transitionKey={tab}>
+          {(activeKey) =>
+            activeKey === "schedule" ? (
+              <SchedulePage
+                alumno={effectiveAlumno}
+                longPressDurationMs={longPressDurationMs}
+                simulated={timingsActive}
+                onShowToast={showToast}
+              />
+            ) : activeKey === "grades" ? (
+              <GradesPage alumno={effectiveAlumno} />
+            ) : (
+              <StudentPage
+                alumno={effectiveAlumno}
+                onRequestRefresh={handlePullToRefresh}
+                onShowToast={showToast}
+                dev={dev}
+              />
+            )
+          }
+        </PageTransition>
       </AppShell>
 
       {toast ? (
