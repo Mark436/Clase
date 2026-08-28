@@ -45,7 +45,7 @@ export function wholeHoursUntil(target: Date, from: Date): number {
  */
 export const CAPSULE_TOMORROW_COUNTDOWN_HOURS = 3;
 
-/** Tomorrow label for the closed capsule: "en Xh" or "mañana HH:MM". */
+/** Tomorrow label for the closed capsule: "Xh" or "mañana HH:MM". */
 export function formatTomorrowCapsuleLabel(
   startsAt: Date,
   now: Date,
@@ -53,7 +53,7 @@ export function formatTomorrowCapsuleLabel(
 ): string {
   const hours = wholeHoursUntil(startsAt, now);
   return hours > CAPSULE_TOMORROW_COUNTDOWN_HOURS
-    ? `en ${hours}h`
+    ? `${hours}h`
     : `mañana ${startsLabel}`;
 }
 

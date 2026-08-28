@@ -120,10 +120,10 @@ describe("formatTomorrowCapsuleLabel", () => {
   it("shows an hours countdown while there are more than 3 hours left", () => {
     expect(
       formatTomorrowCapsuleLabel(new Date(2026, 7, 25, 9, 0), now, "09:00"),
-    ).toBe("en 13h");
+    ).toBe("13h");
     expect(
       formatTomorrowCapsuleLabel(new Date(2026, 7, 25, 0, 10), now, "00:10"),
-    ).toBe("en 4h");
+    ).toBe("4h");
   });
 
   it("falls back to the mañana label at or under 3 hours", () => {
