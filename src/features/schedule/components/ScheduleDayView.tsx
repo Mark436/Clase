@@ -11,7 +11,6 @@ import {
   getClassProgress,
   getCurrentClass,
   getNextClass,
-  getNextClassNote,
   getVisibleClasses,
   minutesOf,
 } from "../utils";
@@ -79,21 +78,17 @@ export function ScheduleDayView({
 
     let variant: ClassCardVariant;
     let progressPercent: number | undefined;
-    let note: string | undefined;
 
     if (isToday && meeting === current) {
       variant = "current";
       progressPercent = getClassProgress(meeting, now).percent;
-      note = `Termina en ${getClassProgress(meeting, now).remainingMinutes} min`;
     } else if (!nextAssigned && meeting === next) {
       variant = "next";
       nextAssigned = true;
-      note = getNextClassNote(meeting, minutesNow);
     } else if (meeting.endMinutes <= minutesNow && isToday) {
       variant = "past";
     } else {
       variant = "upcoming";
-      note = `Empieza a las ${formatMinutes(meeting.startMinutes)}`;
     }
 
     items.push(
@@ -102,7 +97,6 @@ export function ScheduleDayView({
         meeting={meeting}
         variant={variant}
         progressPercent={progressPercent}
-        note={note}
         longPressDurationMs={longPressDurationMs}
         onEditRequest={
           onEditRequest ? () => onEditRequest(meeting) : undefined
