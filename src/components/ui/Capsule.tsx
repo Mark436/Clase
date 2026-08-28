@@ -197,7 +197,7 @@ export function Capsule({
       aria-expanded={isExpanded}
       aria-label={ariaLabel}
       style={{ borderRadius: 22 }}
-      className={`pointer-events-auto z-30 inline-flex select-none text-left transition-transform duration-150 ease-out active:scale-[0.97] ${
+      className={`fixed pointer-events-auto z-30 inline-flex select-none text-left transition-transform duration-150 ease-out active:scale-[0.97] ${
         isExpanded
           ? "mx-auto max-w-full items-stretch p-4"
           : "h-11 items-center px-3.5"
