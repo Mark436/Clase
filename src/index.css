@@ -266,7 +266,7 @@ body {
   }
 }
 
-/* Content swap inside the capsule (minimized ⇄ expanded). */
+/* Content entrance for the toast. */
 @keyframes studia-fade-up {
   from {
     opacity: 0;
@@ -275,6 +275,20 @@ body {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+/* Content swap inside the capsule (minimized ⇄ expanded): the words never
+   reflow during the morph — they only appear at their final size with a soft
+   scale + fade, echo of the island's single transform. */
+@keyframes studia-scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
   }
 }
 

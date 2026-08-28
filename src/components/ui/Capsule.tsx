@@ -180,7 +180,10 @@ export function Capsule({
     Flip.from(snapshot, {
       duration: CAPSULE_MORPH_DURATION,
       ease: CAPSULE_MORPH_EASE,
-      absolute: true,
+      // Transform-anchored morph: the island scales as one unit. Children are
+      // never transformed individually, so the text never re-flows or appears
+      // to reshuffle its letters mid-animation.
+      absolute: false,
     });
   }, [isExpanded, variant]);
 
@@ -206,7 +209,7 @@ export function Capsule({
         key={isExpanded ? "expanded" : "minimized"}
         className={`flex min-w-0 ${
           isExpanded ? "w-max flex-col gap-1" : "items-center gap-1.5"
-        } motion-safe:animate-[studia-fade-up_0.35s_var(--ease-out-soft)]`}
+        } motion-safe:animate-[studia-scale-in_0.3s_var(--ease-out-soft)]`}
       >
         {isExpanded ? expanded : minimized}
       </div>
