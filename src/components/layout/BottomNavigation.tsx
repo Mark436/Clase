@@ -93,7 +93,7 @@ export function BottomNavigation<T extends string>({
         <span
           ref={indicatorRef}
           aria-hidden="true"
-          className="pointer-events-none absolute inset-y-1.5 left-0 rounded-full bg-on-surface/10"
+          className="pointer-events-none absolute inset-y-1.5 left-0 rounded-full bg-on-surface/20 ring-1 ring-on-surface/10"
         />
         {items.map((item, index) => {
           const isActive = item.id === activeId;
