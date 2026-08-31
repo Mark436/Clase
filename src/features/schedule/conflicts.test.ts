@@ -1,11 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { ClassMeeting } from "./types";
-import {
-  conflictGroupKey,
-  dailySwapKey,
-  formatEatenPortion,
-  resolveConflicts,
-} from "./conflicts";
+import { formatEatenPortion, resolveConflicts } from "./conflicts";
 
 function meeting(partial: Partial<ClassMeeting>): ClassMeeting {
   return {
@@ -19,8 +14,6 @@ function meeting(partial: Partial<ClassMeeting>): ClassMeeting {
     ...partial,
   };
 }
-
-const NO_PREFS = { weekly: {}, daily: {} };
 
 describe("formatEatenPortion", () => {
   it("snaps onto friendly fractions", () => {
@@ -44,151 +37,82 @@ describe("formatEatenPortion", () => {
 
 describe("resolveConflicts", () => {
   it("passes non-overlapping meetings through untouched", () => {
-    const resolved = resolveConflicts(
-      [
-        meeting({ clave: "A", startMinutes: 600 }),
-        meeting({ clave: "B", startMinutes: 660 }),
-      ],
-      NO_PREFS,
-    );
+    const resolved = resolveConflicts([
+      meeting({ clave: "A", startMinutes: 600 }),
+      meeting({ clave: "B", startMinutes: 660 }),
+    ]);
 
     expect(resolved).toHaveLength(2);
-    expect(resolved.every((m) => m.conflicts === undefined)).toBe(true);
+    expect(resolved.every((m) => m.overlap === undefined)).toBe(true);
   });
 
-  it("collapses an overlap into one card with a portion notice", () => {
-    const [resolved] = resolveConflicts(
-      [
-        meeting({ clave: "MAT", subjectName: "Matemáticas" }),
-        meeting({
-          clave: "USR-eng",
-          subjectName: "Inglés",
-          startMinutes: 645,
-          endMinutes: 690,
-        }),
-      ],
-      NO_PREFS,
-    );
-
-    expect(resolved.subjectName).toBe("Inglés");
-    expect(resolved.conflictKey).toBe(conflictGroupKey(["MAT", "USR-eng"]));
-    expect(resolved.conflicts).toEqual([
-      { clave: "MAT", subjectName: "Matemáticas", portionLabel: "1/4" },
-    ]);
-  });
-
-  it("shows only the name for fully displaced classes", () => {
-    const [resolved] = resolveConflicts(
-      [
-        meeting({ clave: "FIS", subjectName: "Física" }),
-        meeting({
-          clave: "QUI",
-          subjectName: "Química",
-          startMinutes: 600,
-        }),
-      ],
-      NO_PREFS,
-    );
-
-    // Same range: the earlier-start fetched class wins; Química is swallowed.
-    expect(resolved.subjectName).toBe("Física");
-    expect(resolved.conflicts).toEqual([
-      { clave: "QUI", subjectName: "Química", portionLabel: "" },
-    ]);
-  });
-
-  it("prefers manually added subjects over fetched ones", () => {
-    const [resolved] = resolveConflicts(
-      [
-        meeting({ clave: "MAT", subjectName: "Matemáticas" }),
-        meeting({
-          clave: "USR-1",
-          subjectName: "Inglés",
-          startMinutes: 620,
-          endMinutes: 700,
-        }),
-      ],
-      NO_PREFS,
-    );
-
-    expect(resolved.subjectName).toBe("Inglés");
-    expect(resolved.swapped).toBe(false);
-    expect(resolved.conflicts?.[0]?.subjectName).toBe("Matemáticas");
-    expect(resolved.conflicts?.[0]?.portionLabel).toBe("2/3");
-  });
-
-  it("applies a weekly preference to every occurrence of the group", () => {
-    const meetings: ClassMeeting[] = [1, 3].flatMap((weekday) => [
-      meeting({ clave: "A", subjectName: "A", weekday }),
+  it("annotates both overlapping classes with their overlap note", () => {
+    const resolved = resolveConflicts([
+      meeting({ clave: "MAT", subjectName: "Matemáticas" }),
       meeting({
-        clave: "B",
-        subjectName: "B",
-        weekday,
-        startMinutes: 620,
-        endMinutes: 680,
+        clave: "USR-eng",
+        subjectName: "Inglés",
+        startMinutes: 645,
+        endMinutes: 690,
       }),
     ]);
-    const key = conflictGroupKey(["A", "B"]);
 
-    const resolved = resolveConflicts(meetings, {
-      weekly: { [key]: "B" },
-      daily: {},
-    });
-
-    expect(
-      resolved.every((m) => m.subjectName === "B" && m.swapped === true),
-    ).toBe(true);
-    expect(
-      resolved.every((m) => m.conflicts?.[0]?.clave === "A"),
-    ).toBe(true);
+    const english = resolved.find((m) => m.clave === "USR-eng");
+    const math = resolved.find((m) => m.clave === "MAT");
+    expect(english?.overlap).toBe("Encimada 1/3 por Matemáticas");
+    expect(math?.overlap).toBe("Encimada 1/4 por Inglés");
+    expect(resolved).toHaveLength(2);
   });
 
-  it("lets a day-only swap override the weekly preference", () => {
-    const meetings = [
-      meeting({ clave: "A", subjectName: "A" }),
+  it("marks a fully displaced class as 'completa'", () => {
+    const resolved = resolveConflicts([
+      meeting({ clave: "FIS", subjectName: "Física" }),
+      meeting({ clave: "QUI", subjectName: "Química", startMinutes: 600 }),
+    ]);
+
+    const fisica = resolved.find((m) => m.clave === "FIS");
+    const quimica = resolved.find((m) => m.clave === "QUI");
+    expect(fisica?.overlap).toBe("Encimada completa por Química");
+    expect(quimica?.overlap).toBe("Encimada completa por Física");
+    expect(resolved).toHaveLength(2);
+  });
+
+  it("does not swallow non-overlapping classes that start before a manual subject", () => {
+    // A(7-9), B(11-13), manual Inglés(12-13). Only B overlaps Inglés; the
+    // mid-day manual subject must not pull A into the cluster.
+    const resolved = resolveConflicts([
+      meeting({ clave: "A", subjectName: "A", startMinutes: 420, endMinutes: 540 }),
+      meeting({ clave: "B", subjectName: "B", startMinutes: 660, endMinutes: 780 }),
       meeting({
-        clave: "B",
-        subjectName: "B",
-        startMinutes: 620,
-        endMinutes: 680,
+        clave: "USR-eng",
+        subjectName: "Inglés",
+        startMinutes: 720,
+        endMinutes: 780,
       }),
-    ];
-    const key = conflictGroupKey(["A", "B"]);
+    ]);
 
-    const [resolved] = resolveConflicts(meetings, {
-      weekly: { [key]: "B" },
-      daily: { [dailySwapKey(key, 1)]: "A" },
-    });
+    // A stays as its own untouched card.
+    const a = resolved.find((m) => m.clave === "A");
+    expect(a?.overlap).toBeUndefined();
 
-    expect(resolved.subjectName).toBe("A");
-    expect(resolved.conflicts?.[0]?.clave).toBe("B");
+    const english = resolved.find((m) => m.clave === "USR-eng");
+    const b = resolved.find((m) => m.clave === "B");
+    expect(english?.overlap).toBe("Encimada completa por B");
+    expect(b?.overlap).toBe("Encimada 1/2 por Inglés");
+
+    expect(resolved).toHaveLength(3);
   });
 
-  it("keeps the default order when a preference references a stale clave", () => {
-    const meetings = [
-      meeting({ clave: "A", subjectName: "A" }),
-      meeting({
-        clave: "B",
-        subjectName: "B",
-        startMinutes: 620,
-        endMinutes: 680,
-      }),
-    ];
-    const key = conflictGroupKey(["A", "B"]);
+  it("handles a three-way cluster annotating each member", () => {
+    const resolved = resolveConflicts([
+      meeting({ clave: "A", subjectName: "A", startMinutes: 600, endMinutes: 720 }),
+      meeting({ clave: "B", subjectName: "B", startMinutes: 630, endMinutes: 690 }),
+      meeting({ clave: "C", subjectName: "C", startMinutes: 660, endMinutes: 750 }),
+    ]);
 
-    const [resolved] = resolveConflicts(meetings, {
-      weekly: { [key]: "BORRADA" },
-      daily: {},
-    });
-
-    expect(resolved.subjectName).toBe("A");
-    expect(resolved.conflicts?.[0]?.clave).toBe("B");
-  });
-});
-
-describe("conflictGroupKey", () => {
-  it("is order-independent and de-duplicated", () => {
-    expect(conflictGroupKey(["B", "A", "B"])).toBe("A|B");
-    expect(conflictGroupKey(["A", "B"])).toBe(conflictGroupKey(["B", "A"]));
+    expect(resolved).toHaveLength(3);
+    expect(resolved.find((m) => m.clave === "A")?.overlap).toBeDefined();
+    expect(resolved.find((m) => m.clave === "B")?.overlap).toBeDefined();
+    expect(resolved.find((m) => m.clave === "C")?.overlap).toBeDefined();
   });
 });

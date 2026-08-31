@@ -14,8 +14,6 @@ interface ClassCardProps {
   /** Hold-to-edit gesture; undefined disables it. */
   longPressDurationMs?: number;
   onEditRequest?: () => void;
-  /** Cycles the conflict swap: day → week → default. */
-  onSwapRequest?: () => void;
 }
 
 const CONTAINER_CLASSES: Record<ClassCardVariant, string> = {
@@ -25,25 +23,12 @@ const CONTAINER_CLASSES: Record<ClassCardVariant, string> = {
   past: "bg-surface ring-outline-variant opacity-70",
 };
 
-function conflictLabel(
-  conflicts: NonNullable<ResolvedMeeting["conflicts"]>,
-): string {
-  return conflicts
-    .map((conflict) =>
-      conflict.portionLabel === ""
-        ? conflict.subjectName
-        : `${conflict.portionLabel} ${conflict.subjectName}`,
-    )
-    .join(" · ");
-}
-
 export function ClassCard({
   meeting,
   variant,
   progressPercent,
   longPressDurationMs,
   onEditRequest,
-  onSwapRequest,
 }: ClassCardProps) {
   const isCurrent = variant === "current";
   const hasRingProgress = isCurrent && progressPercent !== undefined;
@@ -91,24 +76,16 @@ export function ClassCard({
 
       <div className="mt-1 flex flex-col gap-0.5 text-sm text-on-surface-variant">
         {meeting.classroom ? <p>Salón {meeting.classroom}</p> : null}
+        {meeting.grupo && meeting.grupo !== "*" ? (
+          <p>Grupo {meeting.grupo}</p>
+        ) : null}
         {meeting.professor ? <p>{meeting.professor}</p> : null}
       </div>
 
-      {meeting.conflicts?.length && onSwapRequest ? (
-        <div className="mt-2 flex items-center gap-2">
-          <button
-            type="button"
-            onClick={onSwapRequest}
-            aria-label={`Ver ${meeting.conflicts
-              .map((conflict) => conflict.subjectName)
-              .join(" o ")} en lugar de ${meeting.subjectName}`}
-            title="Toca para alternar el orden: una vez solo hoy, dos veces toda la semana"
-            className="ml-auto rounded-lg px-1.5 py-0.5 text-xs font-semibold text-error underline-offset-2 transition-colors hover:underline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary"
-          >
-            {meeting.swapped ? "↔ " : ""}
-            {conflictLabel(meeting.conflicts)}
-          </button>
-        </div>
+      {meeting.overlap ? (
+        <p className="mt-2 text-right text-xs font-medium text-error">
+          {meeting.overlap}
+        </p>
       ) : null}
     </article>
   );

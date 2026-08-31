@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Page } from "@/components/layout/Page";
 import { Card } from "@/components/ui/Card";
-import { PlusIcon, TargetIcon } from "@/components/ui/icons";
+import { PlusIcon } from "@/components/ui/icons";
 import { Spinner } from "@/components/ui/Spinner";
 import type { ToastVariant } from "@/components/ui/toastVariants";
 import { getNow } from "@/lib/devtools/clock";
@@ -17,7 +17,6 @@ import {
   detectManualEditConflicts,
   sameStringMap,
 } from "./drift";
-import { dailySwapKey } from "./conflicts";
 import { mapHorario } from "./mapHorario";
 import { useScheduleState } from "./scheduleStateContext";
 import { DayDots } from "./components/DayDots";
@@ -54,8 +53,7 @@ export function SchedulePage({
   onShowToast,
 }: SchedulePageProps) {
   const now = useCurrentTime();
-  const { edits: scheduleEdits, daySwaps, setDaySwaps, resolvedWeek } =
-    useScheduleState();
+  const { edits: scheduleEdits, resolvedWeek } = useScheduleState();
   const [selectedDate, setSelectedDate] = useState<Date>(() => getNow());
   const [editor, setEditor] = useState<EditorState>({ mode: "closed" });
 
@@ -70,26 +68,7 @@ export function SchedulePage({
 
   const isToday = isSameDay(selectedDate, now);
 
-  const { loaded: editsLoaded, edits, setWeeklyPreference } = scheduleEdits;
-
-  // Conflicts can disappear after edits; stale weekly preferences are pruned
-  // so removing an overlap always restores the default order (§12).
-  useEffect(() => {
-    if (!editsLoaded) return;
-
-    const validKeys = new Set(
-      resolvedWeek
-        .map((meeting) => meeting.conflictKey)
-        .filter((key): key is string => key !== undefined),
-    );
-    const staleKeys = Object.keys(edits.conflictOverrides).filter(
-      (key) => !validKeys.has(key),
-    );
-
-    for (const key of staleKeys) {
-      setWeeklyPreference(key, null);
-    }
-  }, [resolvedWeek, editsLoaded, edits.conflictOverrides, setWeeklyPreference]);
+  const { loaded: editsLoaded, edits } = scheduleEdits;
 
   // Manual-edit drift: after each real fetch, compare the fresh raw values
   // against the stored baseline. School changes colliding with a live manual
@@ -138,41 +117,6 @@ export function SchedulePage({
     }
     return names;
   }, [resolvedWeek]);
-
-  const handleSwapToggle = useCallback(
-    (target: ResolvedMeeting) => {
-      if (target.conflictKey === undefined || !target.conflicts?.length) return;
-
-      const key = target.conflictKey;
-      const dKey = dailySwapKey(key, target.weekday);
-      const dailyClave = daySwaps[dKey];
-      const weeklyClave = scheduleEdits.edits.conflictOverrides[key];
-
-      if (dailyClave !== undefined) {
-        // Second tap: promote the choice to every occurrence of the conflict.
-        setDaySwaps((previous) => {
-          const next = { ...previous };
-          delete next[dKey];
-          return next;
-        });
-        scheduleEdits.setWeeklyPreference(key, dailyClave);
-        return;
-      }
-
-      if (weeklyClave !== undefined) {
-        // Already swapped for the whole week: reset to the default order.
-        scheduleEdits.setWeeklyPreference(key, null);
-        return;
-      }
-
-      // First tap: swap just for this day (ephemeral).
-      const displaced = target.conflicts[0];
-      if (displaced !== undefined) {
-        setDaySwaps((previous) => ({ ...previous, [dKey]: displaced.clave }));
-      }
-    },
-    [daySwaps, scheduleEdits, setDaySwaps],
-  );
 
   function handleEditorSubmit(submit: SubjectEditorSubmit) {
     if (editor.mode === "edit") {
@@ -233,12 +177,12 @@ export function SchedulePage({
           </div>
         ) : (
           <>
-            <DayDots
-              selectedDate={selectedDate}
-              now={now}
-              onSelectDate={setSelectedDate}
-            />
-            <div className="mb-3 flex justify-end">
+            <div className="mb-3 flex items-center justify-center gap-3">
+              <DayDots
+                selectedDate={selectedDate}
+                now={now}
+                onSelectDate={setSelectedDate}
+              />
               <button
                 type="button"
                 onClick={
@@ -248,12 +192,20 @@ export function SchedulePage({
                 }
                 aria-label={isToday ? "Agregar materia" : "Volver a hoy"}
                 title={isToday ? "Agregar materia" : "Volver a hoy"}
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-container text-on-primary-container transition-colors hover:bg-primary-container/70 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary"
+                className={`flex h-10 w-10 items-center justify-center rounded-full transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary ${
+                  isToday
+                    ? "bg-primary-container text-on-primary-container hover:bg-primary-container/70"
+                    : "bg-transparent font-semibold text-primary hover:bg-primary-container/50"
+                }`}
               >
-                {isToday ? <PlusIcon size={20} /> : <TargetIcon size={20} />}
+                {isToday ? (
+                  <PlusIcon size={20} />
+                ) : (
+                  <span className="text-xs">Hoy</span>
+                )}
               </button>
             </div>
-            <div {...swipe.bind} className="touch-pan-y">
+            <div {...swipe.bind} className="touch-pan-y flex flex-1 flex-col">
               <ScheduleDayView
                 dayMeetings={dayMeetings}
                 now={now}
@@ -262,7 +214,6 @@ export function SchedulePage({
                 onEditRequest={(meeting) =>
                   setEditor({ mode: "edit", meeting })
                 }
-                onSwapToggle={handleSwapToggle}
               />
             </div>
           </>

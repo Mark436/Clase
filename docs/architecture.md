@@ -126,6 +126,22 @@ Shows only fields with product value, not every API field.
 **Invariant:** Reuses types from `sith-api-client` (`Alumno`, `Creditos`, etc.)
 rather than duplicating DTO shapes.
 
+### `src/features/settings/`
+
+Always-on user preferences surfaced as a bottom sheet opened from the Student
+area. Owns `UserSettings` (notification channel, capsule variant, capsule
+auto-collapse, long-press duration) and the adeudo-alerts switch.
+
+- `types.ts` — `UserSettings` shape, defaults, and `parseUserSettings` validation.
+- `useSettings.ts` — `SettingsController` (load/persist via `lib/storage`, one-time
+  migration from the legacy `DevConfig` user-facing fields).
+- `components/SettingsSheet.tsx` — the bottom-sheet UI using generic primitives
+  (`Switch`, `SegmentedControl`, `Slider`, `Button`).
+
+**Invariant:** These preferences apply regardless of dev mode. Developer
+simulation overrides (clock, materias, grades, debts, toast test duration)
+stay in `features/devtools`/`DevConfig`.
+
 ### `src/features/devtools/`
 
 Gated testing panel (ROADMAP §13): simulated clock, schedule/grade/debt
@@ -161,7 +177,8 @@ IndexedDB persistence for the app cache and small settings. Three stores:
 - `grade-tracking` — per-subject `TrackedGrade` (`current` vs `previous`) so the grades feature can mark new or changed grades;
 - `settings` — non-sensitive preferences: remembered username, adeudo-alerts
   opt-in, grades-seen flag, last login timestamp (drives the 23h stale-data
-  nudge), last reminder date, and dev-tools simulation config.
+  nudge), last reminder date, dev-tools simulation config, and the
+  always-on `userSettings` blob (see `features/settings`).
 
 A fourth store, `schedule-edits`, holds the user's schedule customization
 overlay: per-subject text overrides, per-occurrence time moves, manually

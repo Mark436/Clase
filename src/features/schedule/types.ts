@@ -7,6 +7,8 @@ export interface ClassMeeting {
   subjectName: string;
   classroom: string;
   professor: string;
+  /** Assigned group (`gpo`); absent for manual subjects or when masked. */
+  grupo?: string;
   weekday: number;
   startMinutes: number;
   endMinutes: number;
@@ -17,22 +19,15 @@ export type WeekSchedule = ClassMeeting[];
 // Re-exported so feature code reads one module; persistence stays in lib.
 export type { CustomSubject, ScheduleEdits };
 
-export interface ConflictNotice {
-  clave: string;
-  subjectName: string;
-  /** Friendly eaten fraction ("1/4"); empty when fully displaced. */
-  portionLabel: string;
-}
-
 /**
- * One card per conflicting interval: the highest-ranked meeting of a cluster
- * renders, and every class it displaces is listed in `conflicts`. Classes
- * without overlaps pass through unchanged (no `conflicts` field).
+ * One card per meeting. Every overlapping member of a cluster is emitted as
+ * its own card carrying a plain `overlap` note; classes without overlaps pass
+ * through unchanged (no `overlap` field).
  */
 export interface ResolvedMeeting extends ClassMeeting {
-  conflicts?: ConflictNotice[];
-  /** Stable key of the conflict group, present alongside `conflicts`. */
-  conflictKey?: string;
-  /** True when an explicit user swap preference placed this class here. */
-  swapped?: boolean;
+  /**
+   * Bottom-right note shown when this class shares time with others, e.g.
+   * "Tapada 1/2 por Matemáticas" or "Tapada completa por Química".
+   */
+  overlap?: string;
 }

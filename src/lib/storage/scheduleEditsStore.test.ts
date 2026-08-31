@@ -46,7 +46,6 @@ describe("parseScheduleEdits", () => {
             slots: [],
           },
         ],
-        conflictOverrides: { "A|B": "A" },
       }),
     );
 
@@ -58,7 +57,6 @@ describe("parseScheduleEdits", () => {
     });
     expect(parsed.customSubjects).toHaveLength(1);
     expect(parsed.customSubjects[0]?.clave).toBe("USR-eng");
-    expect(parsed.conflictOverrides).toEqual({ "A|B": "A" });
   });
 
   it("drops custom subjects whose clave lacks the USR- prefix", () => {

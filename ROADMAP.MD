@@ -220,11 +220,9 @@ Intentar actualizar
 - [x] Agregar materias manuales (p. ej. Inglés) con días y rango horario.
 - [x] Eliminar materias agregadas manualmente.
 - [x] Persistir ediciones y materias manuales en IndexedDB (sobreviven recargas; se borran con logout).
-- [x] Resolver empalmes con una sola tarjeta por intervalo: la clase ganadora conserva su rango completo y muestra un aviso con las clases desplazadas ("Matemáticas" o "1/4 Matemáticas").
-- [x] Fracciones amigables en el aviso (1/4, 1/3, 1/2, 2/3, 3/4) con respaldo en minutos.
-- [x] Prioridad: materias manuales sobre las consultadas; entre iguales, el horario más temprano.
-- [x] Alternar el orden con un toque en el aviso: primer toque solo hoy (efímero), segundo toque toda la semana (persistente), tercer toque restaura el orden original.
-- [x] Limpiar preferencias de empalme obsoletas al desaparecer el empalme (por edición o datos nuevos).
+- [x] Resolver empalmes: cada materia empalmada se muestra como su propia tarjeta con una nota al pie ("Encimada 1/2 por Matemáticas" / "Encimada completa por Matemáticas"); las clases no empalmadas pasan intactas.
+- [x] Fracciones amigables en la nota (1/4, 1/3, 1/2, 2/3, 3/4) con respaldo en minutos; cobertura total se indica como "completa".
+- [x] Sin reordenamiento/swap entre empalmadas: la nota es informativa y no hay alternancia de orden (se eliminó la preferencia semanal/diaria de empalme).
 - [x] Botón circular "+" (solo icono) para agregar materia, reemplazando el botón con texto.
 - [x] Validación por campo en el editor (nombre vacío, rango inválido, sin días) con mensajes junto a cada campo y `TimeInput` dedicado; al corregir el error desaparece al instante.
 - [x] Al crear una materia, el horario salta al primer día seleccionado y muestra un toast de éxito.
@@ -236,6 +234,7 @@ Intentar actualizar
 - [x] Implementar swipe horizontal (sobre la zona de la lista).
 - [x] Swipe hacia izquierda → siguiente día.
 - [x] Swipe hacia derecha → día anterior.
+- [x] El área de swipe cubre todo el alto (flex chain del shell: `main`/transform/`Page` crecen) para que el gesto responda también en días sin clases.
 - [x] Alternativa no-gestual: menú de 3 bolitas (anterior / seleccionado / siguiente) con click.
 - [x] La ventana de 3 bolitas sigue al día seleccionado (scroll infinito, el centro es el día en pantalla).
 - [x] Mantener navegación táctil fluida.
@@ -346,7 +345,7 @@ Intentar actualizar
 - [x] Toggle de adeudos (banner y alertas).
 - [x] Config persistida en settings store con botón "Restaurar datos reales".
 - [x] Sección de pruebas de toast: variante y mensaje arbitrarios (los estados nuevos aparecen solos al registrarse en `TOAST_VARIANTS`).
-- [x] Slider de duración del toast (1–10 s) y de duración de presión larga (200–1500 ms); aplican solo con el panel abierto (pausa al cerrar, igual que el resto de overrides).
+- [x] Slider de duración del toast (1–10 s); aplica solo con el panel abierto (pausa al cerrar, igual que el resto de overrides). La duración de presión larga se movió a Ajustes (siempre activa, ver §14.1).
 - [x] Toast con desvanecimiento de salida y temporizadores que no se reinician con re-renders del host.
 - [x] Los toggles de calificaciones y adeudos disparan los toasts reales de producción (mismo texto y variante que un fetch real), a través del mismo `onShowToast` del shell.
 - [ ] Evaluar retirar el panel antes de compartir la app con otros alumnos.
@@ -384,6 +383,18 @@ Fuente de verdad: [`docs/design.md`](docs/design.md).
 - [x] Variante por defecto: **B · Morf iOS** (modo dev cierra/abre el panel con su propio toggle).
 - [ ] Rediseñar iconos PWA al lenguaje cobalto.
 - [ ] Auditoría de contraste AA en ambos temas.
+
+## 14.1 Ajustes (personalización)
+
+Pantalla de preferencias del usuario en el área Alumno, desacoplada de dev mode.
+
+- [x] Bottom sheet "Ajustes" accesible desde Alumno (tarjeta "Personalizar").
+- [x] Desacoplar preferencias de usuario de `DevConfig`: canal de avisos, variante de cápsula, colapso automático y duración de presión larga ahora aplican **siempre**, no solo con el panel dev abierto.
+- [x] Control persistente de alertas de adeudos (switch), reutilizando el opt-in existente.
+- [x] Control para guardar o no el número de control (switch de privacidad); `AuthProvider` persiste el usuario solo si está activado.
+- [x] Migración automática desde el viejo `DevConfig` a `UserSettings` en el primer arranque.
+- [x] Primitivas UI `Switch` y `SegmentedControl` en `components/ui/`.
+- [x] Pruebas de `parseUserSettings` (`settings.test.ts`).
 
 ## 15. Criterio de finalización
 

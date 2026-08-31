@@ -21,7 +21,6 @@ interface ScheduleDayViewProps {
   isToday: boolean;
   longPressDurationMs?: number;
   onEditRequest?: (meeting: ResolvedMeeting) => void;
-  onSwapToggle?: (meeting: ResolvedMeeting) => void;
 }
 
 export function ScheduleDayView({
@@ -30,7 +29,6 @@ export function ScheduleDayView({
   isToday,
   longPressDurationMs,
   onEditRequest,
-  onSwapToggle,
 }: ScheduleDayViewProps) {
   if (dayMeetings.length === 0) {
     return <EmptyState message="Sin clases este día." />;
@@ -100,9 +98,6 @@ export function ScheduleDayView({
         longPressDurationMs={longPressDurationMs}
         onEditRequest={
           onEditRequest ? () => onEditRequest(meeting) : undefined
-        }
-        onSwapRequest={
-          onSwapToggle ? () => onSwapToggle(meeting) : undefined
         }
       />,
     );

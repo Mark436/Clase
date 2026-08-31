@@ -1,5 +1,4 @@
 import { createContext, useContext } from "react";
-import type { Dispatch, SetStateAction } from "react";
 import type { ResolvedMeeting } from "./types";
 import type { ScheduleEditsController } from "./hooks/useScheduleEdits";
 
@@ -8,9 +7,6 @@ import type { ScheduleEditsController } from "./hooks/useScheduleEdits";
 // schedule page read the exact same data without duplicate persistence loads.
 export interface ScheduleStateValue {
   edits: ScheduleEditsController;
-  /** Session-only conflict swap preferences ("solo hoy"). */
-  daySwaps: Record<string, string>;
-  setDaySwaps: Dispatch<SetStateAction<Record<string, string>>>;
   resolvedWeek: ResolvedMeeting[];
 }
 

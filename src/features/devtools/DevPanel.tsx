@@ -57,7 +57,6 @@ export function DevPanel({
       <AdeudosSection dev={dev} onShowToast={onShowToast} />
       <div className="border-t border-outline-variant pt-4" />
       <InteractionSection
-        dev={dev}
         onSendTestNotification={onSendTestNotification}
       />
       <div className="border-t border-outline-variant pt-4" />

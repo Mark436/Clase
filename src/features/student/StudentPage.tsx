@@ -4,6 +4,7 @@ import { AnimatedNumber } from "@/components/ui/AnimatedNumber";
 import { Card } from "@/components/ui/Card";
 import { Page } from "@/components/layout/Page";
 import { ProgressBar } from "@/components/ui/ProgressBar";
+import { SettingsIcon } from "@/components/ui/icons";
 import type { ToastVariant } from "@/components/ui/toastVariants";
 import { DevPanel } from "@/features/devtools/DevPanel";
 import { DebtsCard } from "./components/DebtsCard";
@@ -16,6 +17,8 @@ interface StudentPageProps {
   onRequestRefresh: () => void;
   onShowToast?: (message: string, variant: ToastVariant) => void;
   onSendTestNotification?: () => void;
+  onOpenSettings: () => void;
+  onLogout: () => void;
   dev?: DevToolsController;
 }
 
@@ -24,6 +27,8 @@ export function StudentPage({
   onRequestRefresh,
   onShowToast,
   onSendTestNotification,
+  onOpenSettings,
+  onLogout,
   dev,
 }: StudentPageProps) {
   const nameTapsRef = useRef(0);
@@ -98,6 +103,32 @@ export function StudentPage({
             No hay datos del alumno disponibles.
           </Card>
         )}
+
+        <Card className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0">
+            <SettingsIcon size={20} className="shrink-0 text-primary" />
+            <p className="min-w-0 text-sm font-medium text-on-surface">
+              Ajustes
+            </p>
+          </div>
+          <Button
+            variant="secondary"
+            onClick={onOpenSettings}
+            className="shrink-0"
+          >
+            Personalizar
+          </Button>
+        </Card>
+
+        <Card className="p-2">
+          <button
+            type="button"
+            onClick={onLogout}
+            className="flex h-11 w-full items-center justify-center rounded-xl text-sm font-semibold text-error transition-colors hover:bg-error-container/60 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-error"
+          >
+            Cerrar sesión
+          </button>
+        </Card>
 
         <Card className="flex items-center justify-between gap-3">
           <div className="min-w-0">

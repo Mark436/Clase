@@ -43,6 +43,7 @@ export function mapHorario(
           subjectName,
           classroom: slot.classroom,
           professor: subject.docente.trim(),
+          grupo: subject.grupo.trim(),
           weekday,
           startMinutes: slot.startMinutes,
           endMinutes: slot.endMinutes,

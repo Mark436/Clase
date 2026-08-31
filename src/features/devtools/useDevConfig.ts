@@ -9,11 +9,7 @@ import {
   SETTING_DEV_UNLOCKED,
 } from "@/lib/storage/settingsStore";
 import type { DevConfig, DevMateria } from "./types";
-import {
-  EMPTY_DEV_CONFIG,
-  toCapsuleVariant,
-  toNotificationChannel,
-} from "./types";
+import { EMPTY_DEV_CONFIG } from "./types";
 import { isDevBuild } from "./config";
 
 export interface DevToolsController {
@@ -94,22 +90,6 @@ function parseDevConfig(raw: string | null): DevConfig {
       toastDurationMs: toPositiveNumber(
         parsed.toastDurationMs,
         EMPTY_DEV_CONFIG.toastDurationMs,
-      ),
-      longPressDurationMs: toPositiveNumber(
-        parsed.longPressDurationMs,
-        EMPTY_DEV_CONFIG.longPressDurationMs,
-      ),
-      capsuleVariant: toCapsuleVariant(
-        parsed.capsuleVariant,
-        EMPTY_DEV_CONFIG.capsuleVariant,
-      ),
-      capsuleCollapseMs: toPositiveNumber(
-        parsed.capsuleCollapseMs,
-        EMPTY_DEV_CONFIG.capsuleCollapseMs,
-      ),
-      notificationChannel: toNotificationChannel(
-        parsed.notificationChannel,
-        EMPTY_DEV_CONFIG.notificationChannel,
       ),
     };
   } catch {

@@ -21,10 +21,12 @@ import {
 import { clearAllStores } from "@/lib/storage/db";
 import {
   getSetting,
+  removeSetting,
   setSetting,
   SETTING_GRADES_SEEN,
   SETTING_LAST_LOGIN_AT,
   SETTING_REMEMBERED_USERNAME,
+  SETTING_REMEMBER_USERNAME,
 } from "@/lib/storage/settingsStore";
 import type { AuthStatus } from "./auth-context";
 import { AuthContext } from "./auth-context";
@@ -292,7 +294,16 @@ async function persistSession(
       avisos,
       loadedAt: new Date().toISOString(),
     });
-    await setSetting(SETTING_REMEMBERED_USERNAME, user);
+    // Remember the control number only if the user opted in; otherwise clear
+    // it so future logins start blank. Default is "not remembered".
+    const rememberRaw = await getSetting(SETTING_REMEMBER_USERNAME).catch(
+      () => null,
+    );
+    if (rememberRaw === "true") {
+      await setSetting(SETTING_REMEMBERED_USERNAME, user);
+    } else {
+      await removeSetting(SETTING_REMEMBERED_USERNAME);
+    }
   } catch (error) {
     console.warn("No se pudieron guardar los datos localmente.", error);
   }

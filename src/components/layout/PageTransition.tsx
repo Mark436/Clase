@@ -91,5 +91,5 @@ export function PageTransition({
     };
   }, []);
 
-  return <div ref={elementRef}>{children(displayKey)}</div>;
+  return <div ref={elementRef} className="flex flex-1 flex-col">{children(displayKey)}</div>;
 }

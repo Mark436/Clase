@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { addDays, isSameDay } from "../utils";
 
 interface DayDotsProps {
@@ -15,45 +16,80 @@ const DATE_FORMATTER = new Intl.DateTimeFormat("es-MX", {
   month: "long",
 });
 
+/** Days rendered to either side of the selected one (scrollable strip). */
+const SIDE_DAYS = 14;
+
 /**
- * Infinite day navigation rendered as three dots: [previous, selected, next].
- * The window always centers the selected day, so swiping or tapping a dot
- * moves the whole window (the center becomes the newly chosen day).
+ * Day navigation as a horizontally scrollable strip of circles. Only ~3 are
+ * visible at once, and the selected day is always centered; changing the day
+ * slides the strip smoothly so the new center appears. Works by touch swipe
+ * (native horizontal scroll) and by tapping a visible circle. The strip is
+ * long (a month-ish window) so it feels like a real carousel.
  */
 export function DayDots({
   selectedDate,
   now,
   onSelectDate,
 }: DayDotsProps) {
-  const days = [-1, 0, 1].map((offset) => addDays(selectedDate, offset));
+  const stripRef = useRef<HTMLDivElement>(null);
+  const selectedRef = useRef<HTMLButtonElement>(null);
+
+  const days = Array.from({ length: SIDE_DAYS * 2 + 1 }, (_, index) =>
+    addDays(selectedDate, index - SIDE_DAYS),
+  );
+
+  const centerSelected = () => {
+    const strip = stripRef.current;
+    const selected = selectedRef.current;
+    if (!strip || !selected) return;
+
+    const left =
+      selected.offsetLeft - (strip.clientWidth - selected.offsetWidth) / 2;
+    strip.scrollTo({ left, behavior: "smooth" });
+  };
+
+  // Double rAF so the centering runs after layout settles, both on mount
+  // (center on the initial/today date) and whenever the selected day changes.
+  useEffect(() => {
+    let second = 0;
+    const first = requestAnimationFrame(() => {
+      second = requestAnimationFrame(centerSelected);
+    });
+    return () => {
+      cancelAnimationFrame(first);
+      cancelAnimationFrame(second);
+    };
+  }, [selectedDate]);
 
   return (
     <div
-      className="flex items-center justify-center gap-3"
+      ref={stripRef}
       role="group"
       aria-label="Cambiar día del horario"
+      className="relative flex max-w-[164px] snap-x snap-proximity items-center gap-3 overflow-x-auto px-2 py-1 scroll-smooth [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
     >
       {days.map((date, index) => {
-        const isSelected = index === 1;
+        const isSelected = index === SIDE_DAYS;
         const isToday = isSameDay(date, now);
         const ariaLabel = formatAria(date, isSelected, isToday);
         return (
           <button
             key={date.toDateString()}
+            ref={isSelected ? selectedRef : undefined}
             type="button"
             aria-label={ariaLabel}
             aria-pressed={isSelected}
             onClick={() => onSelectDate(date)}
-            className={`flex h-12 w-12 flex-col items-center justify-center rounded-full transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
+            className={`flex h-10 w-10 shrink-0 snap-center flex-col items-center justify-center rounded-full transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
               isSelected
                 ? "bg-primary text-on-primary"
                 : "bg-primary-container/60 text-on-surface-variant hover:bg-primary-container"
             }`}
           >
-            <span className="text-[10px] font-semibold uppercase leading-none">
+            <span className="text-[9px] font-semibold uppercase leading-none">
               {weekdayShort(date)}
             </span>
-            <span className="text-base font-bold leading-tight tabular-nums">
+            <span className="text-sm font-bold leading-tight tabular-nums">
               {date.getDate()}
             </span>
           </button>

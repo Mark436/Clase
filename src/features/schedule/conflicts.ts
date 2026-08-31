@@ -1,9 +1,4 @@
-import type {
-  ClassMeeting,
-  ConflictNotice,
-  ResolvedMeeting,
-  WeekSchedule,
-} from "./types";
+import type { ClassMeeting, ResolvedMeeting, WeekSchedule } from "./types";
 import { isCustomClave } from "./edits";
 
 /** Absolute tolerance when snapping an eaten ratio onto a friendly fraction. */
@@ -22,7 +17,7 @@ const FRIENDLY_FRACTIONS: ReadonlyArray<readonly [label: string, value: number]>
  * "Comen un cuarto" rendering: the eaten portion becomes "1/4", "1/2",
  * "3/4"... when a friendly fraction approximates it closely enough;
  * otherwise it falls back to minutes ("20 min"). Fully displaced classes
- * return "" (the notice shows just the subject name).
+ * return "" (the caller turns that into "completa").
  */
 export function formatEatenPortion(
   eatenMinutes: number,
@@ -49,6 +44,17 @@ export function formatEatenPortion(
   return best === null ? `${eatenMinutes} min` : best[0];
 }
 
+/**
+ * Overlap label for how much of a class's own duration is shared with
+ * another. "completa" when the whole class is covered; "" when nothing or
+ * everything is ambiguous except the fully-covered case.
+ */
+function eatenLabel(eatenMinutes: number, totalMinutes: number): string {
+  if (totalMinutes <= 0 || eatenMinutes <= 0) return "";
+  if (eatenMinutes >= totalMinutes) return "completa";
+  return formatEatenPortion(eatenMinutes, totalMinutes);
+}
+
 // Manually added subjects win over fetched classes; among equals the earlier
 // start keeps its place. Deterministic regardless of input order.
 function compareRank(a: ClassMeeting, b: ClassMeeting): number {
@@ -73,95 +79,51 @@ function overlapLength(
   );
 }
 
-export interface SwapPreferences {
-  /** Persistent weekly choices: groupKey -> preferred clave. */
-  weekly: Record<string, string>;
-  /** Ephemeral choices: `${groupKey}#${weekday}` -> clave. */
-  daily: Record<string, string>;
-}
+/**
+ * Clear bottom-right note for a card that overlaps others, e.g.
+ * "Encimada 1/2 por Matemáticas" or "Encimada completa por Química". Lists
+ * every class it shares time with; undefined when nothing overlaps.
+ */
+function overlapMessage(
+  others: ClassMeeting[],
+  meeting: ClassMeeting,
+): string | undefined {
+  const total = meeting.endMinutes - meeting.startMinutes;
+  const parts: string[] = [];
 
-export function dailySwapKey(groupKey: string, weekday: number): string {
-  return `${groupKey}#${weekday}`;
-}
+  for (const other of others) {
+    const overlapped = overlapLength(other, meeting);
+    if (overlapped <= 0) continue;
+    parts.push(`${eatenLabel(overlapped, total)} por ${other.subjectName}`);
+  }
 
-/** Stable identity of a conflict cluster; shared by every weekday it repeats on. */
-export function conflictGroupKey(claves: Iterable<string>): string {
-  return [...new Set(claves)].sort().join("|");
+  return parts.length === 0 ? undefined : `Encimada ${parts.join(" y ")}`;
 }
 
 /**
- * Collapses one overlapping cluster into a single card: the highest-ranked
- * member renders with its own time range, and every other member is listed
- * in `conflicts` together with how much of its duration was eaten. Swap
- * preferences (daily first, then weekly) reorder which member displays.
+ * One overlapping cluster → one card per member. Each card records how much
+ * of its own duration is shared with the rest of the group as a plain note
+ * (`overlap`); no ordering or swap behavior.
  */
-function resolveCluster(
-  cluster: ClassMeeting[],
-  weekday: number,
-  prefs: SwapPreferences,
-): ResolvedMeeting[] {
-  const ranked = [...cluster].sort(compareRank);
+function resolveCluster(cluster: ClassMeeting[]): ResolvedMeeting[] {
+  const sorted = [...cluster].sort(compareRank);
+  if (sorted.length === 1) return [sorted[0]];
 
-  // Winners reserve their full interval first; each member records how much
-  // of its own range the higher-ranked members take away.
-  const reserved: Array<{ startMinutes: number; endMinutes: number }> = [];
-  const eatenByClave = new Map<string, number>();
-  for (const meeting of ranked) {
-    let eaten = 0;
-    for (const interval of reserved) {
-      eaten += overlapLength(interval, meeting);
-    }
-    eatenByClave.set(meeting.clave, eaten);
-    reserved.push({
-      startMinutes: meeting.startMinutes,
-      endMinutes: meeting.endMinutes,
-    });
-  }
-
-  const key = conflictGroupKey(ranked.map((meeting) => meeting.clave));
-  const members = [...ranked];
-  let swapped = false;
-
-  const dailyPreferred = prefs.daily[dailySwapKey(key, weekday)];
-  const weeklyPreferred = prefs.weekly[key];
-  const preferred = dailyPreferred ?? weeklyPreferred;
-
-  if (preferred !== undefined) {
-    const index = members.findIndex((meeting) => meeting.clave === preferred);
-    if (index > 0) {
-      const [picked] = members.splice(index, 1);
-      members.unshift(picked);
-      swapped = true;
-    } else if (index === 0 && weeklyPreferred !== undefined) {
-      swapped = true;
-    }
-  }
-
-  const primary = members[0];
-  const others = members.slice(1);
-  if (others.length === 0) return [primary];
-
-  const conflicts: ConflictNotice[] = others.map((meeting) => ({
-    clave: meeting.clave,
-    subjectName: meeting.subjectName,
-    portionLabel: formatEatenPortion(
-      eatenByClave.get(meeting.clave) ?? 0,
-      meeting.endMinutes - meeting.startMinutes,
+  return sorted.map((meeting) => ({
+    ...meeting,
+    overlap: overlapMessage(
+      sorted.filter((other) => other !== meeting),
+      meeting,
     ),
   }));
-
-  return [{ ...primary, conflicts, conflictKey: key, swapped }];
 }
 
 /**
  * Full-week deterministic resolution: meetings are clustered per weekday by
- * interval overlap and every cluster collapses to one card. Non-conflicting
- * meetings pass through untouched.
+ * interval overlap and every member of a cluster is emitted as its own card
+ * carrying an overlap note. Non-conflicting meetings pass through untouched.
  */
-export function resolveConflicts(
-  meetings: WeekSchedule,
-  prefs: SwapPreferences,
-): ResolvedMeeting[] {
+export function resolveConflicts(meetings: WeekSchedule): ResolvedMeeting[] {
   const byWeekday = new Map<number, ClassMeeting[]>();
   for (const meeting of meetings) {
     const bucket = byWeekday.get(meeting.weekday);
@@ -174,15 +136,23 @@ export function resolveConflicts(
 
   const resolved: ResolvedMeeting[] = [];
 
-  for (const [weekday, dayMeetings] of byWeekday) {
-    const ordered = dayMeetings.sort(compareRank);
+  for (const dayMeetings of byWeekday.values()) {
+    // Clustering must group by time overlap only, so order by start minute.
+    // (compareRank would put manual subjects first regardless of time and
+    // inflate clusterEnd, wrongly swallowing earlier non-overlapping classes.)
+    const ordered = [...dayMeetings].sort(
+      (a, b) =>
+        a.startMinutes - b.startMinutes ||
+        a.endMinutes - b.endMinutes ||
+        a.subjectName.localeCompare(b.subjectName),
+    );
 
     let cluster: ClassMeeting[] = [];
     let clusterEnd = -1;
 
     const flush = () => {
       if (cluster.length > 0) {
-        resolved.push(...resolveCluster(cluster, weekday, prefs));
+        resolved.push(...resolveCluster(cluster));
         cluster = [];
         clusterEnd = -1;
       }

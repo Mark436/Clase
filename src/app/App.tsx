@@ -8,13 +8,8 @@ import type { CapsuleVariant } from "@/components/ui/Capsule";
 import type { ToastVariant } from "@/components/ui/toastVariants";
 import { DEFAULT_TOAST_DURATION_MS } from "@/components/ui/toastVariants";
 import { applyDevOverrides } from "@/features/devtools/applyDevOverrides";
-import {
-  DEFAULT_CAPSULE_COLLAPSE_MS,
-  DEFAULT_LONG_PRESS_MS,
-  DEFAULT_NOTIFICATION_CHANNEL,
-} from "@/features/devtools/types";
-import type { NotificationChannel } from "@/features/devtools/types";
 import { useDevConfig } from "@/features/devtools/useDevConfig";
+import { useSettings } from "@/features/settings/useSettings";
 import { useAuth } from "@/features/auth/auth-context";
 import { AuthProvider } from "@/features/auth/AuthProvider";
 import { LoginPage } from "@/features/auth/LoginPage";
@@ -30,6 +25,7 @@ import { SchedulePage } from "@/features/schedule/SchedulePage";
 import { getScheduleForDay } from "@/features/schedule/utils";
 import { AdeudoAlertsCard } from "@/features/student/components/AdeudoAlertsCard";
 import { StudentPage } from "@/features/student/StudentPage";
+import { SettingsSheet } from "@/features/settings/components/SettingsSheet";
 import { useCurrentTime } from "@/lib/devtools/useCurrentTime";
 import { formatAverage } from "@/lib/formatAverage";
 import type { CapsuleNotification } from "@/lib/notifications/capsuleEvents";
@@ -105,12 +101,14 @@ function AuthenticatedShell() {
     lastProgressGain,
     progressAlertCount,
     rememberedUsername,
+    logout,
   } = useAuth();
   const dev = useDevConfig();
   const [tab, setTab] = useState<TabId>(() =>
     getHomeTab(shouldOpenGradesFirst(alumno, unseenGradeChanges)),
   );
   const [reAuthOpen, setReAuthOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [toast, setToast] = useState<ActiveToast | null>(null);
   const toastIdRef = useRef(0);
 
@@ -125,22 +123,21 @@ function AuthenticatedShell() {
     [alumno, dev.loaded, dev.enabled, dev.config],
   );
 
-  // UX timings follow the same convention as every other override: they apply
-  // only while the panel is enabled; otherwise the built-in defaults rule.
-  const timingsActive = dev.loaded && dev.enabled;
-  const toastDurationMs = timingsActive
+  // Always-on user preferences (apply regardless of dev mode): they previously
+  // lived in DevConfig and only took effect while the panel was enabled.
+  const settingsCtrl = useSettings();
+  const {
+    notificationChannel,
+    capsuleVariant,
+    capsuleCollapseMs,
+    longPressDurationMs,
+  } = settingsCtrl.settings;
+
+  // Dev-only toast test duration: applies only while the panel is enabled.
+  const devActive = dev.loaded && dev.enabled;
+  const toastDurationMs = devActive
     ? dev.config.toastDurationMs
     : DEFAULT_TOAST_DURATION_MS;
-  const longPressDurationMs = timingsActive
-    ? dev.config.longPressDurationMs
-    : DEFAULT_LONG_PRESS_MS;
-  const capsuleVariant = timingsActive ? dev.config.capsuleVariant : "morf";
-  const capsuleCollapseMs = timingsActive
-    ? dev.config.capsuleCollapseMs
-    : DEFAULT_CAPSULE_COLLAPSE_MS;
-  const notificationChannel: NotificationChannel = timingsActive
-    ? dev.config.notificationChannel
-    : DEFAULT_NOTIFICATION_CHANNEL;
 
   const showToast = useCallback((message: string, variant: ToastVariant) => {
     toastIdRef.current += 1;
@@ -384,7 +381,7 @@ function AuthenticatedShell() {
               <SchedulePage
                 alumno={effectiveAlumno}
                 longPressDurationMs={longPressDurationMs}
-                simulated={timingsActive}
+                simulated={devActive}
                 onShowToast={showToast}
               />
             ) : activeKey === "grades" ? (
@@ -395,6 +392,8 @@ function AuthenticatedShell() {
                 onRequestRefresh={handlePullToRefresh}
                 onShowToast={showToast}
                 onSendTestNotification={sendTestNotification}
+                onOpenSettings={() => setSettingsOpen(true)}
+                onLogout={logout}
                 dev={dev}
               />
             )
@@ -417,6 +416,11 @@ function AuthenticatedShell() {
         initialUser={rememberedUsername ?? ""}
         onClose={() => setReAuthOpen(false)}
         onSuccess={() => setReAuthOpen(false)}
+      />
+      <SettingsSheet
+        open={settingsOpen}
+        settings={settingsCtrl}
+        onClose={() => setSettingsOpen(false)}
       />
     </ScheduleStateProvider>
   );

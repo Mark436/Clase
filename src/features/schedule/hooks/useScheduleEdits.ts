@@ -26,7 +26,6 @@ export interface ScheduleEditsController {
   ) => void;
   addCustomSubject: (subject: CustomSubject) => void;
   removeCustomSubject: (clave: string) => void;
-  setWeeklyPreference: (groupKey: string, clave: string | null) => void;
   /** Records fresh raw values as the new baseline and queues any conflicts. */
   registerDrift: (
     conflicts: PendingEditConflict[],
@@ -132,26 +131,8 @@ export function useScheduleEdits(): ScheduleEditsController {
         customSubjects: ref.current.customSubjects.filter(
           (subject) => subject.clave !== clave,
         ),
-        conflictOverrides: Object.fromEntries(
-          Object.entries(ref.current.conflictOverrides).filter(
-            ([key, value]) => value !== clave && key.split("|").includes(clave) === false,
-          ),
-        ),
         timeEdits,
       });
-    },
-    [commit],
-  );
-
-  const setWeeklyPreference = useCallback(
-    (groupKey: string, clave: string | null) => {
-      const conflictOverrides = { ...ref.current.conflictOverrides };
-      if (clave === null) {
-        delete conflictOverrides[groupKey];
-      } else {
-        conflictOverrides[groupKey] = clave;
-      }
-      commit({ ...ref.current, conflictOverrides });
     },
     [commit],
   );
@@ -204,7 +185,6 @@ export function useScheduleEdits(): ScheduleEditsController {
     setTimeEdit,
     addCustomSubject,
     removeCustomSubject,
-    setWeeklyPreference,
     registerDrift,
     resolvePendingConflict,
   };

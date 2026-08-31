@@ -64,9 +64,6 @@ export interface ScheduleEdits {
   // Per-occurrence time replacements keyed `${clave}|${weekday}`.
   timeEdits: Record<string, MeetingTimeEdit>;
   customSubjects: CustomSubject[];
-  // Conflict display preferences: groupKey -> preferred clave. Applies to
-  // every weekday where the same conflict repeats.
-  conflictOverrides: Record<string, string>;
   // Last raw values seen per `${clave}|${field}`; lets drift detection tell
   // "the school changed this" apart from "the user edited this".
   fieldSnapshots: Record<string, string>;
@@ -77,7 +74,6 @@ export const EMPTY_SCHEDULE_EDITS: ScheduleEdits = {
   fieldEdits: {},
   timeEdits: {},
   customSubjects: [],
-  conflictOverrides: {},
   fieldSnapshots: {},
   pendingConflicts: [],
 };
@@ -202,10 +198,6 @@ export function parseScheduleEdits(raw: string | null): ScheduleEdits {
             .map(parseCustomSubject)
             .filter((subject): subject is CustomSubject => subject !== null)
         : [],
-      conflictOverrides: parseRecord(
-        parsed.conflictOverrides,
-        (value): string | null => (typeof value === "string" ? value : null),
-      ),
       fieldSnapshots: parseRecord(
         parsed.fieldSnapshots,
         (value): string | null => (typeof value === "string" ? value : null),

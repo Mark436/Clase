@@ -41,12 +41,12 @@ export function AppShell({
               <Spinner size={24} className="text-primary" />
             </div>
           ) : null}
-          <main className="flex-1">
+          <main className="flex flex-1 flex-col">
             <div
               {...bind}
-              className={
+              className={`flex flex-1 flex-col ${
                 dragging ? undefined : "transition-transform duration-200 ease-out"
-              }
+              }`}
               style={{ transform: `translateY(${offset}px)` }}
             >
               {children}
