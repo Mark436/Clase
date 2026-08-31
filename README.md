@@ -15,9 +15,9 @@ administrativo institucional.
 - Diseño responsive para móvil, tablet y escritorio.
 - Proxy opcional de Netlify para evitar CORS y mixed content en producción.
 
-El proyecto se encuentra en desarrollo activo. Algunas capacidades previstas, como
-persistencia de datos, actualización pull-to-refresh y passkeys, aún no están
-completamente implementadas.
+El proyecto se encuentra en desarrollo activo. La persistencia local, el
+pull-to-refresh y el home condicional ya están implementados; los passkeys
+(WebAuthn) siguen pendientes.
 
 ## Tecnologías
 
@@ -66,7 +66,13 @@ URL anterior. En producción, `VITE_API_URL` normalmente apunta a
 
 ## Comandos
 
-| `pnpm preview` | Sirve localmente el build de producción. |
+| Comando        | Propósito                                   |
+| -------------- | ------------------------------------------- |
+| `pnpm dev`     | Inicia el servidor de desarrollo con HMR     |
+| `pnpm build`   | Typecheck (`tsc -b`) y build de producción   |
+| `pnpm lint`    | Ejecuta Oxlint                              |
+| `pnpm test`    | Ejecuta las pruebas de vitest               |
+| `pnpm preview` | Sirve localmente el build de producción      |
 
 ## Seguridad y datos
 
@@ -80,8 +86,8 @@ nunca deben contener secretos.
 
 ## Documentación
 
-- [Producto](docs/PRODUCT.MD): objetivos, navegación y comportamiento esperado.
-- [Arquitectura](docs/ARCHITECTURE.MD): límites entre aplicación, features e infraestructura.
+- [Producto](docs/product.md): objetivos, navegación y comportamiento esperado.
+- [Arquitectura](docs/architecture.md): límites entre aplicación, features e infraestructura.
 - [Diseño](docs/design.md): tokens visuales y reglas de interfaz.
 - [API](docs/api.md): cliente SITH, proxy, datos y limitaciones conocidas.
-- [TODO](TODO.MD): trabajo pendiente y estado del proyecto.
+- [Roadmap](ROADMAP.MD): trabajo pendiente y estado del proyecto.
