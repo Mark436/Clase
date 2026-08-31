@@ -118,16 +118,20 @@ evento real.
 - Auto-colapso tras `DEFAULT_CAPSULE_COLLAPSE_MS` (1500 ms); tap alterna manual
   siempre y cancela el temporizador. Blur, toque fuera y Escape también
   colapsan; la apertura manual igualmente programa su colapso.
-- Al expandirse se **centra** horizontalmente (`mx-auto` dentro de la zona
-  flex); el Flip anima el salto de posición.
+- Al expandirse se **centra** horizontalmente; el morf anima `left`
+  (0% → 50%) + `xPercent` (0 → -50) con GSAP.
+- El **anchor** (contador + salón) se mantiene montado en la esquina
+  superior-izquierda mientras la tarjeta crece; los detalles (materia,
+  progreso…) aparecen a su derecha con `studia-capsule-in`. El contenido no
+  se reemplaza con una nueva key, así el anchor no se mueve de sitio.
 
 ### Variantes visuales
 
 - **A · Píldora total**: círculo minimizado y estadio al expandir.
 - **B · Morf iOS**: círculo minimizado → tarjeta redondeada 20 px.
 
-Ambas construidas; el toggle vive en modo dev → Interacción. Decisión pendiente
-de verlas funcionando.
+Ambas construidas; el toggle vive en modo dev → Interacción. La variante
+por defecto es **B · Morf iOS** (fuera de modo dev y en el config por defecto).
 
 ### Radio animable
 
@@ -142,13 +146,13 @@ transiciones CSS para micro-feedback. Sin librerías adicionales.
 
 | Momento | Tratamiento |
 | --- | --- |
-| Morfo de cápsula | GSAP Flip `power3.out` 0.6 s + radio paralelo `power3.out` 0.5 s (asentamiento sin rebote lateral) |
+| Morfo de cápsula | GSAP tween geométrico `power3.out` 0.6 s (`left`/`xPercent`/radio); el anchor no se remonta |
 | Desliz del indicador activo (barra inferior) | GSAP `translateX` `back.out(1.6)` 0.5 s; posiciona sin tween con `prefers-reduced-motion` |
 | Transición de contenido entre tabs | Salida `power2.in` 0.18 s (fade + subida), entrada `back.out(1.5)` 0.5 s (rise + rebote); líquida sobre un solo contenedor persistente |
 | Números héroe | contador GSAP `power3.out` 0.9 s (`AnimatedNumber`) |
 | Toque (botones, cápsula) | `active:scale-[0.97]` CSS 150 ms |
 | Hora actual / clase en curso | punto que respira (`studia-breathe` 2.6 s, `motion-safe`) |
-| Entrada de contenido de cápsula | `studia-scale-in` 0.3 s (scale + opacidad; el texto nunca se refluye en el morfo) |
+| Entrada de contenido de cápsula | `studia-capsule-in` 0.35 s (fade + subida suave; el anchor no se refluye) |
 | Entrada de toast | `studia-fade-up` 0.3 s |
 | Pull-to-refresh | indicador spinner existente, opacidad ligada al gesto |
 

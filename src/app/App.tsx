@@ -134,7 +134,7 @@ function AuthenticatedShell() {
   const longPressDurationMs = timingsActive
     ? dev.config.longPressDurationMs
     : DEFAULT_LONG_PRESS_MS;
-  const capsuleVariant = timingsActive ? dev.config.capsuleVariant : "pill";
+  const capsuleVariant = timingsActive ? dev.config.capsuleVariant : "morf";
   const capsuleCollapseMs = timingsActive
     ? dev.config.capsuleCollapseMs
     : DEFAULT_CAPSULE_COLLAPSE_MS;

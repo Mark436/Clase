@@ -77,7 +77,7 @@ export const EMPTY_DEV_CONFIG: DevConfig = {
   adeudoOverride: null,
   toastDurationMs: DEFAULT_TOAST_DURATION_MS,
   longPressDurationMs: DEFAULT_LONG_PRESS_MS,
-  capsuleVariant: "pill",
+  capsuleVariant: "morf",
   capsuleCollapseMs: DEFAULT_CAPSULE_COLLAPSE_MS,
   notificationChannel: DEFAULT_NOTIFICATION_CHANNEL,
 };

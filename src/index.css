@@ -280,17 +280,16 @@ body {
   }
 }
 
-/* Content swap inside the capsule (minimized ⇄ expanded): the words never
-   reflow during the morph — they only appear at their final size with a soft
-   scale + fade, echo of the island's single transform. */
-@keyframes studia-scale-in {
+/* Detail content revealed inside the expanded capsule (beside the anchor):
+   fades in with a soft rise so the revealed text never reflows mid-morph. */
+@keyframes studia-capsule-in {
   from {
     opacity: 0;
-    transform: scale(0.94);
+    transform: translateY(4px) scale(0.96);
   }
   to {
     opacity: 1;
-    transform: scale(1);
+    transform: translateY(0) scale(1);
   }
 }
 

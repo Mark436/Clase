@@ -1,8 +1,7 @@
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { FocusEvent, KeyboardEvent } from "react";
 import type { ReactNode } from "react";
 import gsap from "gsap";
-import { Flip } from "gsap/Flip";
 import {
   CAPSULE_MORPH_DURATION,
   CAPSULE_MORPH_EASE,
@@ -10,17 +9,16 @@ import {
   CAPSULE_RADIUS_EASE,
 } from "@/lib/motion/eases";
 
-gsap.registerPlugin(Flip);
-
 export type CapsuleVariant = "pill" | "morf";
 export type CapsuleTone = "neutral" | "accent";
 
 interface CapsuleProps {
   /** A: stadium at every size. B: iOS-style pill → rounded-card morph. */
   variant?: CapsuleVariant;
-  /** Compact row shown while collapsed (~44px tall). */
+  /** Anchor shown while collapsed (and kept at the top-left when expanded).
+      This is the content that does NOT move when the capsule grows. */
   minimized: ReactNode;
-  /** Full card shown while expanded. */
+  /** Detail content revealed alongside the anchor once expanded. */
   expanded: ReactNode;
   /** Change this key to trigger one expand pulse (important events only). */
   pulseKey?: string | number;
@@ -37,16 +35,15 @@ function prefersReducedMotion(): boolean {
 
 const EXPANDED_RADIUS_PX = 20;
 
-// The context capsule: a floating island that morphs between a compact
-// round state and an expanded card. Morphs run through GSAP Flip so the two
-// states can have completely different content and sizes. Radius is derived
-// from the measured height (never 9999px) so the interpolation is real:
-// every frame lands between concrete pixel values.
+// The context capsule: a floating island sitting at the top-left that morphs to
+// a centered (for the "morf" variant) expanded card. The morph is a GSAP tween
+// over geometry — left / xPercent / borderRadius — not a Flip playback, so the
+// anchor (minimized) stays put while the details (expanded) grow beside it.
 //
 // Expansion is always transient: it ends after autoCollapseMs, on Escape,
 // on focus leaving the island, or on a pointer press outside of it.
 export function Capsule({
-  variant = "pill",
+  variant = "morf",
   minimized,
   expanded,
   pulseKey,
@@ -57,7 +54,6 @@ export function Capsule({
 }: CapsuleProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const elementRef = useRef<HTMLButtonElement>(null);
-  const flipStateRef = useRef<Flip.FlipState | null>(null);
   const collapseTimerRef = useRef<number | undefined>(undefined);
   const previousPulseRef = useRef(pulseKey);
 
@@ -68,22 +64,14 @@ export function Capsule({
     }
   }
 
-  function beginMorph() {
-    if (elementRef.current !== null && !prefersReducedMotion()) {
-      flipStateRef.current = Flip.getState(elementRef.current);
-    }
-  }
-
   function scheduleCollapse() {
     clearCollapseTimer();
     collapseTimerRef.current = window.setTimeout(() => {
-      beginMorph();
       setIsExpanded(false);
     }, autoCollapseMs);
   }
 
   function collapseNow() {
-    beginMorph();
     clearCollapseTimer();
     setIsExpanded(false);
   }
@@ -94,7 +82,6 @@ export function Capsule({
     if (previousPulseRef.current === pulseKey) return;
 
     previousPulseRef.current = pulseKey;
-    beginMorph();
     setIsExpanded(true);
     scheduleCollapse();
     // eslint-disable-next-line react-hooks/exhaustive-deps -- timers are refs; re-run only per pulse key.
@@ -134,7 +121,6 @@ export function Capsule({
       return;
     }
 
-    beginMorph();
     setIsExpanded(true);
     scheduleCollapse();
   }
@@ -152,39 +138,48 @@ export function Capsule({
     }
   }
 
-  // After React commits the new state, morph from the captured snapshot and
-  // tween border-radius toward its final concrete value.
-  useLayoutEffect(() => {
+  // After React commits the new layout, morph the island geometry: move it to
+  // (or from) the centered position and tween the border radius toward its final
+  // concrete value. The "morf" variant settles on a rounded-card radius while
+  // expanded; "pill" keeps the full stadium at every size.
+  useEffect(() => {
     const element = elementRef.current;
     if (element === null) return;
+    if (prefersReducedMotion()) return;
 
     const targetRadius =
       variant === "morf" && isExpanded
-        ? `${EXPANDED_RADIUS_PX}px`
-        : `${element.offsetHeight / 2}px`;
+        ? EXPANDED_RADIUS_PX
+        : element.offsetHeight / 2;
 
-    const snapshot = flipStateRef.current;
-    flipStateRef.current = null;
+    gsap.to(element, {
+      left: isExpanded ? "50%" : "0%",
+      xPercent: isExpanded ? -50 : 0,
+      borderRadius: targetRadius,
+      duration: CAPSULE_MORPH_DURATION,
+      ease: CAPSULE_MORPH_EASE,
+      overwrite: "auto",
+    });
+  }, [isExpanded, variant]);
 
-    if (snapshot === null || prefersReducedMotion()) {
-      element.style.borderRadius = targetRadius;
-      return;
-    }
+  // Separate radius ease so the rounding can settle at its own pace without
+  // lagging the silhouette.
+  useEffect(() => {
+    const element = elementRef.current;
+    if (element === null || prefersReducedMotion()) return;
+
+    const targetRadius =
+      variant === "morf" && isExpanded
+        ? EXPANDED_RADIUS_PX
+        : element.offsetHeight / 2;
 
     gsap.to(element, {
       borderRadius: targetRadius,
       duration: CAPSULE_RADIUS_DURATION,
       ease: CAPSULE_RADIUS_EASE,
-      // overwrite: "auto",
+      overwrite: "auto",
     });
-    Flip.from(snapshot, {
-      duration: CAPSULE_MORPH_DURATION,
-      ease: CAPSULE_MORPH_EASE,
-      // Transform-anchored morph: the island scales as one unit. Children are
-      // never transformed individually, so the text never re-flows or appears
-      // to reshuffle its letters mid-animation.
-      absolute: false,
-    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- radius targets geometry only.
   }, [isExpanded, variant]);
 
   return (
@@ -196,22 +191,32 @@ export function Capsule({
       onKeyDown={handleKeyDown}
       aria-expanded={isExpanded}
       aria-label={ariaLabel}
-      style={{ borderRadius: 22 }}
-      className={`fixed pointer-events-auto z-30 inline-flex select-none text-left transition-transform duration-150 ease-out active:scale-[0.97] ${
+      style={{ left: 0 }}
+      className={`pointer-events-auto absolute z-30 inline-flex select-none text-left transition-opacity duration-150 ease-out active:opacity-80 ${
         isExpanded
-          ? "mx-auto max-w-full items-stretch p-4"
-          : "h-11 items-center px-3.5"
-      } ${tone === "accent" ? "glass-panel-accent" : "glass-panel"} ${
-        className ?? ""
-      }`}
+          ? `${variant === "morf" ? "rounded-[20px]" : "rounded-full"} max-w-[calc(100vw-2rem)] items-start p-4`
+          : "h-11 items-center rounded-full px-3.5"
+      } ${
+        tone === "accent" ? "glass-panel-accent" : "glass-panel"
+      } ${className ?? ""}`}
     >
       <div
-        key={isExpanded ? "expanded" : "minimized"}
-        className={`flex min-w-0 ${
-          isExpanded ? "w-max flex-col gap-1" : "items-center gap-1.5"
-        } motion-safe:animate-[studia-scale-in_0.3s_var(--ease-out-soft)]`}
+        className={
+          isExpanded
+            ? "flex items-start gap-3"
+            : "flex min-w-0 items-center gap-1.5"
+        }
       >
-        {isExpanded ? expanded : minimized}
+        <div className={isExpanded ? "shrink-0" : "min-w-0"}>{minimized}</div>
+
+        {isExpanded ? (
+          <div
+            className="min-w-0 flex-1 motion-safe:animate-[studia-capsule-in_0.35s_var(--ease-out-soft)]"
+            aria-hidden={false}
+          >
+            {expanded}
+          </div>
+        ) : null}
       </div>
     </button>
   );
