@@ -270,7 +270,9 @@ Long-press card (>= DEFAULT_LONG_PRESS_MS = 550)  OR  tap pencil icon
 SubjectEditorSheet
   |-- edit mode: rename / professor / classroom (whole subject),
   |              time range for THIS occurrence only
-  |-- create mode ("Agregar materia", circular "+" button):
+  |-- create mode ("Agregar materia", circular "+" button — shown only
+  |              while on today; on any other day the button becomes a
+  |              "volver a hoy" target that recenters the schedule):
   |              days checkboxes + time range; clave generated as
   |              `USR-<base36 timestamp>`; on save the schedule jumps
   |              to the first selected weekday so the new subject is

@@ -100,7 +100,8 @@ Key pure helpers: `getCurrentClass`, `getNextClass`, `getVisibleClasses`,
 hooks, not scattered through JSX.
 
 **Invariant:** Swipe between days is schedule-specific and must have a non-gesture
-alternative (date picker or buttons).
+alternative — provided by the three-dot day menu (`DayDots`), which also always
+keeps the selected day centered (infinite window).
 
 **Invariant:** Completely finished classes do not appear in the contextual view of
 the current day; the in-progress class stays visible with progress.
@@ -251,13 +252,15 @@ but cache exists, cached data stays visible with a stale/offline indicator.
 
 ### Testing
 
-No test runner is configured yet. When added, pure domain logic should be testable
-without React:
+Vitest is configured (`pnpm test`). It focuses on pure domain logic that can
+run without rendering React:
 
 - `getCurrentClass`, `getNextClass`, `getVisibleClasses`, `getClassProgress`
 - `shouldOpenGradesFirst`, home-selection logic
+- schedule conflict resolution, edit persistence, drift reconciliation, capsule state
 
-API integration and UI behavior should be tested separately from schedule math.
+API integration and UI behavior are kept separate from schedule math where
+practical.
 
 ### Configuration
 
@@ -274,7 +277,9 @@ One application-level refresh updates all of `AppData`, persists the result, and
 lets every screen re-render. Pull-to-refresh is the primary manual refresh mechanism.
 Concurrent refresh operations are prevented.
 
-Startup flow: load cache → render → fetch fresh data → replace cache on success.
+Startup flow: load cache → render immediately; fresh data is fetched on login and
+via pull-to-refresh, replacing the cache on success. Automatic refresh at launch
+remains a pending roadmap item (ROADMAP §11).
 
 ### Styling and Responsiveness
 

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Page } from "@/components/layout/Page";
 import { Card } from "@/components/ui/Card";
-import { PlusIcon } from "@/components/ui/icons";
+import { PlusIcon, TargetIcon } from "@/components/ui/icons";
 import { Spinner } from "@/components/ui/Spinner";
 import type { ToastVariant } from "@/components/ui/toastVariants";
 import { getNow } from "@/lib/devtools/clock";
@@ -20,12 +20,18 @@ import {
 import { dailySwapKey } from "./conflicts";
 import { mapHorario } from "./mapHorario";
 import { useScheduleState } from "./scheduleStateContext";
-import { DayNavigation } from "./components/DayNavigation";
+import { DayDots } from "./components/DayDots";
 import { ScheduleDayView } from "./components/ScheduleDayView";
 import { SubjectEditorSheet } from "./components/SubjectEditorSheet";
 import type { SubjectEditorSubmit } from "./components/SubjectEditorSheet";
 import { EditConflictsSheet } from "./components/EditConflictsSheet";
-import { dateForWeekday, getScheduleForDay, isSameDay } from "./utils";
+import { useHorizontalSwipe } from "./hooks/useHorizontalSwipe";
+import {
+  addDays,
+  dateForWeekday,
+  getScheduleForDay,
+  isSameDay,
+} from "./utils";
 
 interface SchedulePageProps {
   alumno: Alumno | null;
@@ -52,6 +58,10 @@ export function SchedulePage({
     useScheduleState();
   const [selectedDate, setSelectedDate] = useState<Date>(() => getNow());
   const [editor, setEditor] = useState<EditorState>({ mode: "closed" });
+
+  const swipe = useHorizontalSwipe((direction) => {
+    setSelectedDate((previous) => addDays(previous, direction));
+  });
 
   const dayMeetings = useMemo(
     () => getScheduleForDay(resolvedWeek, selectedDate),
@@ -223,7 +233,7 @@ export function SchedulePage({
           </div>
         ) : (
           <>
-            <DayNavigation
+            <DayDots
               selectedDate={selectedDate}
               now={now}
               onSelectDate={setSelectedDate}
@@ -231,24 +241,30 @@ export function SchedulePage({
             <div className="mb-3 flex justify-end">
               <button
                 type="button"
-                onClick={() => setEditor({ mode: "create" })}
-                aria-label="Agregar materia"
-                title="Agregar materia"
+                onClick={
+                  isToday
+                    ? () => setEditor({ mode: "create" })
+                    : () => setSelectedDate(getNow())
+                }
+                aria-label={isToday ? "Agregar materia" : "Volver a hoy"}
+                title={isToday ? "Agregar materia" : "Volver a hoy"}
                 className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-container text-on-primary-container transition-colors hover:bg-primary-container/70 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary"
               >
-                <PlusIcon size={20} />
+                {isToday ? <PlusIcon size={20} /> : <TargetIcon size={20} />}
               </button>
             </div>
-            <ScheduleDayView
-              dayMeetings={dayMeetings}
-              now={now}
-              isToday={isToday}
-              longPressDurationMs={longPressDurationMs}
-              onEditRequest={(meeting) =>
-                setEditor({ mode: "edit", meeting })
-              }
-              onSwapToggle={handleSwapToggle}
-            />
+            <div {...swipe.bind} className="touch-pan-y">
+              <ScheduleDayView
+                dayMeetings={dayMeetings}
+                now={now}
+                isToday={isToday}
+                longPressDurationMs={longPressDurationMs}
+                onEditRequest={(meeting) =>
+                  setEditor({ mode: "edit", meeting })
+                }
+                onSwapToggle={handleSwapToggle}
+              />
+            </div>
           </>
         )}
       </Page>

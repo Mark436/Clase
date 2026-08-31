@@ -219,9 +219,14 @@ The student may still navigate to other schedule days through the available day-
 
 The initial experience is centered on the current day.
 
-The application may support navigation between schedule days.
+The application supports navigation between schedule days. A three-dot menu shows
+[previous, selected, next] and always centers the day being viewed; the window
+moves freely (infinite scrolling) as the student changes days. The student can
+switch days by swiping horizontally over the class list or by tapping one of the
+three dots.
 
-If gesture-based navigation between days is implemented, an accessible non-gesture alternative must also be provided.
+Horizontal swiping on the class list changes the day; the tap targets provide the
+accessible non-gesture alternative required whenever gestures are supported.
 
 The initial MVP should not require a two-day simultaneous schedule view.
 

@@ -123,3 +123,13 @@ export function PlusIcon(props: IconProps) {
     </Svg>
   );
 }
+
+export function TargetIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <circle cx="12" cy="12" r="10" />
+      <circle cx="12" cy="12" r="6" />
+      <circle cx="12" cy="12" r="2" />
+    </Svg>
+  );
+}

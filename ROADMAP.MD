@@ -233,11 +233,12 @@ Intentar actualizar
 
 ### Navegación entre días
 
-- [ ] Implementar swipe horizontal.
-- [ ] Swipe hacia izquierda → siguiente día.
-- [ ] Swipe hacia derecha → día anterior.
-- [ ] Añadir selector de fecha.
-- [ ] Mantener navegación táctil fluida.
+- [x] Implementar swipe horizontal (sobre la zona de la lista).
+- [x] Swipe hacia izquierda → siguiente día.
+- [x] Swipe hacia derecha → día anterior.
+- [x] Alternativa no-gestual: menú de 3 bolitas (anterior / seleccionado / siguiente) con click.
+- [x] La ventana de 3 bolitas sigue al día seleccionado (scroll infinito, el centro es el día en pantalla).
+- [x] Mantener navegación táctil fluida.
 - [ ] Animar la transición entre días de forma sutil.
 - [x] Permitir navegar a otros días disponibles.
 
@@ -379,7 +380,8 @@ Fuente de verdad: [`docs/design.md`](docs/design.md).
 - [x] Números héroe animados (promedios, progreso) con GSAP.
 - [x] Branding PWA: manifest Studia + theme-color por esquema.
 - [x] Pruebas de la lógica pura de la cápsula (`capsuleState.test.ts`).
-- [ ] Decidir variante de cápsula (A píldora total vs B morf iOS) comparándolas en funcionamiento.
+- [x] El morph usa un tween geométrico de GSAP (`left`/`xPercent`/radio), sin Flip; el anchor (contador+salón) permanece en su lugar al expandir.
+- [x] Variante por defecto: **B · Morf iOS** (modo dev cierra/abre el panel con su propio toggle).
 - [ ] Rediseñar iconos PWA al lenguaje cobalto.
 - [ ] Auditoría de contraste AA en ambos temas.
 
