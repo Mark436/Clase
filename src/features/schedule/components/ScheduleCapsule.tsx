@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Capsule } from "@/components/ui/Capsule";
 import type { CapsuleVariant } from "@/components/ui/Capsule";
-import { ProgressBar } from "@/components/ui/ProgressBar";
 import type { CapsuleNotification } from "@/lib/notifications/capsuleEvents";
 import type { ResolvedMeeting } from "../types";
 import {
@@ -242,41 +241,34 @@ export function ScheduleCapsule({
 
   if (state.kind === "in-class") {
     const classroomLabel = formatClassroomLabel(state.classroom);
+    const detailLine =
+      classroomLabel === null
+        ? state.subjectName
+        : `${state.subjectName} · ${classroomLabel}`;
     return (
       <Capsule
         variant={variant}
         tone="accent"
         autoCollapseMs={autoCollapseMs}
         pulseKey={effectivePulse}
+        progressPercent={state.progressPercent}
         ariaLabel={`En clase: ${state.subjectName}, termina a las ${state.endsLabel}`}
         minimized={
-          <>
+          <span className="flex flex-col leading-tight">
             <DurationCounter minutes={state.remainingMinutes} />
-            {classroomLabel === null ? null : (
-              <span className="truncate text-sm font-medium text-on-surface">
-                {classroomLabel}
-              </span>
-            )}
-          </>
+            <span className="max-w-40 truncate text-sm font-semibold text-on-surface">
+              {detailLine}
+            </span>
+          </span>
         }
         expanded={
           <>
-            <div className="flex items-baseline justify-between gap-4">
-              <span className="font-display text-lg font-bold leading-tight text-on-surface">
-                {state.subjectName}
-              </span>
-              <span className="shrink-0 text-sm font-semibold tabular-nums text-primary-strong">
-                {state.remainingMinutes}′ restantes
-              </span>
-            </div>
+            <span className="font-display text-base font-bold leading-tight text-on-surface">
+              {state.subjectName}
+            </span>
             <p className="text-sm text-on-surface-variant">
               Termina a las {state.endsLabel}
             </p>
-            <ProgressBar
-              value={state.progressPercent}
-              label={`Progreso de ${state.subjectName}`}
-              className="mt-1"
-            />
           </>
         }
       />
@@ -285,6 +277,10 @@ export function ScheduleCapsule({
 
   const relative = formatRelativeTime(state.minutesUntil);
   const classroomLabel = formatClassroomLabel(state.classroom);
+  const detailLine =
+    classroomLabel === null
+      ? state.subjectName
+      : `${state.subjectName} · ${classroomLabel}`;
   return (
     <Capsule
       variant={variant}
@@ -292,14 +288,12 @@ export function ScheduleCapsule({
       pulseKey={effectivePulse}
       ariaLabel={`Siguiente clase: ${state.subjectName} a las ${state.startsLabel}`}
       minimized={
-        <>
+        <span className="flex flex-col leading-tight">
           <DurationCounter minutes={state.minutesUntil} />
-          {classroomLabel === null ? null : (
-            <span className="truncate text-sm font-medium text-on-surface">
-              {classroomLabel}
-            </span>
-          )}
-        </>
+          <span className="max-w-40 truncate text-sm font-semibold text-on-surface">
+            {detailLine}
+          </span>
+        </span>
       }
       expanded={
         <>

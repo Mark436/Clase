@@ -24,6 +24,9 @@ interface CapsuleProps {
   pulseKey?: string | number;
   /** Delay before an expanded capsule collapses back (ms), manual or pulsed. */
   autoCollapseMs?: number;
+  /** 0–100: when provided, draws a progress fill behind the content that
+      grows across the capsule (used for the in-class countdown). */
+  progressPercent?: number;
   tone?: CapsuleTone;
   ariaLabel?: string;
   className?: string;
@@ -48,6 +51,7 @@ export function Capsule({
   expanded,
   pulseKey,
   autoCollapseMs = 1500,
+  progressPercent,
   tone = "neutral",
   ariaLabel = "Contexto actual",
   className,
@@ -194,12 +198,25 @@ export function Capsule({
       style={{ left: 0 }}
       className={`pointer-events-auto absolute z-30 inline-flex select-none text-left transition-opacity duration-150 ease-out active:opacity-80 ${
         isExpanded
-          ? `${variant === "morf" ? "rounded-[20px]" : "rounded-full"} max-w-[calc(100vw-2rem)] items-start p-4`
-          : "h-11 items-center rounded-full px-3.5"
+          ? `${variant === "morf" ? "rounded-[20px]" : "rounded-full"} max-w-[calc(100vw-1.5rem)] items-start p-4`
+          : "min-h-12 items-center rounded-full px-4"
+      } ${
+        progressPercent !== undefined ? "overflow-hidden" : ""
       } ${
         tone === "accent" ? "glass-panel-accent" : "glass-panel"
       } ${className ?? ""}`}
     >
+      {progressPercent !== undefined ? (
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-y-0 left-0"
+          style={{
+            width: `${Math.min(Math.max(progressPercent, 0), 100)}%`,
+            background:
+              "color-mix(in oklab, var(--studia-cobalto) 20%, transparent)",
+          }}
+        />
+      ) : null}
       <div
         className={
           isExpanded

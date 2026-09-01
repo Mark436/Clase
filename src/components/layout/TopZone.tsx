@@ -15,11 +15,12 @@ export function TopZoneProvider({ children, slot }: TopZoneProviderProps) {
     <TopZoneContext value={element}>
       {children}
       {/* Flex row: the capsule sits at the start while collapsed and can
-          center itself when expanded. */}
+          center itself when expanded. Fixed so the capsule stays pinned to
+          the viewport and never scrolls away with the page. */}
       <div
         ref={setElement}
         aria-hidden={element === null}
-        className="pointer-events-none absolute inset-x-4 top-[calc(env(safe-area-inset-top)+10px)] z-30 flex justify-start"
+        className="pointer-events-none fixed inset-x-3 top-[calc(env(safe-area-inset-top)+10px)] z-30 flex justify-start"
       >
         {slot}
       </div>
