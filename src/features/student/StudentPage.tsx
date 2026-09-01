@@ -120,16 +120,6 @@ export function StudentPage({
           </Button>
         </Card>
 
-        <Card className="p-2">
-          <button
-            type="button"
-            onClick={onLogout}
-            className="flex h-11 w-full items-center justify-center rounded-xl text-sm font-semibold text-error transition-colors hover:bg-error-container/60 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-error"
-          >
-            Cerrar sesión
-          </button>
-        </Card>
-
         <Card className="flex items-center justify-between gap-3">
           <div className="min-w-0">
             <p className="text-sm font-medium text-on-surface">
@@ -146,6 +136,15 @@ export function StudentPage({
           >
             Actualizar
           </Button>
+        </Card>
+        <Card className="p-2">
+          <button
+            type="button"
+            onClick={onLogout}
+            className="flex h-11 w-full items-center justify-center rounded-xl text-sm font-semibold text-error transition-colors hover:bg-error-container/60 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-error"
+          >
+            Cerrar sesión
+          </button>
         </Card>
       </Page>
     </>

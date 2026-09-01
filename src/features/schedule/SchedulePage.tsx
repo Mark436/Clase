@@ -177,7 +177,7 @@ export function SchedulePage({
           </div>
         ) : (
           <>
-            <div className="mb-3 flex items-center justify-center gap-3">
+            <div className="mb-4 flex items-center justify-center gap-5">
               <DayDots
                 selectedDate={selectedDate}
                 now={now}
