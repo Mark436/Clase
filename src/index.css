@@ -42,15 +42,16 @@ html {
   --studia-error-container: #fee7e8;
   --studia-on-error-container: #9f1a1f;
 
-  /* Liquid glass recipe (light) */
-    --studia-glass-tint: rgb(255 255 255 / 16%);
-    --studia-glass-border: rgb(23 24 28 / 32%);
-    --studia-glass-shadow: 0 1px 1px rgb(255 255 255 / 60%) inset,
-      0 -1px 1px rgb(23 24 28 / 4%) inset, 0 8px 32px rgb(23 24 28 / 14%);
-    --studia-glass-blur: 20px;
+  /* Liquid glass recipe (light) — shared by cápsula neutra, barra inferior y
+     toast neutro; los tokens accent solo tiñen la cápsula en clase. */
+  --studia-glass-tint: rgb(255 255 255 / 16%);
+  --studia-glass-border: rgb(23 24 28 / 32%);
+  --studia-glass-shadow: 0 1px 1px rgb(255 255 255 / 60%) inset,
+    0 -1px 1px rgb(23 24 28 / 4%) inset, 0 8px 32px rgb(23 24 28 / 14%);
+  --studia-glass-blur: 20px;
 
-    --studia-accent-glass-tint: rgb(76 124 239 / 16%);
-    --studia-accent-glass-border: rgb(76 124 239 / 32%);
+  --studia-accent-glass-tint: rgb(76 124 239 / 16%);
+  --studia-accent-glass-border: rgb(76 124 239 / 32%);
 
   /* Elevation (light) */
   --studia-shadow-card: 0 1px 2px rgb(23 24 28 / 4%),
@@ -85,14 +86,16 @@ html {
     --studia-error-container: #3b1214;
     --studia-on-error-container: #ffb3b6;
 
-    --studia-glass-tint: rgb(26 29 36 / 20%);
-    --studia-glass-border: rgb(255 255 255 / 36%);
-    --studia-glass-shadow: 0 1px 1px rgb(255 255 255 / 8%) inset,
-      0 -1px 1px rgb(0 0 0 / 20%) inset, 0 8px 32px rgb(0 0 0 / 42%);
-    --studia-glass-blur: 20px;
+  /* Liquid glass recipe (dark) — shared by cápsula neutra, barra inferior y
+     toast neutro; los tokens accent solo tiñen la cápsula en clase. */
+  --studia-glass-tint: rgb(26 29 36 / 20%);
+  --studia-glass-border: rgb(255 255 255 / 36%);
+  --studia-glass-shadow: 0 1px 1px rgb(255 255 255 / 8%) inset,
+    0 -1px 1px rgb(0 0 0 / 20%) inset, 0 8px 32px rgb(0 0 0 / 42%);
+  --studia-glass-blur: 20px;
 
-    --studia-accent-glass-tint: rgb(133 165 240 / 20%);
-    --studia-accent-glass-border: rgb(133 165 240 / 36%);
+  --studia-accent-glass-tint: rgb(133 165 240 / 20%);
+  --studia-accent-glass-border: rgb(133 165 240 / 36%);
 
     --studia-shadow-card: 0 1px 2px rgb(0 0 0 / 24%),
       0 12px 32px -16px rgb(0 0 0 / 52%);
@@ -228,8 +231,9 @@ body {
   }
 }
 
-/* Liquid glass surface: one recipe, both themes, solid fallback when
-   backdrop-filter is unavailable. */
+/* Liquid glass surface: one shared recipe for every glassy container
+   (cápsula neutra, barra inferior, toast neutro), both themes, solid fallback
+   when backdrop-filter is unavailable. */
 @utility glass-panel {
   position: relative;
   background: var(--studia-glass-tint);
@@ -251,7 +255,8 @@ body {
   box-shadow: var(--studia-shadow-card);
 }
 
-/* Accent variant of the glass recipe: the capsule's cobalt moment. */
+/* Accent variant of the glass recipe: tints the surface cobalto, reserved for
+   the context capsule when a class is in progress. */
 @utility glass-panel-accent {
   position: relative;
   background: var(--studia-accent-glass-tint);
