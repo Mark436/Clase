@@ -17,7 +17,7 @@ export function ReAuthSheet({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-20 flex items-end justify-center">
+    <div className="fixed inset-0 z-50 flex items-end justify-center">
       <button
         type="button"
         aria-label="Cerrar"

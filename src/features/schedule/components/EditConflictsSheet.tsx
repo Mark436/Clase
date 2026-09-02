@@ -31,7 +31,7 @@ export function EditConflictsSheet({
   onClose,
 }: EditConflictsSheetProps) {
   return (
-    <div className="fixed inset-0 z-30 flex items-end justify-center">
+    <div className="fixed inset-0 z-50 flex items-end justify-center">
       <button
         type="button"
         aria-label="Cerrar"

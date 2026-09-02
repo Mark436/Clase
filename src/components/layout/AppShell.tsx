@@ -50,7 +50,7 @@ export function AppShell({
               style={{ transform: `translateY(${offset}px)` }}
             >
               {children}
-              {navigation ? <div aria-hidden="true" className="h-24" /> : null}
+              {navigation ? <div aria-hidden="true" className="h-20" /> : null}
             </div>
           </main>
         </TopZoneProvider>
