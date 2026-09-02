@@ -201,19 +201,15 @@ export function Capsule({
           ? `${variant === "morf" ? "rounded-[20px]" : "rounded-full"} max-w-[calc(100vw-1.5rem)] items-start p-4`
           : "min-h-12 items-center rounded-full px-4"
       } ${
-        progressPercent !== undefined ? "overflow-hidden" : ""
-      } ${
         tone === "accent" ? "glass-panel-accent" : "glass-panel"
       } ${className ?? ""}`}
     >
       {progressPercent !== undefined ? (
         <span
           aria-hidden="true"
-          className="pointer-events-none absolute inset-y-0 left-0"
+          className="pointer-events-none absolute inset-0 rounded-[inherit] border-2 border-[var(--studia-cobalto)]"
           style={{
-            width: `${Math.min(Math.max(progressPercent, 0), 100)}%`,
-            background:
-              "color-mix(in oklab, var(--studia-cobalto) 20%, transparent)",
+            mask: `linear-gradient(to right, black ${Math.min(Math.max(progressPercent, 0), 100)}%, transparent ${Math.min(Math.max(progressPercent, 0), 100)}%)`,
           }}
         />
       ) : null}

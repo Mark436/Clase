@@ -43,8 +43,8 @@ html {
   --studia-on-error-container: #9f1a1f;
 
   /* Liquid glass recipe (light) */
-    --studia-glass-tint: rgb(255 255 255 / 62%);
-    --studia-glass-border: rgb(23 24 28 / 12%);
+    --studia-glass-tint: rgb(255 255 255 / 16%);
+    --studia-glass-border: rgb(23 24 28 / 32%);
     --studia-glass-shadow: 0 1px 1px rgb(255 255 255 / 60%) inset,
       0 -1px 1px rgb(23 24 28 / 4%) inset, 0 8px 32px rgb(23 24 28 / 14%);
     --studia-glass-blur: 20px;
@@ -85,8 +85,8 @@ html {
     --studia-error-container: #3b1214;
     --studia-on-error-container: #ffb3b6;
 
-    --studia-glass-tint: rgb(26 29 36 / 62%);
-    --studia-glass-border: rgb(255 255 255 / 9%);
+    --studia-glass-tint: rgb(26 29 36 / 20%);
+    --studia-glass-border: rgb(255 255 255 / 36%);
     --studia-glass-shadow: 0 1px 1px rgb(255 255 255 / 8%) inset,
       0 -1px 1px rgb(0 0 0 / 20%) inset, 0 8px 32px rgb(0 0 0 / 42%);
     --studia-glass-blur: 20px;
@@ -242,7 +242,7 @@ body {
   (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))
 ) {
   .glass-panel {
-    background: var(--studia-surface);
+    background: color-mix(in oklab, var(--studia-surface) 16%, transparent);
   }
 }
 
